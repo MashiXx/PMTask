@@ -1,0 +1,74 @@
+<%
+  const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
+  const pColor = priorityColors[task.priority] || '#FFB347';
+  const pLabel = priorityLabels[task.priority] || 'MEDIUM';
+  const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+  const tagClasses = {
+    'Design': 'tag-design', 'UX': 'tag-ux', 'Backend': 'tag-backend',
+    'Frontend': 'tag-frontend', 'DevOps': 'tag-devops', 'Security': 'tag-security',
+    'QA': 'tag-qa', 'Docs': 'tag-docs'
+  };
+  const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
+%>
+
+<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>">
+  <div class="task-priority-line" style="background: <%= pColor %>"></div>
+
+  <div class="task-header">
+    <span class="task-priority-badge" style="color: <%= pColor %>">
+      <%= pLabel %>
+    </span>
+    <button class="task-menu-btn" onclick="event.stopPropagation(); toggleTaskMenu(<%= task.id %>)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+    </button>
+  </div>
+
+  <div class="task-menu" id="menu-<%= task.id %>">
+    <button class="task-menu-item" onclick="openEditModal(<%= task.id %>)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
+    </button>
+    <button class="task-menu-item danger" onclick="deleteTask(<%= task.id %>)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Delete
+    </button>
+  </div>
+
+  <p class="task-title"><%= task.title %></p>
+
+  <div class="task-tags">
+    <% task.tags.forEach(tt => { %>
+      <span class="tag-badge <%= tagClasses[tt.tag.name] || '' %>"><%= tt.tag.name %></span>
+    <% }) %>
+  </div>
+
+  <% if (task.progress > 0) { %>
+    <div class="task-progress">
+      <div class="task-progress-header">
+        <span class="task-progress-label">Progress</span>
+        <span class="task-progress-value" style="color: <%= progressColor %>"><%= task.progress %>%</span>
+      </div>
+      <div class="task-progress-track">
+        <div class="task-progress-fill" style="width: <%= task.progress %>%; background: <%= progressColor %>; <%= task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : '' %>"></div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="task-footer">
+    <div class="task-assignees">
+      <% task.assignees.forEach((a, i) => { %>
+        <% const aColor = avatarColors[i % avatarColors.length]; %>
+        <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>;" title="<%= a.user.name %>">
+          <%= a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
+        </div>
+      <% }) %>
+    </div>
+    <% if (task.dueDate) { %>
+      <span class="task-due">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <%= task.dueDate %>
+      </span>
+    <% } %>
+  </div>
+</div>

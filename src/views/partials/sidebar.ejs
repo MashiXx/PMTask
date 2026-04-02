@@ -1,0 +1,35 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">&#10024;</div>
+    <span class="sidebar-logo-text">PMTask</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-btn active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Projects
+    </a>
+  </nav>
+
+  <div class="sidebar-projects">
+    <p class="sidebar-section-title">PROJECTS</p>
+    <% projects.forEach(p => { %>
+      <a href="/dashboard?project=<%= p.id %>" class="project-btn <%= p.id === activeProjectId ? 'active' : '' %>" style="<%= p.id === activeProjectId ? 'background:' + p.color + '12;' : '' %>">
+        <span class="project-dot" style="background: <%= p.color %>; box-shadow: 0 0 6px <%= p.color %>55;"></span>
+        <span class="project-name"><%= p.name %></span>
+        <span class="project-count"><%= p._count.tasks %></span>
+      </a>
+    <% }) %>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></div>
+    <div class="sidebar-user-info">
+      <p class="sidebar-user-name"><%= currentUser.name %></p>
+      <p class="sidebar-user-role">Member</p>
+    </div>
+    <a href="/auth/logout" class="sidebar-settings" title="Logout">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </a>
+  </div>
+</aside>

@@ -1,0 +1,45 @@
+<%
+  const columns = [
+    { id: 'todo', label: 'To Do', accent: '#6B6B8E', icon: 'circle' },
+    { id: 'inprogress', label: 'In Progress', accent: '#6C63FF', icon: 'clock' },
+    { id: 'review', label: 'In Review', accent: '#FF5C7A', icon: 'star' },
+    { id: 'done', label: 'Completed', accent: '#00F5A0', icon: 'check' },
+  ];
+
+  const colIcons = {
+    circle: '<circle cx="12" cy="12" r="10"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    check: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  };
+%>
+
+<div class="kanban-board">
+  <% columns.forEach(col => { %>
+    <div class="kanban-column">
+      <div class="column-header">
+        <div class="column-title-group">
+          <svg class="column-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="<%= col.accent %>" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><%- colIcons[col.icon] %></svg>
+          <span class="column-label"><%= col.label %></span>
+          <span class="column-count" style="background: <%= col.accent %>22; color: <%= col.accent %>"><%= tasks[col.id].length %></span>
+        </div>
+        <button class="column-add-btn" onclick="openTaskModal('<%= col.id %>')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="column-divider" style="background: linear-gradient(90deg, <%= col.accent %>88, transparent)"></div>
+
+      <div class="tasks-list" id="col-<%= col.id %>" data-status="<%= col.id %>">
+        <% tasks[col.id].forEach(task => { %>
+          <%- include('task-card', { task }) %>
+        <% }) %>
+
+        <button class="add-task-btn" onclick="openTaskModal('<%= col.id %>')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add task
+        </button>
+      </div>
+    </div>
+  <% }) %>
+</div>

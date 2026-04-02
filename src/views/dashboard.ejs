@@ -1,0 +1,25 @@
+<%- include('partials/head', { title: 'Dashboard' }) %>
+
+<div class="app-layout">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content">
+    <%- include('partials/header') %>
+
+    <div class="dashboard-body">
+      <%- include('partials/stats') %>
+      <%- include('partials/sprint') %>
+      <%- include('partials/kanban') %>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/modals/task-modal') %>
+<%- include('partials/modals/delete-modal') %>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="/js/modal.js"></script>
+<script src="/js/kanban.js"></script>
+<script src="/js/search.js"></script>
+
+<%- include('partials/foot') %>
