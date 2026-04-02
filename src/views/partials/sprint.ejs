@@ -1,19 +1,18 @@
 <div class="sprint-bar">
   <div class="sprint-bar-inner">
     <div class="sprint-bar-header">
-      <span class="sprint-bar-title">Progress</span>
+      <span class="sprint-bar-title">Sprint Progress</span>
+      <span class="sprint-percent"><span class="sprint-percent-value"><%= sprintProgress %>%</span> <span class="sprint-percent-label">completed</span></span>
     </div>
     <div class="sprint-track">
       <div class="sprint-fill" style="width: <%= sprintProgress %>%"></div>
     </div>
     <div class="sprint-meta">
-      <span>Done: <%= stats.completed %></span>
-      <span>Progress: <%= stats.inProgress %></span>
-      <span>Overdue: <%= stats.overdue %></span>
+      <span class="sprint-meta-item"><span style="color:var(--mint)"><%= stats.completed %></span> Done</span>
+      <span class="sprint-meta-item"><span style="color:var(--cyan)"><%= stats.inProgress %></span> In Progress</span>
+      <% if (stats.overdue > 0) { %>
+        <span class="sprint-meta-item"><span style="color:var(--coral)"><%= stats.overdue %></span> Overdue</span>
+      <% } %>
     </div>
-  </div>
-  <div class="sprint-percent">
-    <p class="sprint-percent-value"><%= sprintProgress %>%</p>
-    <p class="sprint-percent-label">completed</p>
   </div>
 </div>

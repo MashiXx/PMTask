@@ -457,6 +457,21 @@ input, textarea, select {
   gap: 16px;
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Breadcrumb */
 .breadcrumb {
   display: flex;
@@ -773,19 +788,23 @@ input, textarea, select {
 
 .sprint-bar-inner {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.sprint-bar-label {
+.sprint-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sprint-bar-title {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
+  color: var(--text);
 }
 
 .sprint-track {
-  flex: 1;
   height: 6px;
   background: var(--border);
   border-radius: 3px;
@@ -803,20 +822,29 @@ input, textarea, select {
   display: flex;
   align-items: center;
   gap: 16px;
-  white-space: nowrap;
+  flex-wrap: wrap;
+}
+
+.sprint-meta-item {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .sprint-percent {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text);
   font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
-.sprint-dates {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
+.sprint-percent-value {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.sprint-percent-label {
+  font-size: 0.7rem;
 }
 
 /* ===================================================
@@ -1934,13 +1962,52 @@ select option {
   border: 0;
 }
 
-/* Responsive: compact at smaller widths */
+/* ===================================================
+   RESPONSIVE
+   =================================================== */
+
+/* Mobile menu button - hidden on desktop */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.mobile-menu-btn:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+}
+
+/* Sidebar overlay - hidden on desktop */
+.sidebar-overlay {
+  display: none;
+}
+
+/* 1200px: stats 2-col, kanban columns smaller */
 @media (max-width: 1200px) {
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .kanban-column {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  .task-detail {
+    grid-template-columns: 1fr 240px;
+  }
 }
 
+/* 900px: sidebar collapses to icon-only, topbar compact */
 @media (max-width: 900px) {
   .sidebar {
     width: 56px;
@@ -1948,10 +2015,8 @@ select option {
   }
 
   .sidebar-logo-text,
-  .nav-btn span,
   .sidebar-projects,
-  .sidebar-user-info,
-  .sidebar-settings span {
+  .sidebar-user-info {
     display: none;
   }
 
@@ -1968,5 +2033,286 @@ select option {
   .sidebar-user {
     justify-content: center;
     padding: 12px 0 8px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-settings {
+    padding: 0;
+  }
+
+  /* Topbar */
+  .filter-btn span,
+  .btn-new-task span {
+    display: none;
+  }
+
+  .btn-new-task {
+    padding: 8px 10px;
+  }
+
+  .search-box {
+    max-width: 180px;
+  }
+
+  /* Sprint bar stacks */
+  .sprint-bar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .sprint-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Task detail single col */
+  .task-detail {
+    grid-template-columns: 1fr;
+  }
+
+  /* Profile single col */
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Kanban columns smaller */
+  .kanban-column {
+    width: 220px;
+    min-width: 220px;
+  }
+}
+
+/* 768px: mobile - sidebar becomes drawer overlay */
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  /* Sidebar becomes off-canvas drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    min-width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Show all sidebar content in drawer */
+  .sidebar.open .sidebar-logo-text,
+  .sidebar.open .sidebar-projects,
+  .sidebar.open .sidebar-user-info {
+    display: block;
+  }
+
+  .sidebar.open .sidebar-logo {
+    justify-content: flex-start;
+    padding: 0 20px 24px;
+  }
+
+  .sidebar.open .nav-btn {
+    justify-content: flex-start;
+    padding: 9px 12px;
+  }
+
+  .sidebar.open .sidebar-user {
+    flex-direction: row;
+    padding: 16px 20px 8px;
+  }
+
+  .sidebar.open .sidebar-settings {
+    padding: 8px 20px 4px;
+  }
+
+  /* Overlay backdrop */
+  .sidebar-overlay.open {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Show hamburger */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* Main content takes full width */
+  .main-content {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .dashboard-body {
+    padding: 16px;
+    gap: 16px;
+    overflow: visible;
+  }
+
+  /* Topbar wraps */
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Search full width on second row */
+  .search-box {
+    order: 10;
+    max-width: 100%;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  /* Stats 2x2 */
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Sprint bar vertical layout */
+  .sprint-bar {
+    padding: 16px;
+  }
+
+  .sprint-bar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .sprint-percent {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+  }
+
+  /* Kanban horizontal scroll */
+  .kanban-board {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 16px;
+  }
+
+  .kanban-column {
+    width: 260px;
+    min-width: 260px;
+    max-height: 60vh;
+  }
+
+  /* Projects grid 1-col */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Profile stacked */
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Task detail stacked */
+  .task-detail {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Modals fit mobile */
+  .modal {
+    margin: 16px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* 480px: very small screens */
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .topbar {
+    padding: 8px 12px;
+  }
+
+  .dashboard-body {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .kanban-column {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  .breadcrumb {
+    font-size: 0.8rem;
+  }
+
+  .btn-new-task {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+
+  .sprint-meta {
+    font-size: 0.7rem;
+  }
+
+  .sprint-meta span {
+    font-family: var(--font-mono);
+  }
+
+  .modal {
+    margin: 8px;
   }
 }

@@ -2,6 +2,11 @@
   document.querySelectorAll('.flash').forEach(el => {
     setTimeout(() => el.remove(), 4000);
   });
+
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.querySelector('.sidebar-overlay').classList.toggle('open');
+  }
 </script>
 </body>
 </html>
