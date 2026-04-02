@@ -2,10 +2,26 @@ const express = require('express');
 const path = require('path');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
+const helmet = require('helmet');
 const sessionConfig = require('./config/session');
 const passport = require('passport');
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 
 // View engine
 app.set('view engine', 'ejs');
@@ -16,7 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parsing
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Method override
 app.use(methodOverride('_method'));

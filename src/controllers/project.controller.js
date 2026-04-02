@@ -61,12 +61,19 @@ exports.updateProject = async (req, res) => {
     const { name, color } = req.body;
     if (!name) return res.status(400).json({ error: 'Name is required' });
 
-    const project = await prisma.project.update({
+    // IDOR protection: only owner can update
+    const project = await prisma.project.findUnique({ where: { id: parseInt(id) } });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (project.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const updated = await prisma.project.update({
       where: { id: parseInt(id) },
       data: { name, color: color || '#6C63FF' },
     });
 
-    res.json({ success: true, project });
+    res.json({ success: true, project: updated });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update project' });
@@ -76,6 +83,14 @@ exports.updateProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // IDOR protection: only owner can delete
+    const project = await prisma.project.findUnique({ where: { id: parseInt(id) } });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (project.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     await prisma.project.delete({ where: { id: parseInt(id) } });
     res.json({ success: true });
   } catch (err) {

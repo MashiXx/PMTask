@@ -62,6 +62,28 @@ exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, role, password, status } = req.body;
+    const targetId = parseInt(id);
+
+    // Prevent admin from demoting themselves
+    if (targetId === req.user.id && role && role !== 'admin') {
+      return res.status(400).json({ error: 'Cannot change your own role' });
+    }
+
+    // Verify target user exists
+    const targetUser = await prisma.user.findUnique({ where: { id: targetId } });
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check email uniqueness if changing email
+    if (email && email !== targetUser.email) {
+      const existing = await prisma.user.findFirst({
+        where: { email, NOT: { id: targetId } },
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
 
     const data = {};
     if (name) data.name = name;
@@ -73,7 +95,7 @@ exports.updateUser = async (req, res) => {
     }
 
     await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id: targetId },
       data,
     });
 

@@ -1,12 +1,36 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const VALID_STATUSES = ['todo', 'inprogress', 'review', 'done'];
+const VALID_PRIORITIES = ['low', 'medium', 'high'];
+
+// Check if user has access to modify a task (admin, creator, or assignee)
+async function canModifyTask(taskId, user) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { assignees: true },
+  });
+  if (!task) return null;
+  if (user.role === 'admin') return task;
+  if (task.createdById === user.id) return task;
+  if (task.assignees.some(a => a.userId === user.id)) return task;
+  return false;
+}
+
 exports.createTask = async (req, res) => {
   try {
     const { title, description, priority, status, dueDate, progress, tags, projectId } = req.body;
 
+    if (!title || !projectId) {
+      return res.status(400).json({ error: 'Title and projectId are required' });
+    }
+
+    const safeStatus = VALID_STATUSES.includes(status) ? status : 'todo';
+    const safePriority = VALID_PRIORITIES.includes(priority) ? priority : 'medium';
+    const safeProgress = Math.min(100, Math.max(0, parseInt(progress) || 0));
+
     const maxPos = await prisma.task.aggregate({
-      where: { projectId: parseInt(projectId), status: status || 'todo' },
+      where: { projectId: parseInt(projectId), status: safeStatus },
       _max: { position: true },
     });
 
@@ -14,10 +38,10 @@ exports.createTask = async (req, res) => {
       data: {
         title,
         description: description || null,
-        priority: priority || 'medium',
-        status: status || 'todo',
+        priority: safePriority,
+        status: safeStatus,
         dueDate: dueDate || null,
-        progress: parseInt(progress) || 0,
+        progress: safeProgress,
         position: (maxPos._max.position || 0) + 1,
         projectId: parseInt(projectId),
         createdById: req.user.id,
@@ -53,22 +77,30 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const taskId = parseInt(id);
     const { title, description, priority, status, dueDate, progress, tags } = req.body;
+
+    // IDOR protection: check ownership
+    const access = await canModifyTask(taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
+    const safeProgress = Math.min(100, Math.max(0, parseInt(progress) || 0));
 
     const updateData = {
       title,
       description: description || null,
-      priority,
+      priority: VALID_PRIORITIES.includes(priority) ? priority : access.priority,
       dueDate: dueDate || null,
-      progress: parseInt(progress) || 0,
+      progress: safeProgress,
     };
-    if (status) {
+    if (status && VALID_STATUSES.includes(status)) {
       updateData.status = status;
       if (status === 'done') updateData.progress = 100;
     }
 
     const task = await prisma.task.update({
-      where: { id: parseInt(id) },
+      where: { id: taskId },
       data: updateData,
     });
 
@@ -97,10 +129,20 @@ exports.updateTask = async (req, res) => {
 exports.moveTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const taskId = parseInt(id);
     const { status, position } = req.body;
 
+    // IDOR protection
+    const access = await canModifyTask(taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
     await prisma.task.update({
-      where: { id: parseInt(id) },
+      where: { id: taskId },
       data: {
         status,
         position: parseInt(position),
@@ -118,7 +160,16 @@ exports.moveTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.task.delete({ where: { id: parseInt(id) } });
+    const taskId = parseInt(id);
+
+    // IDOR protection
+    const access = await canModifyTask(taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
+    await prisma.taskTag.deleteMany({ where: { taskId } });
+    await prisma.taskAssignee.deleteMany({ where: { taskId } });
+    await prisma.task.delete({ where: { id: taskId } });
     res.json({ success: true });
   } catch (err) {
     console.error(err);
