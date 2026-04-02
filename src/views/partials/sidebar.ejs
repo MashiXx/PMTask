@@ -16,7 +16,34 @@
   <% } %>
 
   <% if (typeof activeProjectId !== 'undefined' && activeProjectId) { %>
-    <div class="sidebar-tags">
+    <!-- Group By -->
+    <div class="sidebar-section-group" style="padding: 0 12px;">
+      <p class="sidebar-section-title mb-8">GROUP BY</p>
+      <div class="sidebar-groupby-toggle">
+        <button class="sidebar-groupby-btn active" data-group="status" onclick="setGroupBy('status')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Status
+        </button>
+        <button class="sidebar-groupby-btn" data-group="tag" onclick="setGroupBy('tag')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Tag
+        </button>
+      </div>
+    </div>
+
+    <!-- Hide Completed -->
+    <div style="padding: 0 12px; margin-top: 12px;">
+      <label class="sidebar-toggle-label" id="hideCompletedLabel">
+        <span class="sidebar-toggle-switch">
+          <input type="checkbox" id="hideCompletedCheck" onchange="toggleCompletedTasks()">
+          <span class="sidebar-toggle-slider"></span>
+        </span>
+        <span class="sidebar-toggle-text">Hide completed</span>
+      </label>
+    </div>
+
+    <!-- Filters: Tags (when grouping by status) -->
+    <div class="sidebar-tags" id="sidebarTagFilters">
       <div class="flex-between mb-10">
         <p class="sidebar-section-title" style="margin:0">TAGS</p>
         <% if (currentUser && currentUser.role === 'admin') { %>
@@ -34,10 +61,36 @@
             </button>
           <% }) %>
         </div>
-        <button class="sidebar-clear-filters hidden" onclick="clearTagFilters()">Clear filters</button>
+        <button class="sidebar-clear-filters hidden" onclick="clearAllFilters()">Clear filters</button>
       <% } else { %>
         <p class="sidebar-no-tags">No tags yet</p>
       <% } %>
+    </div>
+
+    <!-- Filters: Status (when grouping by tag) -->
+    <div class="sidebar-tags hidden" id="sidebarStatusFilters">
+      <div class="flex-between mb-10">
+        <p class="sidebar-section-title" style="margin:0">STATUS</p>
+      </div>
+      <div class="sidebar-tags-list">
+        <button class="sidebar-tag-btn" data-status-name="todo" onclick="toggleStatusFilter(this)">
+          <span class="tag-dot" style="background:#6B6B8E;"></span>
+          <span class="tag-name">To Do</span>
+        </button>
+        <button class="sidebar-tag-btn" data-status-name="inprogress" onclick="toggleStatusFilter(this)">
+          <span class="tag-dot" style="background:#6C63FF;"></span>
+          <span class="tag-name">In Progress</span>
+        </button>
+        <button class="sidebar-tag-btn" data-status-name="review" onclick="toggleStatusFilter(this)">
+          <span class="tag-dot" style="background:#FF5C7A;"></span>
+          <span class="tag-name">In Review</span>
+        </button>
+        <button class="sidebar-tag-btn" data-status-name="done" onclick="toggleStatusFilter(this)">
+          <span class="tag-dot" style="background:#00F5A0;"></span>
+          <span class="tag-name">Completed</span>
+        </button>
+      </div>
+      <button class="sidebar-clear-filters hidden" onclick="clearAllFilters()">Clear filters</button>
     </div>
   <% } %>
 

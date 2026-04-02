@@ -9,6 +9,7 @@ exports.getTagsByProject = async (req, res) => {
     const tags = await prisma.tag.findMany({
       where: { projectId },
       orderBy: { name: 'asc' },
+      include: { _count: { select: { tasks: true } } },
     });
     res.json(tags);
   } catch (err) {

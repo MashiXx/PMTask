@@ -51,8 +51,9 @@ async function loadTagList() {
       <div class="tag-manager-item" id="tag-item-${tag.id}">
         <span class="tag-dot" style="background:${tag.color};"></span>
         <span class="tag-manager-name">${tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}</span>
+        ${tag._count.tasks > 0 ? `<span style="font-size:0.7rem; color:var(--text-muted); margin-left:4px;">${tag._count.tasks} task${tag._count.tasks > 1 ? 's' : ''}</span>` : ''}
         <div style="margin-left:auto; display:flex; gap:4px;">
-          <button class="column-add-btn" onclick="deleteTagItem(${tag.id})" title="Delete" style="padding:4px; color:var(--coral);">
+          <button class="column-add-btn" onclick="deleteTagItem(${tag.id}, '${tag.name.replace(/'/g, "\\'")}', ${tag._count.tasks})" title="Delete" style="padding:4px; color:var(--coral);">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
@@ -81,7 +82,11 @@ async function addNewTag() {
   }
 }
 
-async function deleteTagItem(id) {
+async function deleteTagItem(id, name, taskCount) {
+  if (taskCount > 0) {
+    const msg = `Tag "${name}" đang được dùng trong ${taskCount} task${taskCount > 1 ? 's' : ''}.\nTag sẽ bị gỡ khỏi tất cả task. Bạn có chắc muốn xoá?`;
+    if (!confirm(msg)) return;
+  }
   try {
     await fetch(`/api/tags/${id}`, { method: 'DELETE' });
     const item = document.getElementById(`tag-item-${id}`);

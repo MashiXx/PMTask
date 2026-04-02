@@ -1,0 +1,54 @@
+<%
+  const allTasksForTags = [...tasks.todo, ...tasks.inprogress, ...tasks.review, ...tasks.done];
+
+  // Group tasks by tag
+  const tagGroups = {};
+  const noTagTasks = [];
+
+  allTasksForTags.forEach(task => {
+    if (task.tags.length === 0) {
+      noTagTasks.push(task);
+    } else {
+      task.tags.forEach(tt => {
+        const tagName = tt.tag.name;
+        if (!tagGroups[tagName]) {
+          tagGroups[tagName] = { name: tagName, color: tt.tag.color || '#6B6B8E', tasks: [] };
+        }
+        tagGroups[tagName].tasks.push(task);
+      });
+    }
+  });
+
+  const tagColumns = Object.values(tagGroups).sort((a, b) => a.name.localeCompare(b.name));
+  if (noTagTasks.length > 0) {
+    tagColumns.push({ name: 'No Tag', color: '#6B6B8E', tasks: noTagTasks });
+  }
+%>
+
+<div class="kanban-board hidden" id="kanbanTagView">
+  <% if (tagColumns.length === 0) { %>
+    <div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem; width:100%;">
+      No tags yet
+    </div>
+  <% } %>
+
+  <% tagColumns.forEach(col => { %>
+    <div class="kanban-column">
+      <div class="column-header">
+        <div class="column-title-group">
+          <span class="tag-dot" style="background:<%= col.color %>; width:10px; height:10px; border-radius:50%; display:inline-block;"></span>
+          <span class="column-label"><%= col.name.charAt(0).toUpperCase() + col.name.slice(1) %></span>
+          <span class="column-count" style="background: <%= col.color %>22; color: <%= col.color %>"><%= col.tasks.length %></span>
+        </div>
+      </div>
+
+      <div class="column-divider" style="background: linear-gradient(90deg, <%= col.color %>88, transparent)"></div>
+
+      <div class="tasks-list" data-tag="<%= col.name %>">
+        <% col.tasks.forEach(task => { %>
+          <%- include('task-card', { task }) %>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+</div>
