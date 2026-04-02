@@ -1,1 +1,66 @@
-<!-- Task modal placeholder -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <h2 class="modal-title" id="taskModalTitle">New Task</h2>
+
+    <form id="taskForm">
+      <input type="hidden" id="taskId" value="">
+      <input type="hidden" id="taskProjectId" value="<%= activeProjectId %>">
+
+      <div class="form-group">
+        <label>TITLE</label>
+        <input type="text" id="taskTitle" placeholder="Task title" required>
+      </div>
+
+      <div class="form-group">
+        <label>DESCRIPTION</label>
+        <textarea id="taskDescription" placeholder="Optional description" rows="2" style="resize:vertical"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex:1">
+          <label>PRIORITY</label>
+          <select id="taskPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>STATUS</label>
+          <select id="taskStatus">
+            <option value="todo">To Do</option>
+            <option value="inprogress">In Progress</option>
+            <option value="review">In Review</option>
+            <option value="done">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex:1">
+          <label>DUE DATE</label>
+          <input type="date" id="taskDueDate">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>PROGRESS (%)</label>
+          <input type="number" id="taskProgress" min="0" max="100" value="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>TAGS</label>
+        <div class="tags-container">
+          <% ['Design', 'UX', 'Backend', 'Frontend', 'DevOps', 'Security', 'QA', 'Docs'].forEach(tag => { %>
+            <input type="checkbox" class="tag-checkbox" name="tags" value="<%= tag %>" id="tag-<%= tag %>">
+            <label class="tag-label" for="tag-<%= tag %>"><%= tag %></label>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
+        <button type="submit" class="btn-submit" id="taskSubmitBtn">Create Task</button>
+      </div>
+    </form>
+  </div>
+</div>

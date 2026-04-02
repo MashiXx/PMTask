@@ -1,1 +1,13 @@
-<!-- Delete modal placeholder -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width: 380px; text-align: center;">
+    <h2 class="modal-title">Delete Task</h2>
+    <p style="color: var(--text-muted); font-size: 13px; font-family: var(--font-mono); margin-bottom: 24px;">
+      Are you sure? This action cannot be undone.
+    </p>
+    <input type="hidden" id="deleteTaskId" value="">
+    <div class="modal-actions" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-delete" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
