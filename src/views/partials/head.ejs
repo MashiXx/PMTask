@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMTask - <%= typeof title !== 'undefined' ? title : 'Task Manager' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+  <div class="flash flash-success" onclick="this.remove()"><%= success[0] %></div>
+<% } %>
+<% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+  <div class="flash flash-error" onclick="this.remove()"><%= error[0] %></div>
+<% } %>
