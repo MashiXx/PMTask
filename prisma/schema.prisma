@@ -16,6 +16,7 @@ model User {
   avatar    String?
   role      String   @default("developer")
   status    String   @default("active")
+  theme     String   @default("system")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

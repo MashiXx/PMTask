@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="<%= typeof userTheme !== 'undefined' && userTheme ? userTheme : 'system' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/main.css">
+  <script>
+    // Apply theme immediately to prevent flash
+    (function() {
+      var saved = document.documentElement.getAttribute('data-theme');
+      if (!saved || saved === 'system') {
+        var ls = localStorage.getItem('pmtask-theme');
+        if (ls) document.documentElement.setAttribute('data-theme', ls);
+      }
+    })();
+  </script>
 </head>
 <body>
 <div class="flash-messages">

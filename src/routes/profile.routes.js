@@ -7,5 +7,6 @@ router.use(isAuthenticated);
 router.get('/', profile.getProfile);
 router.post('/update', profile.updateProfile);
 router.post('/password', profile.changePassword);
+router.post('/theme', profile.updateTheme);
 
 module.exports = router;

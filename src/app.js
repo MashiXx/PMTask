@@ -51,6 +51,7 @@ app.use(flash());
 // Global template variables
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
+  res.locals.userTheme = req.user ? req.user.theme : 'system';
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();

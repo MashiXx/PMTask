@@ -94,3 +94,24 @@ exports.changePassword = async (req, res) => {
     res.redirect('/profile');
   }
 };
+
+const VALID_THEMES = ['light', 'dark', 'system'];
+
+exports.updateTheme = async (req, res) => {
+  try {
+    const { theme } = req.body;
+    if (!VALID_THEMES.includes(theme)) {
+      return res.status(400).json({ error: 'Invalid theme' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { theme },
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update theme' });
+  }
+};
