@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const project = require('../controllers/project.controller');
 
-router.use(isAuthenticated);
+router.use(isAuthenticated, isAdmin);
 
 router.get('/', project.getProjects);
 router.post('/', project.createProject);

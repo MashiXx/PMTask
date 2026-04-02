@@ -13,7 +13,10 @@ async function main() {
 
   const password = await bcrypt.hash('demo123', 12);
   const user = await prisma.user.create({
-    data: { name: 'Anh Nguyen', email: 'demo@pmtask.com', password },
+    data: { name: 'Anh Nguyen', email: 'admin@pmtask.com', password, role: 'admin' },
+  });
+  const devUser = await prisma.user.create({
+    data: { name: 'Dev User', email: 'dev@pmtask.com', password, role: 'developer' },
   });
 
   const projects = {
@@ -73,10 +76,18 @@ async function main() {
     await prisma.taskAssignee.create({
       data: { taskId: task.id, userId: user.id },
     });
+
+    // Assign some tasks to dev user too
+    if (['inprogress', 'review'].includes(td.status)) {
+      await prisma.taskAssignee.create({
+        data: { taskId: task.id, userId: devUser.id },
+      });
+    }
   }
 
   console.log('Seed complete!');
-  console.log('Login: demo@pmtask.com / demo123');
+  console.log('Admin: admin@pmtask.com / demo123');
+  console.log('Dev:   dev@pmtask.com / demo123');
 }
 
 main()

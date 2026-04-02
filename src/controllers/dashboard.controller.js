@@ -6,8 +6,10 @@ exports.getDashboard = async (req, res) => {
     const userId = req.user.id;
     const projectId = req.query.project ? parseInt(req.query.project) : null;
 
+    // Admins see their own projects, developers see all projects
+    const projectFilter = req.user.role === 'admin' ? { userId } : {};
     const projects = await prisma.project.findMany({
-      where: { userId },
+      where: projectFilter,
       include: { _count: { select: { tasks: true } } },
       orderBy: { createdAt: 'asc' },
     });

@@ -1,0 +1,229 @@
+<%- include('../partials/head', { title: 'User Management' }) %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <main class="main-content">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-text">User Management</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-new-task" onclick="openUserModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add User
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-body">
+      <div class="list-view" style="display:block;">
+        <div class="list-header">
+          <div class="list-col" style="flex:2;">User</div>
+          <div class="list-col" style="flex:1.5;">Email</div>
+          <div class="list-col" style="flex:0.8;">Role</div>
+          <div class="list-col" style="flex:0.8;">Tasks</div>
+          <div class="list-col" style="flex:0.8;">Projects</div>
+          <div class="list-col" style="flex:0.6;">Actions</div>
+        </div>
+
+        <% users.forEach(user => { %>
+          <div class="list-row" id="user-row-<%= user.id %>">
+            <div class="list-col" style="flex:2;">
+              <div class="avatar" style="background:var(--accent-alpha, rgba(108,99,255,0.15)); border-color:rgba(108,99,255,0.35); color:var(--accent); width:28px; height:28px; font-size:0.65rem; flex-shrink:0;">
+                <%= user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
+              </div>
+              <span class="list-task-name"><%= user.name %></span>
+              <% if (user.id === currentUser.id) { %>
+                <span class="list-status-badge" style="color:var(--accent); background:rgba(108,99,255,0.12); font-size:0.55rem;">You</span>
+              <% } %>
+            </div>
+            <div class="list-col font-mono text-muted" style="flex:1.5; font-size:0.75rem;"><%= user.email %></div>
+            <div class="list-col" style="flex:0.8;">
+              <span class="list-status-badge" style="color:<%= user.role === 'admin' ? 'var(--coral)' : 'var(--cyan)' %>; background:<%= user.role === 'admin' ? 'rgba(255,92,122,0.12)' : 'rgba(0,217,255,0.12)' %>;"><%= user.role === 'admin' ? 'Admin' : 'Developer' %></span>
+            </div>
+            <div class="list-col font-mono text-muted" style="flex:0.8; font-size:0.75rem;"><%= user._count.tasks %></div>
+            <div class="list-col font-mono text-muted" style="flex:0.8; font-size:0.75rem;"><%= user._count.projects %></div>
+            <div class="list-col" style="flex:0.6;" onclick="event.stopPropagation();">
+              <button class="column-add-btn" onclick="openEditUserModal(<%= user.id %>, '<%= user.name.replace(/'/g, "\\'") %>', '<%= user.email %>', '<%= user.role %>')" title="Edit">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <% if (user.id !== currentUser.id) { %>
+                <button class="column-add-btn text-coral" onclick="deleteUserConfirm(<%= user.id %>, '<%= user.name.replace(/'/g, "\\'") %>')" title="Delete">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal modal-md">
+    <h2 class="modal-title" id="userModalTitle">Add User</h2>
+    <form id="userForm">
+      <input type="hidden" id="editUserId" value="">
+      <div class="form-group">
+        <label>NAME</label>
+        <input type="text" id="userName" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label>EMAIL</label>
+        <input type="email" id="userEmail" placeholder="Email address" required>
+      </div>
+      <div class="form-group">
+        <label>PASSWORD <span id="pwdHint" class="text-dim text-xs"></span></label>
+        <input type="password" id="userPassword" placeholder="Min 6 characters" minlength="6">
+      </div>
+      <div class="form-group">
+        <label>ROLE</label>
+        <select id="userRole">
+          <option value="developer">Developer</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeUserModal()">Cancel</button>
+        <button type="submit" class="btn-submit" id="userSubmitBtn">Add User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete User Confirm Modal -->
+<div class="modal-overlay" id="deleteUserModal">
+  <div class="modal modal-sm text-center">
+    <h2 class="modal-title">Delete User</h2>
+    <p class="modal-confirm-text mb-16">Delete <strong class="text-white" id="deleteUserName"></strong>?</p>
+    <p class="modal-warning-text mb-20">All their tasks and projects will also be deleted.</p>
+    <input type="hidden" id="deleteUserId" value="">
+    <div class="modal-actions justify-center">
+      <button class="btn-cancel" onclick="closeDeleteUserModal()">Cancel</button>
+      <button class="btn-delete" onclick="confirmDeleteUser()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openUserModal() {
+  document.getElementById('userModalTitle').textContent = 'Add User';
+  document.getElementById('userSubmitBtn').textContent = 'Add User';
+  document.getElementById('editUserId').value = '';
+  document.getElementById('userName').value = '';
+  document.getElementById('userEmail').value = '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userPassword').required = true;
+  document.getElementById('pwdHint').textContent = '';
+  document.getElementById('userRole').value = 'developer';
+  document.getElementById('userModal').classList.add('active');
+  document.getElementById('userName').focus();
+}
+
+function openEditUserModal(id, name, email, role) {
+  document.getElementById('userModalTitle').textContent = 'Edit User';
+  document.getElementById('userSubmitBtn').textContent = 'Save Changes';
+  document.getElementById('editUserId').value = id;
+  document.getElementById('userName').value = name;
+  document.getElementById('userEmail').value = email;
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userPassword').required = false;
+  document.getElementById('pwdHint').textContent = '(leave blank to keep current)';
+  document.getElementById('userRole').value = role;
+  document.getElementById('userModal').classList.add('active');
+  document.getElementById('userName').focus();
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('active');
+}
+
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const userId = document.getElementById('editUserId').value;
+  const data = {
+    name: document.getElementById('userName').value.trim(),
+    email: document.getElementById('userEmail').value.trim(),
+    role: document.getElementById('userRole').value,
+  };
+  const pwd = document.getElementById('userPassword').value;
+  if (pwd) data.password = pwd;
+
+  if (userId) {
+    // Edit
+    try {
+      const res = await fetch('/admin/users/' + userId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (result.success) {
+        closeUserModal();
+        window.location.reload();
+      } else {
+        alert(result.error || 'Failed to update user');
+      }
+    } catch (err) { console.error(err); }
+  } else {
+    // Create via form POST
+    if (!pwd || pwd.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/users';
+    Object.entries({ ...data, password: pwd }).forEach(([k, v]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = k; input.value = v;
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+});
+
+function deleteUserConfirm(id, name) {
+  document.getElementById('deleteUserId').value = id;
+  document.getElementById('deleteUserName').textContent = name;
+  document.getElementById('deleteUserModal').classList.add('active');
+}
+
+function closeDeleteUserModal() {
+  document.getElementById('deleteUserModal').classList.remove('active');
+}
+
+async function confirmDeleteUser() {
+  const id = document.getElementById('deleteUserId').value;
+  try {
+    const res = await fetch('/admin/users/' + id, {
+      method: 'DELETE',
+      headers: { 'Accept': 'application/json' },
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeDeleteUserModal();
+      document.getElementById('user-row-' + id)?.remove();
+    } else {
+      alert(data.error || 'Failed to delete user');
+    }
+  } catch (err) { console.error(err); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+</script>
+
+<%- include('../partials/foot') %>

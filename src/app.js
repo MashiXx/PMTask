@@ -48,6 +48,7 @@ app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/profile', require('./routes/profile.routes'));
+app.use('/admin', require('./routes/admin.routes'));
 
 // Task detail page
 const { isAuthenticated } = require('./middleware/auth');
