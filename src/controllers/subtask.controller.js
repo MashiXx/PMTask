@@ -1,6 +1,27 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Recalculate parent task progress based on subtasks
+// Formula: doneSubtasks / (totalSubtasks + 1) * 100
+// The +1 represents the parent task itself; only status=done gives 100%
+async function recalcTaskProgress(taskId) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { subtasks: true },
+  });
+  if (!task) return;
+
+  if (task.subtasks.length === 0) return;
+
+  const doneCount = task.subtasks.filter(s => s.done).length;
+  const progress = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+
+  await prisma.task.update({
+    where: { id: taskId },
+    data: { progress },
+  });
+}
+
 exports.getSubtasks = async (req, res) => {
   try {
     const taskId = parseInt(req.params.taskId);
@@ -33,6 +54,7 @@ exports.createSubtask = async (req, res) => {
         position: (maxPos._max.position || 0) + 1,
       },
     });
+    await recalcTaskProgress(taskId);
     res.json(subtask);
   } catch (err) {
     console.error(err);
@@ -53,6 +75,7 @@ exports.updateSubtask = async (req, res) => {
       where: { id },
       data,
     });
+    await recalcTaskProgress(subtask.taskId);
     res.json(subtask);
   } catch (err) {
     console.error(err);
@@ -63,7 +86,9 @@ exports.updateSubtask = async (req, res) => {
 exports.deleteSubtask = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const subtask = await prisma.subTask.findUnique({ where: { id } });
     await prisma.subTask.delete({ where: { id } });
+    if (subtask) await recalcTaskProgress(subtask.taskId);
     res.json({ success: true });
   } catch (err) {
     console.error(err);

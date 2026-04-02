@@ -115,6 +115,7 @@ document.addEventListener('click', (e) => {
 
 // Task Preview Popup
 let previewTaskId = null;
+let previewTaskStatus = null;
 let previewDirty = false;
 
 // Build tagColorMap dynamically from PROJECT_TAGS
@@ -130,6 +131,7 @@ async function openTaskPreview(taskId) {
     const res = await fetch(`/api/tasks/${taskId}`);
     const task = await res.json();
     previewTaskId = task.id;
+    previewTaskStatus = task.status;
     previewDirty = false;
 
     document.getElementById('previewTaskId').value = task.id;
@@ -245,7 +247,10 @@ async function savePreviewField() {
       body: JSON.stringify(data),
     });
     previewDirty = true;
+    previewTaskStatus = status;
     updateCardInDOM(previewTaskId, { title, status, priority });
+    // Re-render subtask progress with updated status
+    if (typeof refreshPreviewSubtasks === 'function') refreshPreviewSubtasks();
   } catch (err) {
     console.error('Failed to save:', err);
   }

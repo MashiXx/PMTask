@@ -48,7 +48,7 @@
 
   <% if (task.subtasks && task.subtasks.length > 0) { %>
     <% const doneCount = task.subtasks.filter(s => s.done).length; %>
-    <% const subPercent = Math.round(doneCount / task.subtasks.length * 100); %>
+    <% const subPercent = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100); %>
     <div class="task-subtask-indicator">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       <span class="task-subtask-text"><%= doneCount %>/<%= task.subtasks.length %></span>

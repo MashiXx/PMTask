@@ -96,13 +96,24 @@ exports.updateTask = async (req, res) => {
     };
     if (status && VALID_STATUSES.includes(status)) {
       updateData.status = status;
-      if (status === 'done') updateData.progress = 100;
     }
 
     const task = await prisma.task.update({
       where: { id: taskId },
       data: updateData,
+      include: { subtasks: true },
     });
+
+    // Recalculate progress based on subtasks
+    if (task.subtasks.length > 0) {
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      const calcProgress = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+      await prisma.task.update({ where: { id: taskId }, data: { progress: calcProgress } });
+      task.progress = calcProgress;
+    } else if (task.status === 'done') {
+      await prisma.task.update({ where: { id: taskId }, data: { progress: 100 } });
+      task.progress = 100;
+    }
 
     if (tags !== undefined) {
       await prisma.taskTag.deleteMany({ where: { taskId: task.id } });
@@ -141,14 +152,23 @@ exports.moveTask = async (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    await prisma.task.update({
+    const task = await prisma.task.update({
       where: { id: taskId },
       data: {
         status,
         position: parseInt(position),
-        ...(status === 'done' ? { progress: 100 } : {}),
       },
+      include: { subtasks: true },
     });
+
+    // Recalculate progress based on subtasks
+    if (task.subtasks.length > 0) {
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      const calcProgress = status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+      await prisma.task.update({ where: { id: taskId }, data: { progress: calcProgress } });
+    } else if (status === 'done') {
+      await prisma.task.update({ where: { id: taskId }, data: { progress: 100 } });
+    }
 
     res.json({ success: true });
   } catch (err) {

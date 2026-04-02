@@ -104,10 +104,12 @@
             </div>
             <% if (task.subtasks.length > 0) { %>
               <div class="subtask-progress-bar mt-6 mb-10">
-                <div class="subtask-progress-fill" style="width:<%= task.subtasks.length > 0 ? Math.round(task.subtasks.filter(s => s.done).length / task.subtasks.length * 100) : 0 %>%;"></div>
+                <% const dtDone = task.subtasks.filter(s => s.done).length; %>
+                <% const dtPercent = task.status === 'done' ? 100 : Math.round(dtDone / (task.subtasks.length + 1) * 100); %>
+                <div class="subtask-progress-fill" style="width:<%= dtPercent %>%;"></div>
               </div>
             <% } %>
-            <div id="detailSubtaskList" class="subtask-list" data-task-id="<%= task.id %>">
+            <div id="detailSubtaskList" class="subtask-list" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>">
               <% task.subtasks.forEach(sub => { %>
                 <div class="subtask-item <%= sub.done ? 'done' : '' %>" data-subtask-id="<%= sub.id %>">
                   <label class="subtask-check">
