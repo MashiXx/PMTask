@@ -1,17 +1,17 @@
 <div class="modal-overlay" id="tagManagerModal">
-  <div class="modal" style="max-width: 440px;">
+  <div class="modal modal-md">
     <h2 class="modal-title">Manage Tags</h2>
 
     <div id="tagList" class="tag-manager-list"></div>
 
-    <div style="border-top:1px solid var(--border); padding-top:16px; margin-top:16px;">
-      <p style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Add New Tag</p>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <input type="text" id="newTagName" placeholder="Tag name" style="flex:1;">
-        <div style="display:flex; gap:4px;">
+    <div class="tag-add-section">
+      <p class="label-meta mb-8">Add New Tag</p>
+      <div class="flex-center gap-8">
+        <input type="text" id="newTagName" placeholder="Tag name" class="flex-1">
+        <div class="flex gap-4">
           <% ['#6C63FF','#00D9FF','#FF5C7A','#00F5A0','#FFB347','#6B6B8E'].forEach((c, i) => { %>
-            <label style="cursor:pointer;">
-              <input type="radio" name="newTagColor" value="<%= c %>" style="display:none;" <%= i === 0 ? 'checked' : '' %>>
+            <label class="color-swatch-label">
+              <input type="radio" name="newTagColor" value="<%= c %>" class="color-swatch-radio" <%= i === 0 ? 'checked' : '' %>>
               <span class="color-swatch" data-color="<%= c %>" style="display:block; width:22px; height:22px; border-radius:6px; background:<%= c %>; border:2px solid transparent; transition:all 0.15s;"></span>
             </label>
           <% }) %>
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <div class="modal-actions" style="margin-top:20px;">
+    <div class="modal-actions mt-20">
       <button type="button" class="btn-cancel" onclick="closeTagManager()">Close</button>
     </div>
   </div>

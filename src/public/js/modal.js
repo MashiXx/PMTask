@@ -145,17 +145,17 @@ async function openTaskPreview(taskId) {
         const label = tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1);
         return `<span class="tag-badge" style="background:${c}18; border:1px solid ${c}35; color:${c};">${label}</span>`;
       }).join('');
-      tagsWrap.style.display = 'block';
+      tagsWrap.classList.remove('hidden');
     } else {
-      tagsWrap.style.display = 'none';
+      tagsWrap.classList.add('hidden');
     }
 
     const dueDateWrap = document.getElementById('previewDueDateWrap');
     if (task.dueDate) {
       document.getElementById('previewDueDate').textContent = task.dueDate;
-      dueDateWrap.style.display = 'block';
+      dueDateWrap.classList.remove('hidden');
     } else {
-      dueDateWrap.style.display = 'none';
+      dueDateWrap.classList.add('hidden');
     }
 
     const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
@@ -173,14 +173,14 @@ async function openTaskPreview(taskId) {
       assigneesEl.innerHTML = task.assignees.map((a, i) => {
         const c = avatarColors[i % avatarColors.length];
         const initials = a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
-        return `<div style="display:flex; align-items:center; gap:6px; padding:4px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px;">
+        return `<div class="assignee-chip" style="padding:4px 10px; border-radius:6px;">
           <div class="avatar" style="background:${c}22; border-color:${c}55; color:${c}; width:20px; height:20px; font-size:0.55rem;">${initials}</div>
-          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text);">${a.user.name}</span>
+          <span class="assignee-chip-name" style="font-size:0.75rem;">${a.user.name}</span>
         </div>`;
       }).join('');
-      assigneesWrap.style.display = 'block';
+      assigneesWrap.classList.remove('hidden');
     } else {
-      assigneesWrap.style.display = 'none';
+      assigneesWrap.classList.add('hidden');
     }
 
     document.getElementById('previewDetailsLink').href = '/tasks/' + task.id;

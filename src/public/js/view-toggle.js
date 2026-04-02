@@ -5,11 +5,11 @@ function switchView(mode) {
   if (!board || !list) return;
 
   if (mode === 'list') {
-    board.style.display = 'none';
-    list.style.display = 'block';
+    board.classList.add('hidden');
+    list.classList.remove('hidden');
   } else {
-    board.style.display = '';
-    list.style.display = 'none';
+    board.classList.remove('hidden');
+    list.classList.add('hidden');
   }
 
   document.querySelectorAll('.view-btn').forEach(btn => {

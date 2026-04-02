@@ -1,5 +1,5 @@
 <div class="modal-overlay" id="projectModal">
-  <div class="modal" style="max-width: 400px;">
+  <div class="modal">
     <h2 class="modal-title" id="projectModalTitle">New Project</h2>
 
     <form id="projectForm">
@@ -12,10 +12,10 @@
 
       <div class="form-group">
         <label>COLOR</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div class="color-swatch-wrap">
           <% ['#6C63FF','#00D9FF','#00F5A0','#FF5C7A','#FFB347','#E8E8FF'].forEach((c, i) => { %>
-            <label style="cursor:pointer;">
-              <input type="radio" name="projectColor" value="<%= c %>" style="display:none;" <%= i === 0 ? 'checked' : '' %>>
+            <label class="color-swatch-label">
+              <input type="radio" name="projectColor" value="<%= c %>" class="color-swatch-radio" <%= i === 0 ? 'checked' : '' %>>
               <span class="color-swatch" data-color="<%= c %>" style="
                 display:block; width:28px; height:28px; border-radius:8px;
                 background:<%= c %>; border:2px solid transparent;
@@ -35,23 +35,23 @@
 </div>
 
 <div class="modal-overlay" id="deleteProjectModal">
-  <div class="modal" style="max-width: 400px; text-align: center;">
+  <div class="modal text-center">
     <h2 class="modal-title">Delete Project</h2>
-    <p style="color: var(--text-muted); font-size: 13px; font-family: var(--font-mono); margin-bottom: 8px;">
+    <p class="modal-confirm-text mb-8">
       Delete <strong id="deleteProjectName" style="color:var(--text)"></strong>?
     </p>
-    <p style="color: var(--coral); font-size: 11px; font-family: var(--font-mono); margin-bottom: 16px;">
+    <p class="modal-warning-text mb-16">
       All tasks in this project will also be deleted. This action cannot be undone.
     </p>
-    <div class="form-group" style="text-align:left; margin-bottom:20px;">
-      <label style="font-size:11px;">TYPE THE PROJECT NAME TO CONFIRM</label>
+    <div class="form-group text-left mb-20">
+      <label>TYPE THE PROJECT NAME TO CONFIRM</label>
       <input type="text" id="deleteProjectConfirmInput" placeholder="Type project name here" autocomplete="off">
     </div>
     <input type="hidden" id="deleteProjectId" value="">
     <input type="hidden" id="deleteProjectExpectedName" value="">
-    <div class="modal-actions" style="justify-content: center;">
+    <div class="modal-actions justify-center">
       <button class="btn-cancel" onclick="closeDeleteProjectModal()">Cancel</button>
-      <button class="btn-delete" id="deleteProjectBtn" onclick="confirmDeleteProject()" disabled style="opacity:0.5; cursor:not-allowed;">Delete</button>
+      <button class="btn-delete btn-disabled" id="deleteProjectBtn" onclick="confirmDeleteProject()" disabled>Delete</button>
     </div>
   </div>
 </div>

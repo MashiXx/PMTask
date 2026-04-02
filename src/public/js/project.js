@@ -40,11 +40,10 @@ function updateSwatchBorders() {
   document.querySelectorAll('.color-swatch').forEach(swatch => {
     const radio = swatch.parentElement.querySelector('input[type="radio"]');
     if (radio && radio.checked) {
-      swatch.style.borderColor = swatch.dataset.color;
-      swatch.style.boxShadow = '0 0 8px ' + swatch.dataset.color + '55';
+      swatch.classList.add('swatch-selected');
+      swatch.style.setProperty('--swatch-color', swatch.dataset.color);
     } else {
-      swatch.style.borderColor = 'transparent';
-      swatch.style.boxShadow = 'none';
+      swatch.classList.remove('swatch-selected');
     }
   });
 }
@@ -95,8 +94,7 @@ function deleteProject(id, name) {
   document.getElementById('deleteProjectConfirmInput').value = '';
   const btn = document.getElementById('deleteProjectBtn');
   btn.disabled = true;
-  btn.style.opacity = '0.5';
-  btn.style.cursor = 'not-allowed';
+  btn.classList.add('btn-disabled');
   document.getElementById('deleteProjectModal').classList.add('active');
   document.getElementById('deleteProjectConfirmInput').focus();
 }
@@ -106,12 +104,10 @@ document.getElementById('deleteProjectConfirmInput').addEventListener('input', f
   const btn = document.getElementById('deleteProjectBtn');
   if (this.value === expected) {
     btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
+    btn.classList.remove('btn-disabled');
   } else {
     btn.disabled = true;
-    btn.style.opacity = '0.5';
-    btn.style.cursor = 'not-allowed';
+    btn.classList.add('btn-disabled');
   }
 });
 

@@ -23,14 +23,14 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <a href="/dashboard?project=<%= task.projectId %>" class="breadcrumb-text" style="text-decoration:none; color:var(--text-muted);">
+          <a href="/dashboard?project=<%= task.projectId %>" class="breadcrumb-text breadcrumb-link">
             <%= task.project.name %>
           </a>
           <span class="breadcrumb-separator">/</span>
           <span class="breadcrumb-text"><%= task.title %></span>
         </div>
       </div>
-      <div class="topbar-right" style="gap:8px;">
+      <div class="topbar-right">
         <button class="btn-cancel" onclick="openEditModal(<%= task.id %>)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Edit
@@ -57,7 +57,7 @@
           <% if (task.tags.length > 0) { %>
             <div class="task-detail-section">
               <h3 class="task-detail-label">TAGS</h3>
-              <div class="task-tags" style="margin-top:6px;">
+              <div class="task-tags mt-6">
                 <% task.tags.forEach(tt => { %>
                   <% const tColor = tagColorMap[tt.tag.name] || '#6B6B8E'; %>
                   <span class="tag-badge" style="background:<%= tColor %>18; border:1px solid <%= tColor %>35; color:<%= tColor %>;">
@@ -71,14 +71,14 @@
           <% if (task.assignees.length > 0) { %>
             <div class="task-detail-section">
               <h3 class="task-detail-label">ASSIGNEES</h3>
-              <div style="display:flex; gap:8px; margin-top:6px;">
+              <div class="flex gap-8 mt-6">
                 <% task.assignees.forEach((a, i) => { %>
                   <% const aColor = avatarColors[i % avatarColors.length]; %>
-                  <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--surface); border:1px solid var(--border); border-radius:8px;">
+                  <div class="assignee-chip">
                     <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>; width:24px; height:24px; font-size:0.6rem;">
                       <%= a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
                     </div>
-                    <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text);"><%= a.user.name %></span>
+                    <span class="assignee-chip-name"><%= a.user.name %></span>
                   </div>
                 <% }) %>
               </div>
@@ -108,16 +108,16 @@
             <% } %>
             <div class="task-detail-meta-item">
               <span class="task-detail-label">PROGRESS</span>
-              <div style="display:flex; align-items:center; gap:10px; width:100%;">
+              <div class="progress-inline">
                 <div class="task-progress-track" style="flex:1;">
                   <div class="task-progress-fill" style="width:<%= task.progress %>%; background:<%= progressColor %>;"></div>
                 </div>
-                <span style="font-family:var(--font-mono); font-size:0.8rem; color:<%= progressColor %>; font-weight:600;"><%= task.progress %>%</span>
+                <span class="progress-value" style="color:<%= progressColor %>;"><%= task.progress %>%</span>
               </div>
             </div>
             <div class="task-detail-meta-item">
               <span class="task-detail-label">CREATED</span>
-              <span class="task-detail-meta-value" style="font-size:0.75rem;">
+              <span class="task-detail-meta-value text-sm">
                 <%= new Date(task.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
               </span>
             </div>

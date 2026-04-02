@@ -1,14 +1,14 @@
 <div class="modal-overlay" id="taskPreviewModal">
-  <div class="modal" style="max-width: 540px;">
+  <div class="modal modal-lg">
     <input type="hidden" id="previewTaskId" value="">
 
     <!-- Editable Title -->
-    <div style="margin-bottom:12px;">
+    <div class="mb-12">
       <input type="text" id="previewTitle" class="preview-editable-title" placeholder="Task title">
     </div>
 
     <!-- Status + Priority row -->
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
+    <div class="flex gap-8 mb-16">
       <select id="previewStatusSelect" class="preview-inline-select">
         <option value="todo">To Do</option>
         <option value="inprogress">In Progress</option>
@@ -23,44 +23,44 @@
     </div>
 
     <!-- Editable Description -->
-    <div style="margin-bottom:16px;">
+    <div class="mb-16">
       <textarea id="previewDescription" class="preview-editable-desc" placeholder="Add a description..." rows="2"></textarea>
     </div>
 
-    <div id="previewTagsWrap" style="margin-bottom:16px; display:none;">
-      <p style="font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:6px;">Tags</p>
+    <div id="previewTagsWrap" class="mb-16 hidden">
+      <p class="label-meta">Tags</p>
       <div id="previewTags" class="task-tags"></div>
     </div>
 
-    <div style="display:flex; gap:16px; margin-bottom:16px;">
-      <div id="previewDueDateWrap" style="display:none;">
-        <p style="font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:4px;">Due Date</p>
-        <p id="previewDueDate" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text);"></p>
+    <div class="flex gap-16 mb-16">
+      <div id="previewDueDateWrap" class="hidden">
+        <p class="label-meta">Due Date</p>
+        <p id="previewDueDate" class="progress-value"></p>
       </div>
       <div>
-        <p style="font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:4px;">Progress</p>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <p class="label-meta">Progress</p>
+        <div class="progress-inline">
           <div class="task-progress-track" style="width:100px;">
             <div class="task-progress-fill" id="previewProgressBar"></div>
           </div>
-          <span id="previewProgressText" style="font-family:var(--font-mono); font-size:0.8rem; font-weight:600;"></span>
+          <span id="previewProgressText" class="progress-value"></span>
         </div>
       </div>
     </div>
 
-    <div id="previewAssigneesWrap" style="margin-bottom:20px; display:none;">
-      <p style="font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:6px;">Assignees</p>
-      <div id="previewAssignees" style="display:flex; gap:6px;"></div>
+    <div id="previewAssigneesWrap" class="mb-20 hidden">
+      <p class="label-meta">Assignees</p>
+      <div id="previewAssignees" class="flex gap-6"></div>
     </div>
 
     <div class="modal-actions">
       <button type="button" class="btn-cancel" onclick="closeTaskPreview()">Close</button>
-      <div style="display:flex; gap:8px;">
+      <div class="flex gap-8">
         <button type="button" class="btn-delete" onclick="previewDelete()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           Delete
         </button>
-        <a id="previewDetailsLink" href="#" class="btn-submit" style="text-decoration:none; text-align:center;">
+        <a id="previewDetailsLink" href="#" class="btn-submit no-decoration text-center">
           Details
         </a>
       </div>

@@ -10,14 +10,14 @@
       <a href="/projects" class="sidebar-project-link" title="Switch project">
         <span class="project-dot" style="background:<%= activeProject.color %>; box-shadow: 0 0 6px <%= activeProject.color %>55;"></span>
         <span class="sidebar-project-name"><%= activeProject.name %></span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto; flex-shrink:0; opacity:0.5;"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg class="sidebar-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
     </div>
   <% } %>
 
   <% if (typeof activeProjectId !== 'undefined' && activeProjectId) { %>
     <div class="sidebar-tags">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <div class="flex-between mb-10">
         <p class="sidebar-section-title" style="margin:0">TAGS</p>
         <button class="column-add-btn" onclick="openTagManager()" title="Manage Tags">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -32,17 +32,17 @@
             </button>
           <% }) %>
         </div>
-        <button class="sidebar-clear-filters" onclick="clearTagFilters()" style="display:none;">Clear filters</button>
+        <button class="sidebar-clear-filters hidden" onclick="clearTagFilters()">Clear filters</button>
       <% } else { %>
-        <p style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-dim); padding:4px 8px;">No tags yet</p>
+        <p class="sidebar-no-tags">No tags yet</p>
       <% } %>
     </div>
   <% } %>
 
   <div class="sidebar-user">
-    <a href="/profile" class="sidebar-avatar" title="Profile" style="text-decoration:none;"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></a>
+    <a href="/profile" class="sidebar-avatar no-decoration" title="Profile"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></a>
     <div class="sidebar-user-info">
-      <a href="/profile" style="text-decoration:none;"><p class="sidebar-user-name"><%= currentUser.name %></p></a>
+      <a href="/profile" class="no-decoration"><p class="sidebar-user-name"><%= currentUser.name %></p></a>
       <p class="sidebar-user-role">Member</p>
     </div>
     <a href="/auth/logout" class="sidebar-settings" title="Logout">

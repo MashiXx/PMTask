@@ -1,13 +1,13 @@
 <div class="stats-sprint-row">
   <div class="stat-mini"><span class="stat-mini-value"><%= stats.total %></span><span class="stat-mini-label">Tasks</span></div>
-  <div class="stat-mini"><span class="stat-mini-value" style="color:var(--cyan)"><%= stats.inProgress %></span><span class="stat-mini-label">In Progress</span></div>
-  <div class="stat-mini"><span class="stat-mini-value" style="color:var(--mint)"><%= stats.completed %></span><span class="stat-mini-label">Done</span></div>
+  <div class="stat-mini"><span class="stat-mini-value text-cyan"><%= stats.inProgress %></span><span class="stat-mini-label">In Progress</span></div>
+  <div class="stat-mini"><span class="stat-mini-value text-mint"><%= stats.completed %></span><span class="stat-mini-label">Done</span></div>
   <% if (stats.overdue > 0) { %>
-    <div class="stat-mini"><span class="stat-mini-value" style="color:var(--coral)"><%= stats.overdue %></span><span class="stat-mini-label">Overdue</span></div>
+    <div class="stat-mini"><span class="stat-mini-value text-coral"><%= stats.overdue %></span><span class="stat-mini-label">Overdue</span></div>
   <% } %>
   <div class="stat-mini-progress">
     <div class="sprint-track">
-      <div class="sprint-fill" style="width: <%= sprintProgress %>%"></div>
+      <div class="sprint-fill" style="width:<%= sprintProgress %>%"></div>
     </div>
     <span class="stat-mini-percent"><%= sprintProgress %>%</span>
   </div>

@@ -26,19 +26,19 @@ function applyTagFilters() {
   const items = document.querySelectorAll('.task-card, .list-row');
 
   if (activeTagFilters.size === 0) {
-    items.forEach(el => { el.style.display = ''; });
-    if (clearBtn) clearBtn.style.display = 'none';
+    items.forEach(el => { el.classList.remove('hidden'); });
+    if (clearBtn) clearBtn.classList.add('hidden');
   } else {
-    if (clearBtn) clearBtn.style.display = 'block';
+    if (clearBtn) clearBtn.classList.remove('hidden');
     items.forEach(el => {
       const tags = (el.dataset.tags || '').split(',').filter(Boolean);
-      el.style.display = tags.some(t => activeTagFilters.has(t)) ? '' : 'none';
+      el.classList.toggle('hidden', !tags.some(t => activeTagFilters.has(t)));
     });
   }
 
   // Update column counts
   document.querySelectorAll('.tasks-list').forEach(list => {
-    const visible = list.querySelectorAll('.task-card:not([style*="display: none"])').length;
+    const visible = list.querySelectorAll('.task-card:not(.hidden)').length;
     const col = list.closest('.kanban-column');
     if (col) {
       const badge = col.querySelector('.column-count');
