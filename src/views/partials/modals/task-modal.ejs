@@ -4,7 +4,7 @@
 
     <form id="taskForm">
       <input type="hidden" id="taskId" value="">
-      <input type="hidden" id="taskProjectId" value="<%= activeProjectId %>">
+      <input type="hidden" id="taskProjectId" value="<%= typeof activeProjectId !== 'undefined' ? activeProjectId : '' %>">
 
       <div class="form-group">
         <label>TITLE</label>
@@ -47,24 +47,17 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>TAGS</label>
-        <div class="tags-container">
-          <% [
-            { value: 'design', label: 'Design' },
-            { value: 'ux', label: 'UX' },
-            { value: 'backend', label: 'Backend' },
-            { value: 'frontend', label: 'Frontend' },
-            { value: 'devops', label: 'DevOps' },
-            { value: 'security', label: 'Security' },
-            { value: 'qa', label: 'QA' },
-            { value: 'docs', label: 'Docs' },
-          ].forEach(tag => { %>
-            <input type="checkbox" class="tag-checkbox" name="tags" value="<%= tag.value %>" id="tag-<%= tag.value %>">
-            <label class="tag-label" for="tag-<%= tag.value %>"><%= tag.label %></label>
-          <% }) %>
+      <% if (typeof projectTags !== 'undefined' && projectTags.length > 0) { %>
+        <div class="form-group">
+          <label>TAGS</label>
+          <div class="tags-container">
+            <% projectTags.forEach(tag => { %>
+              <input type="checkbox" class="tag-checkbox" name="tags" value="<%= tag.name %>" id="tag-<%= tag.name %>">
+              <label class="tag-label" for="tag-<%= tag.name %>" style="--tag-color: <%= tag.color %>"><%= tag.name.charAt(0).toUpperCase() + tag.name.slice(1) %></label>
+            <% }) %>
+          </div>
         </div>
-      </div>
+      <% } %>
 
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancel</button>

@@ -6,31 +6,31 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="/dashboard" class="nav-btn <%= typeof activeProjectId !== 'undefined' && activeProjectId !== null ? 'active' : '' %>">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-    <a href="/projects" class="nav-btn <%= typeof activeProjectId !== 'undefined' && activeProjectId === null ? 'active' : '' %>">
+    <a href="/projects" class="nav-btn <%= typeof activeProjectId !== 'undefined' && activeProjectId ? '' : 'active' %>">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       Projects
     </a>
   </nav>
 
-  <div class="sidebar-projects">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-      <p class="sidebar-section-title" style="margin:0">PROJECTS</p>
-      <button class="column-add-btn" onclick="openProjectModal()" title="New Project">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
+  <% if (typeof projectTags !== 'undefined' && projectTags.length > 0) { %>
+    <div class="sidebar-tags">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <p class="sidebar-section-title" style="margin:0">TAGS</p>
+        <button class="column-add-btn" onclick="openTagManager()" title="Manage Tags">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+      <div class="sidebar-tags-list">
+        <% projectTags.forEach(tag => { %>
+          <button class="sidebar-tag-btn" data-tag-name="<%= tag.name %>" onclick="toggleTagFilter(this)">
+            <span class="tag-dot" style="background:<%= tag.color %>;"></span>
+            <span class="tag-name"><%= tag.name.charAt(0).toUpperCase() + tag.name.slice(1) %></span>
+          </button>
+        <% }) %>
+      </div>
+      <button class="sidebar-clear-filters" onclick="clearTagFilters()" style="display:none;">Clear filters</button>
     </div>
-    <% projects.forEach(p => { %>
-      <a href="/dashboard?project=<%= p.id %>" class="project-btn <%= p.id === activeProjectId ? 'active' : '' %>" style="<%= p.id === activeProjectId ? 'background:' + p.color + '12;' : '' %>">
-        <span class="project-dot" style="background: <%= p.color %>; box-shadow: 0 0 6px <%= p.color %>55;"></span>
-        <span class="project-name"><%= p.name %></span>
-        <span class="project-count"><%= p._count.tasks %></span>
-      </a>
-    <% }) %>
-  </div>
+  <% } %>
 
   <div class="sidebar-user">
     <a href="/profile" class="sidebar-avatar" title="Profile" style="text-decoration:none;"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></a>

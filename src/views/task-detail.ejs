@@ -7,11 +7,9 @@
   const statusColors = { todo: 'var(--text-muted)', inprogress: 'var(--cyan)', review: 'var(--amber)', done: 'var(--mint)' };
   const pColor = priorityColors[task.priority] || '#FFB347';
   const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
-  const tagColorMap = {
-    'design': '#6C63FF', 'ux': '#00D9FF', 'backend': '#FF5C7A',
-    'frontend': '#00F5A0', 'devops': '#FFB347', 'security': '#FF5C7A',
-    'qa': '#FFB347', 'docs': '#6B6B8E'
-  };
+  // Dynamic tag colors from DB
+  const tagColorMap = {};
+  task.tags.forEach(tt => { tagColorMap[tt.tag.name] = tt.tag.color || '#6B6B8E'; });
   const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
 %>
 

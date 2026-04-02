@@ -26,11 +26,12 @@ exports.createTask = async (req, res) => {
 
     if (tags && tags.length > 0) {
       const tagList = Array.isArray(tags) ? tags : [tags];
+      const pid = parseInt(projectId);
       for (const tagName of tagList) {
         const tag = await prisma.tag.upsert({
-          where: { name: tagName },
+          where: { name_projectId: { name: tagName, projectId: pid } },
           update: {},
-          create: { name: tagName },
+          create: { name: tagName, projectId: pid },
         });
         await prisma.taskTag.create({
           data: { taskId: task.id, tagId: tag.id },
@@ -76,9 +77,9 @@ exports.updateTask = async (req, res) => {
       const tagList = Array.isArray(tags) ? tags : tags ? [tags] : [];
       for (const tagName of tagList) {
         const tag = await prisma.tag.upsert({
-          where: { name: tagName },
+          where: { name_projectId: { name: tagName, projectId: task.projectId } },
           update: {},
-          create: { name: tagName },
+          create: { name: tagName, projectId: task.projectId },
         });
         await prisma.taskTag.create({
           data: { taskId: task.id, tagId: tag.id },
@@ -147,11 +148,17 @@ exports.getTaskPage = async (req, res) => {
       orderBy: { createdAt: 'asc' },
     });
 
+    const projectTags = await prisma.tag.findMany({
+      where: { projectId: task.projectId },
+      orderBy: { name: 'asc' },
+    });
+
     res.render('task-detail', {
       title: task.title,
       task,
       projects,
       activeProjectId: task.projectId,
+      projectTags,
     });
   } catch (err) {
     console.error(err);

@@ -16,6 +16,13 @@ async function main() {
     data: { name: 'Anh Nguyen', email: 'demo@pmtask.com', password },
   });
 
+  const projects = {
+    atlas: await prisma.project.create({ data: { name: 'Atlas Platform', color: '#6C63FF', userId: user.id } }),
+    mobile: await prisma.project.create({ data: { name: 'Mobile App', color: '#00D9FF', userId: user.id } }),
+    data: await prisma.project.create({ data: { name: 'Data Pipeline', color: '#00F5A0', userId: user.id } }),
+    marketing: await prisma.project.create({ data: { name: 'Marketing Site', color: '#FF5C7A', userId: user.id } }),
+  };
+
   const tagData = [
     { name: 'design', color: '#6C63FF' },
     { name: 'ux', color: '#00D9FF' },
@@ -28,15 +35,8 @@ async function main() {
   ];
   const tags = {};
   for (const t of tagData) {
-    tags[t.name] = await prisma.tag.create({ data: t });
+    tags[t.name] = await prisma.tag.create({ data: { ...t, projectId: projects.atlas.id } });
   }
-
-  const projects = {
-    atlas: await prisma.project.create({ data: { name: 'Atlas Platform', color: '#6C63FF', userId: user.id } }),
-    mobile: await prisma.project.create({ data: { name: 'Mobile App', color: '#00D9FF', userId: user.id } }),
-    data: await prisma.project.create({ data: { name: 'Data Pipeline', color: '#00F5A0', userId: user.id } }),
-    marketing: await prisma.project.create({ data: { name: 'Marketing Site', color: '#FF5C7A', userId: user.id } }),
-  };
 
   const taskData = [
     { title: 'Redesign onboarding flow', priority: 'high', status: 'todo', tags: ['design', 'ux'], progress: 0, dueDate: '2026-04-08', position: 0 },

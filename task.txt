@@ -1,1 +1,4 @@
-khi click vào task thì view dạng popup thôi, khi ấn vào nút Details thì mới hiện full màn hình
+Thay đổi cách tiếp cận, phía sidebar không hiển thị danh sách các dự án nữa. thay vào đó sẽ hiển thị danh sách tags của dự án. khi click vào mỗi tags này thì filter tags theo lựa chọn, cho phép chọn nhiều tags cùng lúc
+Việc chọn projects chỉ thực hiện trong trang projects
+bỏ menu Dashboard
+mỗi dự án sẽ có danh sách tags riêng, cho phép thêm sửa xoá

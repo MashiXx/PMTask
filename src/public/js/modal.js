@@ -117,11 +117,11 @@ document.addEventListener('click', (e) => {
 let previewTaskId = null;
 let previewDirty = false;
 
-const tagColorMap = {
-  'design': '#6C63FF', 'ux': '#00D9FF', 'backend': '#FF5C7A',
-  'frontend': '#00F5A0', 'devops': '#FFB347', 'security': '#FF5C7A',
-  'qa': '#FFB347', 'docs': '#6B6B8E'
-};
+// Build tagColorMap dynamically from PROJECT_TAGS
+const tagColorMap = {};
+if (typeof window.PROJECT_TAGS !== 'undefined') {
+  window.PROJECT_TAGS.forEach(t => { tagColorMap[t.name] = t.color; });
+}
 
 async function openTaskPreview(taskId) {
   closeAllMenus();

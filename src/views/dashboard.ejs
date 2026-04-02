@@ -18,11 +18,15 @@
 <%- include('partials/modals/delete-modal') %>
 <%- include('partials/modals/project-modal') %>
 <%- include('partials/modals/task-preview-modal') %>
+<%- include('partials/modals/tag-modal') %>
 
+<script>window.PROJECT_TAGS = <%- JSON.stringify(projectTags || []) %>;</script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="/js/modal.js"></script>
 <script src="/js/project.js"></script>
 <script src="/js/kanban.js"></script>
 <script src="/js/search.js"></script>
+<script src="/js/tag-filter.js"></script>
+<script src="/js/tag-manage.js"></script>
 
 <%- include('partials/foot') %>

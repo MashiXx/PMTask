@@ -4,15 +4,13 @@
   const pColor = priorityColors[task.priority] || '#FFB347';
   const pLabel = priorityLabels[task.priority] || 'MEDIUM';
   const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
-  const tagClasses = {
-    'design': 'tag-design', 'ux': 'tag-ux', 'backend': 'tag-backend',
-    'frontend': 'tag-frontend', 'devops': 'tag-devops', 'security': 'tag-security',
-    'qa': 'tag-qa', 'docs': 'tag-docs'
-  };
+  // Build tag color map from the tag data itself
+  const tagColorFromData = {};
+  task.tags.forEach(tt => { tagColorFromData[tt.tag.name] = tt.tag.color || '#6B6B8E'; });
   const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
 %>
 
-<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>">
+<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>">
   <div class="task-priority-line" style="background: <%= pColor %>"></div>
 
   <div class="task-header">
@@ -39,7 +37,8 @@
 
   <div class="task-tags">
     <% task.tags.forEach(tt => { %>
-      <span class="tag-badge <%= tagClasses[tt.tag.name] || '' %>"><%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %></span>
+      <% const tColor = tagColorFromData[tt.tag.name] || '#6B6B8E'; %>
+      <span class="tag-badge" style="background:color-mix(in srgb, <%= tColor %> 12%, transparent); border:1px solid color-mix(in srgb, <%= tColor %> 35%, transparent); color:<%= tColor %>;"><%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %></span>
     <% }) %>
   </div>
 

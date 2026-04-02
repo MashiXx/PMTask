@@ -24,6 +24,7 @@ exports.getProjects = async (req, res) => {
       title: 'Projects',
       projects,
       activeProjectId: null,
+      projectTags: [],
     });
   } catch (err) {
     console.error(err);

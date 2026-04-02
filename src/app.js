@@ -45,6 +45,7 @@ app.use('/auth', require('./routes/auth.routes'));
 app.use('/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/tasks', require('./routes/task.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
+app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/profile', require('./routes/profile.routes'));
 
@@ -55,7 +56,7 @@ app.get('/tasks/:id', isAuthenticated, taskController.getTaskPage);
 
 // Root redirect
 app.get('/', (req, res) => {
-  if (req.isAuthenticated()) return res.redirect('/dashboard');
+  if (req.isAuthenticated()) return res.redirect('/projects');
   res.redirect('/auth/login');
 });
 

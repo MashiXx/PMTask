@@ -46,6 +46,10 @@ exports.getDashboard = async (req, res) => {
 
     const activeProject = projects.find(p => p.id === activeProjectId);
 
+    const projectTags = activeProjectId
+      ? await prisma.tag.findMany({ where: { projectId: activeProjectId }, orderBy: { name: 'asc' } })
+      : [];
+
     res.render('dashboard', {
       title: 'Dashboard',
       projects,
@@ -59,6 +63,7 @@ exports.getDashboard = async (req, res) => {
         overdue: overdueCount,
       },
       sprintProgress,
+      projectTags,
     });
   } catch (err) {
     console.error(err);

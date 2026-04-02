@@ -1,0 +1,27 @@
+<div class="modal-overlay" id="tagManagerModal">
+  <div class="modal" style="max-width: 440px;">
+    <h2 class="modal-title">Manage Tags</h2>
+
+    <div id="tagList" class="tag-manager-list"></div>
+
+    <div style="border-top:1px solid var(--border); padding-top:16px; margin-top:16px;">
+      <p style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Add New Tag</p>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="newTagName" placeholder="Tag name" style="flex:1;">
+        <div style="display:flex; gap:4px;">
+          <% ['#6C63FF','#00D9FF','#FF5C7A','#00F5A0','#FFB347','#6B6B8E'].forEach((c, i) => { %>
+            <label style="cursor:pointer;">
+              <input type="radio" name="newTagColor" value="<%= c %>" style="display:none;" <%= i === 0 ? 'checked' : '' %>>
+              <span class="color-swatch" data-color="<%= c %>" style="display:block; width:22px; height:22px; border-radius:6px; background:<%= c %>; border:2px solid transparent; transition:all 0.15s;"></span>
+            </label>
+          <% }) %>
+        </div>
+        <button class="btn-submit" onclick="addNewTag()" style="padding:8px 14px;">Add</button>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button type="button" class="btn-cancel" onclick="closeTagManager()">Close</button>
+    </div>
+  </div>
+</div>
