@@ -2,12 +2,13 @@ const router = require('express').Router();
 const { isAuthenticated } = require('../middleware/auth');
 const task = require('../controllers/task.controller');
 
-router.use(isAuthenticated);
-
-router.post('/', task.createTask);
+// GET task: open to all (guests can view)
 router.get('/:id', task.getTask);
-router.put('/:id', task.updateTask);
-router.patch('/:id/move', task.moveTask);
-router.delete('/:id', task.deleteTask);
+
+// CUD requires authentication
+router.post('/', isAuthenticated, task.createTask);
+router.put('/:id', isAuthenticated, task.updateTask);
+router.patch('/:id/move', isAuthenticated, task.moveTask);
+router.delete('/:id', isAuthenticated, task.deleteTask);
 
 module.exports = router;

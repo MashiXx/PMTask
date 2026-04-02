@@ -2,11 +2,12 @@ const router = require('express').Router();
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const project = require('../controllers/project.controller');
 
-router.use(isAuthenticated, isAdmin);
-
+// GET projects page: open to all (guests can browse)
 router.get('/', project.getProjects);
-router.post('/', project.createProject);
-router.put('/:id', project.updateProject);
-router.delete('/:id', project.deleteProject);
+
+// CUD requires admin
+router.post('/', isAuthenticated, isAdmin, project.createProject);
+router.put('/:id', isAuthenticated, isAdmin, project.updateProject);
+router.delete('/:id', isAuthenticated, isAdmin, project.deleteProject);
 
 module.exports = router;

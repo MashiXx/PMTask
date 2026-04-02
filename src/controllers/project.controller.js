@@ -3,9 +3,10 @@ const prisma = new PrismaClient();
 
 exports.getProjects = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const isGuest = !req.user;
+    const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
     const projects = await prisma.project.findMany({
-      where: { userId },
+      where: projectFilter,
       include: {
         _count: { select: { tasks: true } },
         tasks: { select: { status: true, dueDate: true } },
@@ -25,6 +26,7 @@ exports.getProjects = async (req, res) => {
       projects,
       activeProjectId: null,
       projectTags: [],
+      isGuest,
     });
   } catch (err) {
     console.error(err);

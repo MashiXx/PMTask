@@ -7,21 +7,11 @@
 
   <% if (typeof activeProject !== 'undefined' && activeProject) { %>
     <div class="sidebar-active-project">
-      <% if (currentUser && currentUser.role === 'admin') { %>
-        <a href="/projects" class="sidebar-project-link" title="Switch project">
-      <% } else { %>
-        <div class="sidebar-project-link">
-      <% } %>
+      <a href="/projects" class="sidebar-project-link" title="Switch project">
         <span class="project-dot" style="background:<%= activeProject.color %>; box-shadow: 0 0 6px <%= activeProject.color %>55;"></span>
         <span class="sidebar-project-name"><%= activeProject.name %></span>
-        <% if (currentUser && currentUser.role === 'admin') { %>
-          <svg class="sidebar-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        <% } %>
-      <% if (currentUser && currentUser.role === 'admin') { %>
-        </a>
-      <% } else { %>
-        </div>
-      <% } %>
+        <svg class="sidebar-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
     </div>
   <% } %>
 
