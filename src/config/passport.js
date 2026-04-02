@@ -17,6 +17,9 @@ passport.use(new LocalStrategy(
       if (!isMatch) {
         return done(null, false, { message: 'Invalid email or password' });
       }
+      if (user.status === 'pending') {
+        return done(null, false, { message: 'Your account is pending approval. Please wait for admin to activate it.' });
+      }
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -41,8 +44,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
               email: profile.emails[0].value,
               name: profile.displayName,
               avatar: profile.photos?.[0]?.value,
+              status: 'pending',
             },
           });
+          return done(null, false, { message: 'Account created. Please wait for admin approval.' });
+        }
+        if (user.status === 'pending') {
+          return done(null, false, { message: 'Your account is pending approval.' });
         }
         return done(null, user);
       } catch (err) {

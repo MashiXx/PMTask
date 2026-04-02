@@ -26,16 +26,15 @@
         <div class="list-header">
           <div class="list-col" style="flex:2;">User</div>
           <div class="list-col" style="flex:1.5;">Email</div>
-          <div class="list-col" style="flex:0.8;">Role</div>
-          <div class="list-col" style="flex:0.8;">Tasks</div>
-          <div class="list-col" style="flex:0.8;">Projects</div>
-          <div class="list-col" style="flex:0.6;">Actions</div>
+          <div class="list-col" style="flex:0.7;">Role</div>
+          <div class="list-col" style="flex:0.7;">Status</div>
+          <div class="list-col" style="flex:0.7;">Actions</div>
         </div>
 
         <% users.forEach(user => { %>
           <div class="list-row" id="user-row-<%= user.id %>">
             <div class="list-col" style="flex:2;">
-              <div class="avatar" style="background:var(--accent-alpha, rgba(108,99,255,0.15)); border-color:rgba(108,99,255,0.35); color:var(--accent); width:28px; height:28px; font-size:0.65rem; flex-shrink:0;">
+              <div class="avatar" style="background:rgba(108,99,255,0.15); border-color:rgba(108,99,255,0.35); color:var(--accent); width:28px; height:28px; font-size:0.65rem; flex-shrink:0;">
                 <%= user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
               </div>
               <span class="list-task-name"><%= user.name %></span>
@@ -44,13 +43,23 @@
               <% } %>
             </div>
             <div class="list-col font-mono text-muted" style="flex:1.5; font-size:0.75rem;"><%= user.email %></div>
-            <div class="list-col" style="flex:0.8;">
-              <span class="list-status-badge" style="color:<%= user.role === 'admin' ? 'var(--coral)' : 'var(--cyan)' %>; background:<%= user.role === 'admin' ? 'rgba(255,92,122,0.12)' : 'rgba(0,217,255,0.12)' %>;"><%= user.role === 'admin' ? 'Admin' : 'Developer' %></span>
+            <div class="list-col" style="flex:0.7;">
+              <span class="list-status-badge" style="color:<%= user.role === 'admin' ? 'var(--coral)' : 'var(--cyan)' %>; background:<%= user.role === 'admin' ? 'rgba(255,92,122,0.12)' : 'rgba(0,217,255,0.12)' %>;"><%= user.role === 'admin' ? 'Admin' : 'Dev' %></span>
             </div>
-            <div class="list-col font-mono text-muted" style="flex:0.8; font-size:0.75rem;"><%= user._count.tasks %></div>
-            <div class="list-col font-mono text-muted" style="flex:0.8; font-size:0.75rem;"><%= user._count.projects %></div>
-            <div class="list-col" style="flex:0.6;" onclick="event.stopPropagation();">
-              <button class="column-add-btn" onclick="openEditUserModal(<%= user.id %>, '<%= user.name.replace(/'/g, "\\'") %>', '<%= user.email %>', '<%= user.role %>')" title="Edit">
+            <div class="list-col" style="flex:0.7;">
+              <% if (user.status === 'pending') { %>
+                <span class="list-status-badge" style="color:var(--amber); background:rgba(255,179,71,0.12);">Pending</span>
+              <% } else { %>
+                <span class="list-status-badge" style="color:var(--mint); background:rgba(0,245,160,0.12);">Active</span>
+              <% } %>
+            </div>
+            <div class="list-col" style="flex:0.7;" onclick="event.stopPropagation();">
+              <% if (user.status === 'pending' && user.id !== currentUser.id) { %>
+                <button class="column-add-btn" onclick="approveUser(<%= user.id %>)" title="Approve" style="color:var(--mint);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              <% } %>
+              <button class="column-add-btn" onclick="openEditUserModal(<%= user.id %>, '<%= user.name.replace(/'/g, "\\'") %>', '<%= user.email %>', '<%= user.role %>', '<%= user.status %>')" title="Edit">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
               <% if (user.id !== currentUser.id) { %>
@@ -84,12 +93,21 @@
         <label>PASSWORD <span id="pwdHint" class="text-dim text-xs"></span></label>
         <input type="password" id="userPassword" placeholder="Min 6 characters" minlength="6">
       </div>
-      <div class="form-group">
-        <label>ROLE</label>
-        <select id="userRole">
-          <option value="developer">Developer</option>
-          <option value="admin">Admin</option>
-        </select>
+      <div style="display:flex; gap:12px;">
+        <div class="form-group" style="flex:1;">
+          <label>ROLE</label>
+          <select id="userRole">
+            <option value="developer">Developer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group" id="statusGroup" style="flex:1;">
+          <label>STATUS</label>
+          <select id="userStatus">
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeUserModal()">Cancel</button>
@@ -124,11 +142,13 @@ function openUserModal() {
   document.getElementById('userPassword').required = true;
   document.getElementById('pwdHint').textContent = '';
   document.getElementById('userRole').value = 'developer';
+  document.getElementById('userStatus').value = 'active';
+  document.getElementById('statusGroup').style.display = 'none';
   document.getElementById('userModal').classList.add('active');
   document.getElementById('userName').focus();
 }
 
-function openEditUserModal(id, name, email, role) {
+function openEditUserModal(id, name, email, role, status) {
   document.getElementById('userModalTitle').textContent = 'Edit User';
   document.getElementById('userSubmitBtn').textContent = 'Save Changes';
   document.getElementById('editUserId').value = id;
@@ -138,8 +158,22 @@ function openEditUserModal(id, name, email, role) {
   document.getElementById('userPassword').required = false;
   document.getElementById('pwdHint').textContent = '(leave blank to keep current)';
   document.getElementById('userRole').value = role;
+  document.getElementById('userStatus').value = status || 'active';
+  document.getElementById('statusGroup').style.display = '';
   document.getElementById('userModal').classList.add('active');
   document.getElementById('userName').focus();
+}
+
+async function approveUser(id) {
+  try {
+    const res = await fetch('/admin/users/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ status: 'active' }),
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+  } catch (err) { console.error(err); }
 }
 
 function closeUserModal() {
@@ -153,6 +187,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     name: document.getElementById('userName').value.trim(),
     email: document.getElementById('userEmail').value.trim(),
     role: document.getElementById('userRole').value,
+    status: document.getElementById('userStatus').value,
   };
   const pwd = document.getElementById('userPassword').value;
   if (pwd) data.password = pwd;

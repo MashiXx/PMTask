@@ -61,12 +61,13 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, password } = req.body;
+    const { name, email, role, password, status } = req.body;
 
     const data = {};
     if (name) data.name = name;
     if (email) data.email = email;
     if (role) data.role = role === 'admin' ? 'admin' : 'developer';
+    if (status) data.status = status === 'active' ? 'active' : 'pending';
     if (password && password.length >= 6) {
       data.password = await bcrypt.hash(password, 12);
     }

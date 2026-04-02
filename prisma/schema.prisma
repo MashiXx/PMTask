@@ -15,6 +15,7 @@ model User {
   googleId  String?  @unique
   avatar    String?
   role      String   @default("developer")
+  status    String   @default("active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

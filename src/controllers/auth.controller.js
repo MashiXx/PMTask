@@ -32,20 +32,11 @@ exports.postRegister = async (req, res) => {
       return res.redirect('/auth/register');
     }
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword },
+    await prisma.user.create({
+      data: { name, email, password: hashedPassword, role: 'developer', status: 'pending' },
     });
-    await prisma.project.create({
-      data: { name: 'My Project', color: '#6C63FF', userId: user.id },
-    });
-    req.login(user, (err) => {
-      if (err) {
-        req.flash('error', 'Registration succeeded but login failed');
-        return res.redirect('/auth/login');
-      }
-      req.flash('success', 'Welcome to PMTask!');
-      res.redirect('/dashboard');
-    });
+    req.flash('success', 'Registration successful! Please wait for admin approval.');
+    res.redirect('/auth/login');
   } catch (err) {
     console.error(err);
     req.flash('error', 'Something went wrong');
