@@ -1747,6 +1747,7 @@ select option {
 
 /* Sidebar Tags */
 .sidebar-tags {
+  margin-top: 10px;
   padding: 0 12px;
   flex: 1;
   overflow-y: auto;
