@@ -2088,6 +2088,11 @@ select option {
   border-color: var(--accent);
 }
 
+.preview-readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
 /* ===================================================
    21. UTILITY CLASSES
    =================================================== */

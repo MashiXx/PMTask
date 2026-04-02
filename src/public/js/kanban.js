@@ -1,3 +1,4 @@
+if (window.IS_GUEST) { /* skip drag setup for guests */ } else
 document.querySelectorAll('.tasks-list').forEach(list => {
   new Sortable(list, {
     group: 'kanban',

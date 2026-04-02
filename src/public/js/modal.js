@@ -125,6 +125,7 @@ if (typeof window.PROJECT_TAGS !== 'undefined') {
 
 async function openTaskPreview(taskId) {
   closeAllMenus();
+  const isGuest = window.IS_GUEST;
   try {
     const res = await fetch(`/api/tasks/${taskId}`);
     const task = await res.json();
@@ -184,6 +185,30 @@ async function openTaskPreview(taskId) {
     }
 
     document.getElementById('previewDetailsLink').href = '/tasks/' + task.id;
+
+    // Guest mode: make fields read-only, hide edit/delete actions
+    const previewTitle = document.getElementById('previewTitle');
+    const previewDesc = document.getElementById('previewDescription');
+    const previewStatus = document.getElementById('previewStatusSelect');
+    const previewPriority = document.getElementById('previewPrioritySelect');
+    if (isGuest) {
+      previewTitle.readOnly = true;
+      previewDesc.readOnly = true;
+      previewStatus.disabled = true;
+      previewPriority.disabled = true;
+      previewTitle.classList.add('preview-readonly');
+      previewDesc.classList.add('preview-readonly');
+      document.querySelectorAll('#taskPreviewModal .btn-delete').forEach(el => el.classList.add('hidden'));
+    } else {
+      previewTitle.readOnly = false;
+      previewDesc.readOnly = false;
+      previewStatus.disabled = false;
+      previewPriority.disabled = false;
+      previewTitle.classList.remove('preview-readonly');
+      previewDesc.classList.remove('preview-readonly');
+      document.querySelectorAll('#taskPreviewModal .btn-delete').forEach(el => el.classList.remove('hidden'));
+    }
+
     document.getElementById('taskPreviewModal').classList.add('active');
   } catch (err) {
     console.error('Failed to load task preview:', err);

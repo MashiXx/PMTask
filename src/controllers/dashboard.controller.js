@@ -3,11 +3,12 @@ const prisma = new PrismaClient();
 
 exports.getDashboard = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const user = req.user;
+    const isGuest = !user;
     const projectId = req.query.project ? parseInt(req.query.project) : null;
 
-    // Admins see their own projects, developers see all projects
-    const projectFilter = req.user.role === 'admin' ? { userId } : {};
+    // Guests and developers see all projects; admins see their own
+    const projectFilter = user && user.role === 'admin' ? { userId: user.id } : {};
     const projects = await prisma.project.findMany({
       where: projectFilter,
       include: { _count: { select: { tasks: true } } },
@@ -15,39 +16,53 @@ exports.getDashboard = async (req, res) => {
     });
 
     // Use query param, or session saved project, or first project
-    let activeProjectId = projectId || req.session.lastProjectId || (projects[0]?.id ?? null);
+    let activeProjectId = projectId
+      || (req.session && req.session.lastProjectId)
+      || (projects[0]?.id ?? null);
 
-    // Verify the project still exists and belongs to user
+    // Verify the project still exists
     if (activeProjectId && !projects.find(p => p.id === activeProjectId)) {
       activeProjectId = projects[0]?.id ?? null;
     }
 
     // Save to session for next visit
-    if (activeProjectId) {
+    if (activeProjectId && req.session) {
       req.session.lastProjectId = activeProjectId;
     }
 
-    // No projects at all -> go to projects page to create one
+    // No projects at all
     if (!activeProjectId) {
+      if (isGuest) {
+        // Guest with no projects -> show empty dashboard
+        return res.render('dashboard', {
+          title: 'Dashboard',
+          projects: [],
+          activeProjectId: null,
+          activeProject: null,
+          tasks: { todo: [], inprogress: [], review: [], done: [] },
+          stats: { total: 0, inProgress: 0, completed: 0, overdue: 0 },
+          sprintProgress: 0,
+          projectTags: [],
+          isGuest: true,
+        });
+      }
       return res.redirect('/projects');
     }
 
     let tasks = { todo: [], inprogress: [], review: [], done: [] };
 
-    if (activeProjectId) {
-      const allTasks = await prisma.task.findMany({
-        where: { projectId: activeProjectId },
-        include: {
-          tags: { include: { tag: true } },
-          assignees: { include: { user: true } },
-        },
-        orderBy: { position: 'asc' },
-      });
+    const allTasks = await prisma.task.findMany({
+      where: { projectId: activeProjectId },
+      include: {
+        tags: { include: { tag: true } },
+        assignees: { include: { user: true } },
+      },
+      orderBy: { position: 'asc' },
+    });
 
-      for (const task of allTasks) {
-        if (tasks[task.status]) {
-          tasks[task.status].push(task);
-        }
+    for (const task of allTasks) {
+      if (tasks[task.status]) {
+        tasks[task.status].push(task);
       }
     }
 
@@ -82,10 +97,11 @@ exports.getDashboard = async (req, res) => {
       },
       sprintProgress,
       projectTags,
+      isGuest,
     });
   } catch (err) {
     console.error(err);
     req.flash('error', 'Failed to load dashboard');
-    res.redirect('/');
+    res.redirect('/auth/login');
   }
 };

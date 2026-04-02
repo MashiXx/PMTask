@@ -142,8 +142,10 @@ exports.getTaskPage = async (req, res) => {
       return res.redirect('/dashboard');
     }
 
+    const isGuest = !req.user;
+    const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
     const projects = await prisma.project.findMany({
-      where: { userId: req.user.id },
+      where: projectFilter,
       include: { _count: { select: { tasks: true } } },
       orderBy: { createdAt: 'asc' },
     });
@@ -160,6 +162,7 @@ exports.getTaskPage = async (req, res) => {
       activeProjectId: task.projectId,
       activeProject: task.project,
       projectTags,
+      isGuest,
     });
   } catch (err) {
     console.error(err);

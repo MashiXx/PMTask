@@ -53,12 +53,11 @@ app.use('/admin', require('./routes/admin.routes'));
 // Task detail page
 const { isAuthenticated } = require('./middleware/auth');
 const taskController = require('./controllers/task.controller');
-app.get('/tasks/:id', isAuthenticated, taskController.getTaskPage);
+app.get('/tasks/:id', taskController.getTaskPage);
 
-// Root redirect
+// Root -> dashboard (guests welcome)
 app.get('/', (req, res) => {
-  if (req.isAuthenticated()) return res.redirect('/dashboard');
-  res.redirect('/auth/login');
+  res.redirect('/dashboard');
 });
 
 module.exports = app;
