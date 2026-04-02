@@ -5,6 +5,7 @@ document.querySelectorAll('.tasks-list').forEach(list => {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     draggable: '.task-card',
+    handle: '.task-drag-handle',
     onEnd: async function(evt) {
       const taskId = evt.item.dataset.taskId;
       const newStatus = evt.to.dataset.status;

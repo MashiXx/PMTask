@@ -667,145 +667,60 @@ input, textarea, select {
 }
 
 /* ===================================================
-   9. STATS CARDS
+   9. STATS + SPRINT (compact row)
    =================================================== */
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.stat-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  background: var(--card-hover);
-  border-color: var(--border-light);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-.stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.stats-sprint-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  flex-wrap: wrap;
 }
 
-.stat-icon svg {
-  width: 18px;
-  height: 18px;
+.stat-mini {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-.stat-icon.accent {
-  background: rgba(108, 99, 255, 0.15);
-  color: var(--accent);
-}
-
-.stat-icon.cyan {
-  background: rgba(0, 217, 255, 0.12);
-  color: var(--cyan);
-}
-
-.stat-icon.coral {
-  background: rgba(255, 92, 122, 0.12);
-  color: var(--coral);
-}
-
-.stat-icon.mint {
-  background: rgba(0, 245, 160, 0.12);
-  color: var(--mint);
-}
-
-.stat-icon.amber {
-  background: rgba(255, 179, 71, 0.12);
-  color: var(--amber);
-}
-
-.stat-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-value {
-  font-size: 1.625rem;
+.stat-mini-value {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text);
-  line-height: 1.1;
-  font-family: var(--font-mono);
 }
 
-.stat-label {
-  font-size: 0.75rem;
+.stat-mini-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.stat-badge {
-  display: inline-flex;
+.stat-mini-progress {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  gap: 10px;
+  margin-left: auto;
+  min-width: 120px;
+}
+
+.stat-mini-percent {
   font-family: var(--font-mono);
-  margin-top: 8px;
-}
-
-.stat-badge.up {
-  background: rgba(0, 245, 160, 0.1);
-  color: var(--mint);
-}
-
-.stat-badge.down {
-  background: rgba(255, 92, 122, 0.1);
-  color: var(--coral);
-}
-
-/* ===================================================
-   10. SPRINT PROGRESS
-   =================================================== */
-
-.sprint-bar {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px 24px;
-}
-
-.sprint-bar-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sprint-bar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sprint-bar-title {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .sprint-track {
-  height: 6px;
+  flex: 1;
+  height: 5px;
   background: var(--border);
   border-radius: 3px;
   overflow: hidden;
@@ -816,35 +731,6 @@ input, textarea, select {
   background: linear-gradient(90deg, var(--accent), var(--cyan));
   border-radius: 3px;
   transition: width 0.6s ease;
-}
-
-.sprint-meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.sprint-meta-item {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.sprint-percent {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.sprint-percent-value {
-  font-weight: 700;
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.sprint-percent-label {
-  font-size: 0.7rem;
 }
 
 /* ===================================================
@@ -979,7 +865,7 @@ input, textarea, select {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px;
-  cursor: grab;
+  cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
@@ -992,7 +878,11 @@ input, textarea, select {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-.task-card:active {
+.task-drag-handle {
+  cursor: grab;
+}
+
+.task-drag-handle:active {
   cursor: grabbing;
 }
 
@@ -1584,7 +1474,7 @@ select option {
 
 /* Sidebar Active Project */
 .sidebar-active-project {
-  padding: 0 12px;
+  padding: 16px 12px 0;
   margin-bottom: 4px;
 }
 
@@ -2091,12 +1981,8 @@ select option {
   display: none;
 }
 
-/* 1200px: stats 2-col, kanban columns smaller */
+/* 1200px: kanban columns smaller */
 @media (max-width: 1200px) {
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .kanban-column {
     width: 240px;
     min-width: 240px;
@@ -2153,19 +2039,6 @@ select option {
 
   .search-box {
     max-width: 180px;
-  }
-
-  /* Sprint bar stacks */
-  .sprint-bar-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .sprint-meta {
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 0.75rem;
   }
 
   /* Task detail single col */
@@ -2289,41 +2162,13 @@ select option {
     margin-left: 0;
   }
 
-  /* Stats 2x2 */
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  .stats-sprint-row {
+    padding: 10px 14px;
+    gap: 12px;
   }
 
-  .stat-card {
-    padding: 14px;
-    gap: 10px;
-  }
-
-  .stat-icon {
-    width: 34px;
-    height: 34px;
-  }
-
-  .stat-value {
-    font-size: 1.25rem;
-  }
-
-  /* Sprint bar vertical layout */
-  .sprint-bar {
-    padding: 16px;
-  }
-
-  .sprint-bar-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .sprint-percent {
-    display: flex;
-    gap: 6px;
-    align-items: baseline;
+  .stat-mini-progress {
+    min-width: 80px;
   }
 
   /* Kanban horizontal scroll */
@@ -2366,19 +2211,13 @@ select option {
 
 /* 480px: very small screens */
 @media (max-width: 480px) {
-  .stats-row {
-    grid-template-columns: 1fr;
+  .stats-sprint-row {
     gap: 8px;
+    padding: 8px 12px;
   }
 
-  .stat-card {
-    padding: 12px;
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .stat-value {
-    font-size: 1.1rem;
+  .stat-mini-value {
+    font-size: 0.95rem;
   }
 
   .topbar {
