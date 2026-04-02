@@ -140,17 +140,21 @@ async function openTaskPreview(taskId) {
     document.getElementById('previewStatusSelect').value = task.status;
     document.getElementById('previewPrioritySelect').value = task.priority;
 
-    const tagsWrap = document.getElementById('previewTagsWrap');
     const tagsEl = document.getElementById('previewTags');
-    if (task.tags && task.tags.length > 0) {
-      tagsEl.innerHTML = task.tags.map(tt => {
-        const c = tagColorMap[tt.tag.name] || '#6B6B8E';
-        const label = tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1);
-        return `<span class="tag-badge" style="background:${c}18; border:1px solid ${c}35; color:${c};">${label}</span>`;
+    previewCurrentTags = (task.tags || []).map(tt => tt.tag.name);
+    renderPreviewTagBadges();
+
+    // Hide tag editor on open
+    document.getElementById('previewTagEditor').classList.add('hidden');
+
+    // Build tag pill options
+    const optionsEl = document.getElementById('previewTagOptions');
+    if (window.PROJECT_TAGS && window.PROJECT_TAGS.length > 0) {
+      optionsEl.innerHTML = window.PROJECT_TAGS.map(t => {
+        const isActive = previewCurrentTags.includes(t.name);
+        const label = t.name.charAt(0).toUpperCase() + t.name.slice(1);
+        return `<span class="preview-tag-pill${isActive ? ' active' : ''}" style="--pill-color:${t.color}" data-tag="${t.name}" onclick="togglePreviewTag('${t.name}')">${label}</span>`;
       }).join('');
-      tagsWrap.classList.remove('hidden');
-    } else {
-      tagsWrap.classList.add('hidden');
     }
 
     const dueDateWrap = document.getElementById('previewDueDateWrap');
@@ -339,3 +343,68 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     }
   });
 });
+
+// Preview Tag Editor
+let previewCurrentTags = [];
+
+function renderPreviewTagBadges() {
+  const tagsEl = document.getElementById('previewTags');
+  if (previewCurrentTags.length > 0) {
+    tagsEl.innerHTML = previewCurrentTags.map(name => {
+      const c = tagColorMap[name] || '#6B6B8E';
+      const label = name.charAt(0).toUpperCase() + name.slice(1);
+      return `<span class="tag-badge" style="background:${c}18; border:1px solid ${c}35; color:${c};">${label}</span>`;
+    }).join('');
+  } else {
+    tagsEl.innerHTML = '<span style="color:var(--text-dim); font-size:0.75rem;">No tags</span>';
+  }
+}
+
+function togglePreviewTagEditor() {
+  document.getElementById('previewTagEditor').classList.toggle('hidden');
+}
+
+async function togglePreviewTag(tagName) {
+  if (!previewTaskId) return;
+  const idx = previewCurrentTags.indexOf(tagName);
+  if (idx >= 0) {
+    previewCurrentTags.splice(idx, 1);
+  } else {
+    previewCurrentTags.push(tagName);
+  }
+
+  // Update pill states
+  document.querySelectorAll('#previewTagOptions .preview-tag-pill').forEach(pill => {
+    if (pill.dataset.tag === tagName) {
+      pill.classList.toggle('active');
+    }
+  });
+
+  renderPreviewTagBadges();
+
+  // Save to API
+  try {
+    await fetch(`/api/tasks/${previewTaskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tags: previewCurrentTags }),
+    });
+    previewDirty = true;
+
+    // Update card tags in DOM
+    const card = document.querySelector(`.task-card[data-task-id="${previewTaskId}"]`);
+    if (card) {
+      const cardTags = card.querySelector('.task-tags');
+      if (cardTags) {
+        cardTags.innerHTML = previewCurrentTags.map(name => {
+          const c = tagColorMap[name] || '#6B6B8E';
+          const label = name.charAt(0).toUpperCase() + name.slice(1);
+          return `<span class="tag-badge" style="background:color-mix(in srgb, ${c} 12%, transparent); border:1px solid color-mix(in srgb, ${c} 35%, transparent); color:${c};">${label}</span>`;
+        }).join('');
+      }
+      card.dataset.tags = previewCurrentTags.join(',');
+    }
+  } catch (err) {
+    console.error('Failed to update tags:', err);
+  }
+}

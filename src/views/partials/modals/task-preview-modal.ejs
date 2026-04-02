@@ -27,9 +27,17 @@
       <textarea id="previewDescription" class="preview-editable-desc" placeholder="Add a description..." rows="2"></textarea>
     </div>
 
-    <div id="previewTagsWrap" class="mb-16 hidden">
-      <p class="label-meta">Tags</p>
+    <div id="previewTagsWrap" class="mb-16">
+      <div class="preview-tags-header">
+        <p class="label-meta" style="margin:0">Tags</p>
+        <button type="button" class="preview-tag-toggle-btn preview-auth-btn" onclick="event.stopPropagation(); togglePreviewTagEditor()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
       <div id="previewTags" class="task-tags"></div>
+      <div id="previewTagEditor" class="preview-tag-editor hidden" onclick="event.stopPropagation()">
+        <div id="previewTagOptions" class="preview-tag-options"></div>
+      </div>
     </div>
 
     <div class="flex gap-16 mb-16">
