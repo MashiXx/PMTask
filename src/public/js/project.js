@@ -91,21 +91,46 @@ document.getElementById('projectForm').addEventListener('submit', async (e) => {
 function deleteProject(id, name) {
   document.getElementById('deleteProjectId').value = id;
   document.getElementById('deleteProjectName').textContent = name;
+  document.getElementById('deleteProjectExpectedName').value = name;
+  document.getElementById('deleteProjectConfirmInput').value = '';
+  const btn = document.getElementById('deleteProjectBtn');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'not-allowed';
   document.getElementById('deleteProjectModal').classList.add('active');
+  document.getElementById('deleteProjectConfirmInput').focus();
 }
+
+document.getElementById('deleteProjectConfirmInput').addEventListener('input', function() {
+  const expected = document.getElementById('deleteProjectExpectedName').value;
+  const btn = document.getElementById('deleteProjectBtn');
+  if (this.value === expected) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  }
+});
 
 function closeDeleteProjectModal() {
   document.getElementById('deleteProjectModal').classList.remove('active');
 }
 
 async function confirmDeleteProject() {
+  const expected = document.getElementById('deleteProjectExpectedName').value;
+  const typed = document.getElementById('deleteProjectConfirmInput').value;
+  if (typed !== expected) return;
+
   const id = document.getElementById('deleteProjectId').value;
   try {
     const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
       closeDeleteProjectModal();
-      window.location.href = '/dashboard';
+      window.location.href = '/projects';
     }
   } catch (err) {
     console.error('Failed to delete project:', err);

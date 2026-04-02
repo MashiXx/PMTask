@@ -35,18 +35,23 @@
 </div>
 
 <div class="modal-overlay" id="deleteProjectModal">
-  <div class="modal" style="max-width: 380px; text-align: center;">
+  <div class="modal" style="max-width: 400px; text-align: center;">
     <h2 class="modal-title">Delete Project</h2>
     <p style="color: var(--text-muted); font-size: 13px; font-family: var(--font-mono); margin-bottom: 8px;">
       Delete <strong id="deleteProjectName" style="color:var(--text)"></strong>?
     </p>
-    <p style="color: var(--coral); font-size: 11px; font-family: var(--font-mono); margin-bottom: 24px;">
-      All tasks in this project will also be deleted.
+    <p style="color: var(--coral); font-size: 11px; font-family: var(--font-mono); margin-bottom: 16px;">
+      All tasks in this project will also be deleted. This action cannot be undone.
     </p>
+    <div class="form-group" style="text-align:left; margin-bottom:20px;">
+      <label style="font-size:11px;">TYPE THE PROJECT NAME TO CONFIRM</label>
+      <input type="text" id="deleteProjectConfirmInput" placeholder="Type project name here" autocomplete="off">
+    </div>
     <input type="hidden" id="deleteProjectId" value="">
+    <input type="hidden" id="deleteProjectExpectedName" value="">
     <div class="modal-actions" style="justify-content: center;">
       <button class="btn-cancel" onclick="closeDeleteProjectModal()">Cancel</button>
-      <button class="btn-delete" onclick="confirmDeleteProject()">Delete</button>
+      <button class="btn-delete" id="deleteProjectBtn" onclick="confirmDeleteProject()" disabled style="opacity:0.5; cursor:not-allowed;">Delete</button>
     </div>
   </div>
 </div>

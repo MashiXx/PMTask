@@ -1,0 +1,148 @@
+<%- include('partials/head', { title: task.title }) %>
+
+<%
+  const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
+  const statusLabels = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
+  const statusColors = { todo: 'var(--text-muted)', inprogress: 'var(--cyan)', review: 'var(--amber)', done: 'var(--mint)' };
+  const pColor = priorityColors[task.priority] || '#FFB347';
+  const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+  const tagColorMap = {
+    'design': '#6C63FF', 'ux': '#00D9FF', 'backend': '#FF5C7A',
+    'frontend': '#00F5A0', 'devops': '#FFB347', 'security': '#FF5C7A',
+    'qa': '#FFB347', 'docs': '#6B6B8E'
+  };
+  const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
+%>
+
+<div class="app-layout">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <a href="/dashboard?project=<%= task.projectId %>" class="breadcrumb-text" style="text-decoration:none; color:var(--text-muted);">
+            <%= task.project.name %>
+          </a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-text"><%= task.title %></span>
+        </div>
+      </div>
+      <div class="topbar-right" style="gap:8px;">
+        <button class="btn-cancel" onclick="openEditModal(<%= task.id %>)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn-delete" onclick="deleteTask(<%= task.id %>)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-body">
+      <div class="task-detail">
+        <div class="task-detail-main">
+          <h1 class="task-detail-title"><%= task.title %></h1>
+
+          <% if (task.description) { %>
+            <div class="task-detail-section">
+              <h3 class="task-detail-label">DESCRIPTION</h3>
+              <p class="task-detail-text"><%= task.description %></p>
+            </div>
+          <% } %>
+
+          <% if (task.tags.length > 0) { %>
+            <div class="task-detail-section">
+              <h3 class="task-detail-label">TAGS</h3>
+              <div class="task-tags" style="margin-top:6px;">
+                <% task.tags.forEach(tt => { %>
+                  <% const tColor = tagColorMap[tt.tag.name] || '#6B6B8E'; %>
+                  <span class="tag-badge" style="background:<%= tColor %>18; border:1px solid <%= tColor %>35; color:<%= tColor %>;">
+                    <%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %>
+                  </span>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+
+          <% if (task.assignees.length > 0) { %>
+            <div class="task-detail-section">
+              <h3 class="task-detail-label">ASSIGNEES</h3>
+              <div style="display:flex; gap:8px; margin-top:6px;">
+                <% task.assignees.forEach((a, i) => { %>
+                  <% const aColor = avatarColors[i % avatarColors.length]; %>
+                  <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--surface); border:1px solid var(--border); border-radius:8px;">
+                    <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>; width:24px; height:24px; font-size:0.6rem;">
+                      <%= a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
+                    </div>
+                    <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text);"><%= a.user.name %></span>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="task-detail-sidebar">
+          <div class="task-detail-meta-card">
+            <div class="task-detail-meta-item">
+              <span class="task-detail-label">STATUS</span>
+              <span class="task-detail-meta-value" style="color:<%= statusColors[task.status] %>;">
+                <%= statusLabels[task.status] %>
+              </span>
+            </div>
+            <div class="task-detail-meta-item">
+              <span class="task-detail-label">PRIORITY</span>
+              <span class="task-detail-meta-value" style="color:<%= pColor %>;">
+                <%= priorityLabels[task.priority] %>
+              </span>
+            </div>
+            <% if (task.dueDate) { %>
+              <div class="task-detail-meta-item">
+                <span class="task-detail-label">DUE DATE</span>
+                <span class="task-detail-meta-value"><%= task.dueDate %></span>
+              </div>
+            <% } %>
+            <div class="task-detail-meta-item">
+              <span class="task-detail-label">PROGRESS</span>
+              <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                <div class="task-progress-track" style="flex:1;">
+                  <div class="task-progress-fill" style="width:<%= task.progress %>%; background:<%= progressColor %>;"></div>
+                </div>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; color:<%= progressColor %>; font-weight:600;"><%= task.progress %>%</span>
+              </div>
+            </div>
+            <div class="task-detail-meta-item">
+              <span class="task-detail-label">CREATED</span>
+              <span class="task-detail-meta-value" style="font-size:0.75rem;">
+                <%= new Date(task.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/modals/task-modal') %>
+<%- include('partials/modals/delete-modal') %>
+
+<script src="/js/modal.js"></script>
+<script>
+  // Override delete redirect to go back to project
+  const origConfirmDelete = confirmDelete;
+  confirmDelete = async function() {
+    const taskId = document.getElementById('deleteTaskId').value;
+    try {
+      await fetch('/api/tasks/' + taskId, { method: 'DELETE' });
+      window.location.href = '/dashboard?project=<%= task.projectId %>';
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+    }
+  };
+</script>
+
+<%- include('partials/foot') %>

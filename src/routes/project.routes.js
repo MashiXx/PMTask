@@ -4,6 +4,7 @@ const project = require('../controllers/project.controller');
 
 router.use(isAuthenticated);
 
+router.get('/', project.getProjects);
 router.post('/', project.createProject);
 router.put('/:id', project.updateProject);
 router.delete('/:id', project.deleteProject);

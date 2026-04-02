@@ -1,6 +1,37 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+exports.getProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const projects = await prisma.project.findMany({
+      where: { userId },
+      include: {
+        _count: { select: { tasks: true } },
+        tasks: { select: { status: true, dueDate: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    for (const p of projects) {
+      p.doneTasks = p.tasks.filter(t => t.status === 'done').length;
+      p.overdueTasks = p.tasks.filter(t => t.status !== 'done' && t.dueDate && t.dueDate < today).length;
+      delete p.tasks;
+    }
+
+    res.render('projects', {
+      title: 'Projects',
+      projects,
+      activeProjectId: null,
+    });
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Failed to load projects');
+    res.redirect('/dashboard');
+  }
+};
+
 exports.createProject = async (req, res) => {
   try {
     const { name, color } = req.body;

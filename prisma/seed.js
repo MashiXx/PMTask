@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
@@ -16,14 +17,14 @@ async function main() {
   });
 
   const tagData = [
-    { name: 'Design', color: '#6C63FF' },
-    { name: 'UX', color: '#00D9FF' },
-    { name: 'Backend', color: '#FF5C7A' },
-    { name: 'Frontend', color: '#00F5A0' },
-    { name: 'DevOps', color: '#FFB347' },
-    { name: 'Security', color: '#FF5C7A' },
-    { name: 'QA', color: '#FFB347' },
-    { name: 'Docs', color: '#6B6B8E' },
+    { name: 'design', color: '#6C63FF' },
+    { name: 'ux', color: '#00D9FF' },
+    { name: 'backend', color: '#FF5C7A' },
+    { name: 'frontend', color: '#00F5A0' },
+    { name: 'devops', color: '#FFB347' },
+    { name: 'security', color: '#FF5C7A' },
+    { name: 'qa', color: '#FFB347' },
+    { name: 'docs', color: '#6B6B8E' },
   ];
   const tags = {};
   for (const t of tagData) {
@@ -38,15 +39,15 @@ async function main() {
   };
 
   const taskData = [
-    { title: 'Redesign onboarding flow', priority: 'high', status: 'todo', tags: ['Design', 'UX'], progress: 0, dueDate: '2026-04-08', position: 0 },
-    { title: 'Set up CI/CD pipeline', priority: 'medium', status: 'todo', tags: ['DevOps'], progress: 0, dueDate: '2026-04-10', position: 1 },
-    { title: 'Write API documentation', priority: 'low', status: 'todo', tags: ['Docs'], progress: 0, dueDate: '2026-04-12', position: 2 },
-    { title: 'Build authentication module', priority: 'high', status: 'inprogress', tags: ['Backend', 'Security'], progress: 65, dueDate: '2026-04-06', position: 0 },
-    { title: 'Dashboard analytics charts', priority: 'medium', status: 'inprogress', tags: ['Frontend'], progress: 40, dueDate: '2026-04-09', position: 1 },
-    { title: 'Mobile responsive fixes', priority: 'medium', status: 'review', tags: ['Frontend', 'QA'], progress: 90, dueDate: '2026-04-05', position: 0 },
-    { title: 'Performance optimization', priority: 'high', status: 'review', tags: ['Backend'], progress: 85, dueDate: '2026-04-07', position: 1 },
-    { title: 'Database schema design', priority: 'high', status: 'done', tags: ['Backend'], progress: 100, dueDate: '2026-04-01', position: 0 },
-    { title: 'UI component library', priority: 'medium', status: 'done', tags: ['Design', 'Frontend'], progress: 100, dueDate: '2026-04-02', position: 1 },
+    { title: 'Redesign onboarding flow', priority: 'high', status: 'todo', tags: ['design', 'ux'], progress: 0, dueDate: '2026-04-08', position: 0 },
+    { title: 'Set up CI/CD pipeline', priority: 'medium', status: 'todo', tags: ['devops'], progress: 0, dueDate: '2026-04-10', position: 1 },
+    { title: 'Write API documentation', priority: 'low', status: 'todo', tags: ['docs'], progress: 0, dueDate: '2026-04-12', position: 2 },
+    { title: 'Build authentication module', priority: 'high', status: 'inprogress', tags: ['backend', 'security'], progress: 65, dueDate: '2026-04-06', position: 0 },
+    { title: 'Dashboard analytics charts', priority: 'medium', status: 'inprogress', tags: ['frontend'], progress: 40, dueDate: '2026-04-09', position: 1 },
+    { title: 'Mobile responsive fixes', priority: 'medium', status: 'review', tags: ['frontend', 'qa'], progress: 90, dueDate: '2026-04-05', position: 0 },
+    { title: 'Performance optimization', priority: 'high', status: 'review', tags: ['backend'], progress: 85, dueDate: '2026-04-07', position: 1 },
+    { title: 'Database schema design', priority: 'high', status: 'done', tags: ['backend'], progress: 100, dueDate: '2026-04-01', position: 0 },
+    { title: 'UI component library', priority: 'medium', status: 'done', tags: ['design', 'frontend'], progress: 100, dueDate: '2026-04-02', position: 1 },
   ];
 
   for (const td of taskData) {

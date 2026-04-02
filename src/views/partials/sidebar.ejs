@@ -5,8 +5,12 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="/dashboard" class="nav-btn active">
+    <a href="/dashboard" class="nav-btn <%= typeof activeProjectId !== 'undefined' && activeProjectId !== null ? 'active' : '' %>">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="/projects" class="nav-btn <%= typeof activeProjectId !== 'undefined' && activeProjectId === null ? 'active' : '' %>">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       Projects
     </a>
   </nav>
@@ -19,28 +23,18 @@
       </button>
     </div>
     <% projects.forEach(p => { %>
-      <div class="project-item" style="display:flex; align-items:center; gap:0;">
-        <a href="/dashboard?project=<%= p.id %>" class="project-btn <%= p.id === activeProjectId ? 'active' : '' %>" style="flex:1; <%= p.id === activeProjectId ? 'background:' + p.color + '12;' : '' %>">
-          <span class="project-dot" style="background: <%= p.color %>; box-shadow: 0 0 6px <%= p.color %>55;"></span>
-          <span class="project-name"><%= p.name %></span>
-          <span class="project-count"><%= p._count.tasks %></span>
-        </a>
-        <div class="project-actions" style="display:flex; gap:2px; opacity:0; transition:opacity 0.15s;">
-          <button class="column-add-btn" onclick="openProjectModal(<%= p.id %>, '<%= p.name.replace(/'/g, "\\'") %>', '<%= p.color %>')" title="Edit" style="padding:4px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="column-add-btn" onclick="deleteProject(<%= p.id %>, '<%= p.name.replace(/'/g, "\\'") %>')" title="Delete" style="padding:4px; color:var(--coral);">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </div>
-      </div>
+      <a href="/dashboard?project=<%= p.id %>" class="project-btn <%= p.id === activeProjectId ? 'active' : '' %>" style="<%= p.id === activeProjectId ? 'background:' + p.color + '12;' : '' %>">
+        <span class="project-dot" style="background: <%= p.color %>; box-shadow: 0 0 6px <%= p.color %>55;"></span>
+        <span class="project-name"><%= p.name %></span>
+        <span class="project-count"><%= p._count.tasks %></span>
+      </a>
     <% }) %>
   </div>
 
   <div class="sidebar-user">
-    <div class="sidebar-avatar"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></div>
+    <a href="/profile" class="sidebar-avatar" title="Profile" style="text-decoration:none;"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></a>
     <div class="sidebar-user-info">
-      <p class="sidebar-user-name"><%= currentUser.name %></p>
+      <a href="/profile" style="text-decoration:none;"><p class="sidebar-user-name"><%= currentUser.name %></p></a>
       <p class="sidebar-user-role">Member</p>
     </div>
     <a href="/auth/logout" class="sidebar-settings" title="Logout">

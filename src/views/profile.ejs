@@ -1,0 +1,70 @@
+<%- include('partials/head', { title: 'Profile' }) %>
+
+<div class="app-layout">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-text">Profile</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-body">
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="profile-avatar-large">
+            <%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
+          </div>
+          <h2 class="profile-name"><%= currentUser.name %></h2>
+          <p class="profile-email"><%= currentUser.email %></p>
+          <% if (currentUser.googleId) { %>
+            <span class="profile-badge">Google Account</span>
+          <% } %>
+        </div>
+
+        <div class="profile-forms">
+          <div class="profile-section">
+            <h3 class="profile-section-title">Profile Information</h3>
+            <form action="/profile/update" method="POST">
+              <div class="form-group">
+                <label>NAME</label>
+                <input type="text" name="name" value="<%= currentUser.name %>" required>
+              </div>
+              <div class="form-group">
+                <label>EMAIL</label>
+                <input type="email" name="email" value="<%= currentUser.email %>" required>
+              </div>
+              <button type="submit" class="btn-submit" style="margin-top:8px;">Save Changes</button>
+            </form>
+          </div>
+
+          <div class="profile-section">
+            <h3 class="profile-section-title">Change Password</h3>
+            <form action="/profile/password" method="POST">
+              <% if (currentUser.password) { %>
+                <div class="form-group">
+                  <label>CURRENT PASSWORD</label>
+                  <input type="password" name="currentPassword" placeholder="Enter current password" required>
+                </div>
+              <% } %>
+              <div class="form-group">
+                <label>NEW PASSWORD</label>
+                <input type="password" name="newPassword" placeholder="Min 6 characters" required minlength="6">
+              </div>
+              <div class="form-group">
+                <label>CONFIRM NEW PASSWORD</label>
+                <input type="password" name="confirmPassword" placeholder="Re-enter new password" required minlength="6">
+              </div>
+              <button type="submit" class="btn-submit" style="margin-top:8px;">Change Password</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/foot') %>

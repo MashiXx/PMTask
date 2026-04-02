@@ -52,17 +52,23 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, priority, dueDate, progress, tags } = req.body;
+    const { title, description, priority, status, dueDate, progress, tags } = req.body;
+
+    const updateData = {
+      title,
+      description: description || null,
+      priority,
+      dueDate: dueDate || null,
+      progress: parseInt(progress) || 0,
+    };
+    if (status) {
+      updateData.status = status;
+      if (status === 'done') updateData.progress = 100;
+    }
 
     const task = await prisma.task.update({
       where: { id: parseInt(id) },
-      data: {
-        title,
-        description: description || null,
-        priority,
-        dueDate: dueDate || null,
-        progress: parseInt(progress) || 0,
-      },
+      data: updateData,
     });
 
     if (tags !== undefined) {
@@ -116,6 +122,41 @@ exports.deleteTask = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+};
+
+exports.getTaskPage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await prisma.task.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        project: true,
+        tags: { include: { tag: true } },
+        assignees: { include: { user: true } },
+      },
+    });
+    if (!task) {
+      req.flash('error', 'Task not found');
+      return res.redirect('/dashboard');
+    }
+
+    const projects = await prisma.project.findMany({
+      where: { userId: req.user.id },
+      include: { _count: { select: { tasks: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    res.render('task-detail', {
+      title: task.title,
+      task,
+      projects,
+      activeProjectId: task.projectId,
+    });
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Failed to load task');
+    res.redirect('/dashboard');
   }
 };
 

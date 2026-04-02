@@ -5,9 +5,9 @@
   const pLabel = priorityLabels[task.priority] || 'MEDIUM';
   const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
   const tagClasses = {
-    'Design': 'tag-design', 'UX': 'tag-ux', 'Backend': 'tag-backend',
-    'Frontend': 'tag-frontend', 'DevOps': 'tag-devops', 'Security': 'tag-security',
-    'QA': 'tag-qa', 'Docs': 'tag-docs'
+    'design': 'tag-design', 'ux': 'tag-ux', 'backend': 'tag-backend',
+    'frontend': 'tag-frontend', 'devops': 'tag-devops', 'security': 'tag-security',
+    'qa': 'tag-qa', 'docs': 'tag-docs'
   };
   const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
 %>
@@ -35,11 +35,11 @@
     </button>
   </div>
 
-  <p class="task-title"><%= task.title %></p>
+  <p class="task-title" onclick="openTaskPreview(<%= task.id %>)" style="cursor:pointer;"><%= task.title %></p>
 
   <div class="task-tags">
     <% task.tags.forEach(tt => { %>
-      <span class="tag-badge <%= tagClasses[tt.tag.name] || '' %>"><%= tt.tag.name %></span>
+      <span class="tag-badge <%= tagClasses[tt.tag.name] || '' %>"><%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %></span>
     <% }) %>
   </div>
 
