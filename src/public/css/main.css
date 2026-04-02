@@ -905,6 +905,8 @@ input, textarea, select {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .list-col-title {
@@ -962,6 +964,7 @@ input, textarea, select {
 
 .list-progress-track {
   flex: 1;
+  min-width: 0;
   height: 4px;
   background: var(--border);
   border-radius: 2px;
