@@ -8,6 +8,9 @@ const passport = require('passport');
 
 const app = express();
 
+// Trust first proxy (needed for express-rate-limit behind reverse proxy)
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet({
   contentSecurityPolicy: {
