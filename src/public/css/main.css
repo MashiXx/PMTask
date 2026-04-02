@@ -2882,12 +2882,14 @@ select option {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 16px;
+    scroll-snap-type: x mandatory;
   }
 
   .kanban-column {
-    width: 260px;
-    min-width: 260px;
-    max-height: 60vh;
+    width: 80vw;
+    min-width: 80vw;
+    max-height: 65vh;
+    scroll-snap-align: start;
   }
 
   /* Projects grid 1-col */
@@ -2912,6 +2914,32 @@ select option {
     max-height: 85vh;
     overflow-y: auto;
   }
+
+  .modal-lg {
+    max-width: 100%;
+  }
+
+  .modal-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-actions .flex {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .modal-actions .btn-cancel,
+  .modal-actions .btn-delete,
+  .modal-actions .btn-submit {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    padding: 9px 12px;
+    font-size: 0.75rem;
+  }
 }
 
 /* 480px: very small screens */
@@ -2935,8 +2963,9 @@ select option {
   }
 
   .kanban-column {
-    width: 240px;
-    min-width: 240px;
+    width: 75vw;
+    min-width: 75vw;
+    max-height: 65vh;
   }
 
   .breadcrumb {
@@ -2958,5 +2987,30 @@ select option {
 
   .modal {
     margin: 8px;
+    padding: 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-actions > .btn-cancel {
+    width: 100%;
+    order: 10;
+  }
+
+  .modal-actions .flex {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .preview-editable-title {
+    font-size: 1rem;
+  }
+
+  .preview-inline-select {
+    flex: 1;
+    min-width: 0;
   }
 }
