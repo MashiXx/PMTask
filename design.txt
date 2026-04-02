@@ -1,0 +1,591 @@
+import { useState, useEffect } from "react";
+import {
+LayoutGrid, List, Search, Bell, Plus, ChevronDown,
+MoreHorizontal, Calendar, Flag, Zap, Clock,
+CheckCircle2, Circle, ArrowUpRight, Filter,
+Flame, Star, Hash, FolderKanban, Settings,
+Users, BarChart3, ChevronRight, X, Sparkles
+} from "lucide-react";
+const COLORS = {
+bg: "#08080F",
+surface: "#0F0F1A",
+card: "#151522",
+cardHover: "#1C1C2E",
+border: "#1E1E30",
+borderLight: "#2A2A40",
+accent: "#6C63FF",
+accentGlow: "rgba(108,99,255,0.15)",
+cyan: "#00D9FF",
+coral: "#FF5C7A",
+amber: "#FFB347",
+mint: "#00F5A0",
+text: "#E8E8FF",
+textMuted: "#6B6B8E",
+textDim: "#3D3D58",
+};
+const INITIAL_TASKS = {
+todo: [
+{ id: 1, title: "Redesign onboarding flow", priority: "high", tags: ["Design", "UX"], ass
+{ id: 2, title: "Set up CI/CD pipeline", priority: "medium", tags: ["DevOps"], assignees:
+{ id: 3, title: "Write API documentation", priority: "low", tags: ["Docs"], assignees: ["
+],
+inprogress: [
+{ id: 4, title: "Build authentication module", priority: "high", tags: ["Backend", { id: 5, title: "Dashboard analytics charts", priority: "medium", tags: ["Frontend"], ass
+"Secur
+],
+review: [
+{ id: 6, title: "Mobile responsive fixes", priority: "medium", tags: ["Frontend", "QA"],
+{ id: 7, title: "Performance optimization", priority: "high", tags: ["Backend"], assignee
+],
+done: [
+{ id: 8, title: "Database schema design", priority: "high", tags: ["Backend"], assignees:
+{ id: 9, title: "UI component library", priority: "medium", tags: ["Design", "Frontend"],
+],
+};
+const PROJECTS = [
+{ id: 1, name: "Atlas Platform", color: "#6C63FF", tasks: 12, active: true },
+{ id: 2, name: "Mobile App", color: "#00D9FF", tasks: 8 },
+{ id: 3, name: "Data Pipeline", color: "#00F5A0", tasks: 5 },
+{ id: 4, name: "Marketing Site", color: "#FF5C7A", tasks: 3 },
+];
+const AVATARS = {
+A: { color: "#6C63FF", initials: "AN" },
+B: { color: "#00D9FF", initials: "BT" },
+C: { color: "#FF5C7A", initials: "CM" },
+D: { color: "#00F5A0", initials: "DK" },
+E: { color: "#FFB347", initials: "EL" },
+};
+const PRIORITY_CONFIG = {
+high: { color: "#FF5C7A", icon: Flame, label: "High" },
+medium: { color: "#FFB347", icon: Zap, label: "Medium" },
+low: { color: "#00F5A0", icon: ArrowUpRight, label: "Low" },
+};
+const COLUMN_CONFIG = {
+todo: { label: "To Do", color: "#3D3D58", accent: "#6B6B8E", icon: Circle },
+inprogress: { label: "In Progress", color: "#1A1A35", accent: "#6C63FF", icon: Clock review: { label: "In Review", color: "#1A1525", accent: "#FF5C7A", icon: Star },
+done: { label: "Completed", color: "#0F1A15", accent: "#00F5A0", icon: CheckCircle2 },
+},
+};
+function Avatar({ id, size = 24 }) {
+const a = AVATARS[id];
+return (
+<div style={{
+width: size, height: size,
+borderRadius: "50%",
+background: `${a.color}22`,
+border: `1.5px solid ${a.color}55`,
+display: "flex", alignItems: "center", justifyContent: "center",
+fontSize: size * 0.35, fontWeight: 700,
+color: a.color, fontFamily: "'DM Mono', monospace",
+marginLeft: -6, transition: "transform 0.2s",
+}}>{a.initials}</div>
+);
+}
+function TagBadge({ tag }) {
+const colors = {
+Design: ["#6C63FF22", "#6C63FF88"],
+UX: ["#00D9FF22", "#00D9FF88"],
+Backend: ["#FF5C7A22", "#FF5C7A88"],
+Frontend: ["#00F5A022", "#00F5A088"],
+DevOps: ["#FFB34722", "#FFB34788"],
+Security: ["#FF5C7A22", "#FF5C7A88"],
+QA: ["#FFB34722", "#FFB34788"],
+Docs: ["#6B6B8E22", "#6B6B8E88"],
+};
+const [bg, border] = colors[tag] || ["#3D3D5822", "#3D3D5888"];
+return (
+<span style={{
+background: bg, border: `1px solid ${border}`,
+borderRadius: 4, padding: "2px 7px",
+fontSize: 10, fontWeight: 600, letterSpacing: "0.04em",
+color: border.replace("88", "CC"),
+fontFamily: "'DM Mono', monospace",
+}}>{tag}</span>
+);
+}
+function ProgressRing({ value, size = 28 }) {
+const r = (size - 4) / 2;
+const circ = 2 * Math.PI * r;
+const fill = (value / 100) * circ;
+const color = value === 100 ? "#00F5A0" : value > 60 ? "#6C63FF" : "#FFB347";
+return (
+<svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+<circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`${color}22`} strokeWidth={2.
+<circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color}
+strokeWidth={2.5} strokeDasharray={`${fill} ${circ}`}
+strokeLinecap="round" style={{ transition: "stroke-dasharray 0.6s ease" }} />
+</svg>
+);
+}
+function TaskCard({ task, onDrop }) {
+const [hovered, setHovered] = useState(false);
+const P = PRIORITY_CONFIG[task.priority];
+const PIcon = P.icon;
+return (
+<div
+onMouseEnter={() => setHovered(true)}
+onMouseLeave={() => setHovered(false)}
+>
+style={{
+background: hovered ? COLORS.cardHover : COLORS.card,
+border: `1px solid ${hovered ? COLORS.borderLight : COLORS.border}`,
+borderRadius: 12,
+padding: "14px 15px",
+cursor: "pointer",
+transition: "all 0.2s ease",
+transform: hovered ? "translateY(-2px)" : "translateY(0)",
+boxShadow: hovered ? `0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px ${COLORS.borderLight}` :
+position: "relative",
+overflow: "hidden",
+}}
+{/* Priority line accent */}
+<div style={{
+position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+background: P.color, borderRadius: "12px 0 0 12px",
+opacity: hovered ? 1 : 0.5, transition: "opacity 0.2s",
+}} />
+{/* Header */}
+<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start
+<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+{task.starred && <Star size={11} fill="#FFB347" color="#FFB347" />}
+<span style={{
+fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+color: P.color, fontFamily: "'DM Mono', monospace",
+display: "flex", alignItems: "center", gap: 4,
+}}>
+<PIcon size={10} />
+{P.label.toUpperCase()}
+</span>
+</div>
+<MoreHorizontal size={14} color={COLORS.textMuted} style={{ opacity: hovered ? </div>
+1 : 0,
+{/* Title */}
+<p style={{
+fontSize: 13.5, fontWeight: 600, color: COLORS.text,
+fontFamily: "'Syne', sans-serif", lineHeight: 1.4,
+margin: "0 0 10px", letterSpacing: "-0.01em",
+}}>{task.title}</p>
+{/* Tags */}
+<div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 12 }}>
+{task.tags.map(t => <TagBadge key={t} tag={t} />)}
+</div>
+{/* Progress bar */}
+{task.progress > 0 && (
+<div style={{ marginBottom: 12 }}>
+<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+<span style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: "'DM Mono', mon
+<span style={{ fontSize: 10, color: task.progress === 100 ? "#00F5A0" : COLORS.te
+{task.progress}%
+</span>
+</div>
+<div style={{ height: 3, background: COLORS.border, borderRadius: 99, overflow: "hi
+<div style={{
+height: "100%", borderRadius: 99,
+width: `${task.progress}%`,
+background: task.progress === 100 ? "#00F5A0" : task.progress > 60 ? "#6C63FF"
+transition: "width 0.6s ease",
+boxShadow: task.progress === 100 ? "0 0 8px #00F5A055" : "none",
+}} />
+</div>
+</div>
+)}
+{/* Footer */}
+<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+<div style={{ display: "flex", alignItems: "center", paddingLeft: 6 }}>
+{task.assignees.map(a => <Avatar key={a} id={a} />)}
+</div>
+<div style={{
+display: "flex", alignItems: "center", gap: 4,
+fontSize: 10, color: COLORS.textMuted,
+fontFamily: "'DM Mono', monospace",
+}}>
+<Calendar size={10} />
+{task.due}
+</div>
+</div>
+</div>
+);
+}
+function Column({ id, tasks }) {
+const cfg = COLUMN_CONFIG[id];
+const Icon = cfg.icon;
+return (
+<div style={{ flex: 1, minWidth: 240, maxWidth: 300 }}>
+{/* Column Header */}
+<div style={{
+display: "flex", alignItems: "center", justifyContent: "space-between",
+marginBottom: 16, padding: "0 2px",
+}}>
+<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+<Icon size={14} color={cfg.accent} />
+<span style={{
+fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+color: COLORS.textMuted, fontFamily: "'DM Mono', monospace",
+textTransform: "uppercase",
+}}>{cfg.label}</span>
+<span style={{
+background: `${cfg.accent}22`, color: cfg.accent,
+borderRadius: 99, padding: "1px 8px",
+fontSize: 10, fontWeight: 700, fontFamily: "'DM Mono', monospace",
+}}>{tasks.length}</span>
+</div>
+<button style={{
+background: "none", border: "none", cursor: "pointer",
+color: COLORS.textMuted, padding: 2,
+display: "flex", alignItems: "center",
+transition: "color 0.2s",
+}} onMouseEnter={e => e.target.style.color = COLORS.text}
+onMouseLeave={e => e.target.style.color = COLORS.textMuted}>
+<Plus size={14} />
+</button>
+</div>
+{/* Column divider */}
+<div style={{
+height: 2, borderRadius: 99, marginBottom: 14,
+background: `linear-gradient(90deg, ${cfg.accent}88, transparent)`,
+}} />
+{/* Tasks */}
+<div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+{tasks.map(task => (
+<div key={task.id} style={{
+animation: "fadeSlideIn 0.3s ease forwards",
+animationDelay: `${task.id * 0.04}s`,
+opacity: 0,
+}}>
+<TaskCard task={task} />
+</div>
+))}
+{/* Add task placeholder */}
+<button style={{
+background: "none", border: `1px dashed ${COLORS.border}`,
+borderRadius: 12, padding: "12px",
+cursor: "pointer", color: COLORS.textDim,
+fontSize: 12, fontFamily: "'DM Mono', monospace",
+display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+transition: "all 0.2s",
+marginTop: 2,
+}}
+onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.borderLight; e.curr
+onMouseLeave={e => { e.currentTarget.style.borderColor = COLORS.border; e.currentTa
+<Plus size={13} />
+Add task
+</button>
+</div>
+</div>
+);
+}
+function StatCard({ label, value, sub, color, Icon }) {
+return (
+<div style={{
+background: COLORS.card,
+border: `1px solid ${COLORS.border}`,
+borderRadius: 12, padding: "16px 18px",
+display: "flex", alignItems: "center", gap: 14,
+flex: 1,
+}}>
+<div style={{
+width: 40, height: 40, borderRadius: 10,
+background: `${color}15`, border: `1px solid ${color}30`,
+display: "flex", alignItems: "center", justifyContent: "center",
+}}>
+<Icon size={18} color={color} />
+</div>
+<div>
+</div>
+{sub && (
+<span style={{
+marginLeft: "auto", fontSize: 10, fontWeight: 700,
+color: "#00F5A0", background: "#00F5A015",
+borderRadius: 99, padding: "2px 8px",
+fontFamily: "'DM Mono', monospace",
+}}>{sub}</span>
+<p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: COLORS.text, fontFamily:
+<p style={{ margin: 0, fontSize: 11, color: COLORS.textMuted, fontFamily: "'DM Mono',
+)}
+</div>
+);
+}
+export default function TaskManager() {
+const [tasks] = useState(INITIAL_TASKS);
+const [activeProject, setActiveProject] = useState(1);
+const [searchFocused, setSearchFocused] = useState(false);
+const [view, setView] = useState("kanban");
+const [notifOpen, setNotifOpen] = useState(false);
+const totalTasks = Object.values(tasks).flat().length;
+const doneTasks = tasks.done.length;
+const inProgressTasks = tasks.inprogress.length;
+return (
+<>
+<style>{`
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&famil
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: ${COLORS.bg}; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: ${COLORS.borderLight}; border-radius: 99px; }
+@keyframes fadeSlideIn {
+from { opacity: 0; transform: translateY(12px); }
+to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
+@keyframes shimmer {
+0% { background-position: -200% 0; }
+100% { background-position: 200% 0; }
+}
+`}</style>
+<div style={{
+display: "flex", height: "100vh", overflow: "hidden",
+background: COLORS.bg, fontFamily: "'Syne', sans-serif",
+color: COLORS.text,
+}}>
+{/* ── SIDEBAR ── */}
+<aside style={{
+width: 220, flexShrink: 0,
+background: COLORS.surface,
+borderRight: `1px solid ${COLORS.border}`,
+display: "flex", flexDirection: "column",
+padding: "20px 0",
+}}>
+gap: 1
+{/* Logo */}
+<div style={{ padding: "0 18px 24px", display: "flex", alignItems: "center", <div style={{
+width: 30, height: 30, borderRadius: 8,
+background: "linear-gradient(135deg, #6C63FF, #00D9FF)",
+display: "flex", alignItems: "center", justifyContent: "center",
+boxShadow: "0 0 20px rgba(108,99,255,0.4)",
+}}>
+<Sparkles size={15} color="white" />
+</div>
+<span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.02em" }}>Orbit</
+</div>
+{/* Nav */}
+{[
+{ icon: LayoutGrid, label: "Overview", active: false },
+{ icon: FolderKanban, label: "Projects", active: true },
+{ icon: Users, label: "Team", active: false },
+{ icon: BarChart3, label: "Analytics", active: false },
+].map(({ icon: Icon, label, active }) => (
+<button key={label} style={{
+display: "flex", alignItems: "center", gap: 10,
+padding: "10px 18px", width: "100%",
+background: active ? `${COLORS.accent}15` : "none",
+border: "none", borderLeft: active ? `2px solid ${COLORS.accent}` : "2px cursor: "pointer", color: active ? COLORS.text : COLORS.textMuted,
+fontSize: 13, fontWeight: active ? 600 : 500,
+fontFamily: "'Syne', sans-serif",
+transition: "all 0.15s",
+}}>
+<Icon size={15} />
+{label}
+</button>
+solid
+))}
+{/* Projects */}
+<div style={{ padding: "20px 18px 10px" }}>
+<p style={{
+fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
+color: COLORS.textDim, textTransform: "uppercase",
+fontFamily: "'DM Mono', monospace", marginBottom: 12,
+}}>PROJECTS</p>
+{PROJECTS.map(p => (
+<button key={p.id} onClick={() => setActiveProject(p.id)}
+style={{
+display: "flex", alignItems: "center", gap: 9,
+width: "100%", padding: "8px 10px", marginBottom: 2,
+background: activeProject === p.id ? `${p.color}12` : "none",
+border: `1px solid ${activeProject === p.id ? `${p.color}30` : "transparent
+borderRadius: 8, cursor: "pointer",
+transition: "all 0.15s",
+}}>
+<div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color,
+<span style={{
+fontSize: 12.5, color: activeProject === p.id ? COLORS.text : COLORS.textMu
+fontWeight: activeProject === p.id ? 600 : 400,
+fontFamily: "'Syne', sans-serif", flex: 1, textAlign: "left",
+}}>{p.name}</span>
+<span style={{
+fontSize: 10, color: COLORS.textDim,
+fontFamily: "'DM Mono', monospace",
+}}>{p.tasks}</span>
+</button>
+))}
+</div>
+${COLO
+{/* Bottom */}
+<div style={{ marginTop: "auto", padding: "16px 18px", borderTop: `1px solid <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+<div style={{
+width: 30, height: 30, borderRadius: "50%",
+background: `${COLORS.accent}22`, border: `1.5px solid ${COLORS.accent}44`,
+display: "flex", alignItems: "center", justifyContent: "center",
+fontSize: 11, fontWeight: 700, color: COLORS.accent,
+fontFamily: "'DM Mono', monospace",
+}}>AN</div>
+<div>
+<p style={{ fontSize: 12, fontWeight: 600, color: COLORS.text }}>Anh Nguyen</
+<p style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: "'DM Mono', mo
+</div>
+<Settings size={13} color={COLORS.textDim} style={{ marginLeft: "auto" }} />
+</div>
+</div>
+</aside>
+{/* ── MAIN CONTENT ── */}
+<main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden"
+{/* Header */}
+<header style={{
+height: 60, flexShrink: 0,
+borderBottom: `1px solid ${COLORS.border}`,
+display: "flex", alignItems: "center",
+padding: "0 28px", gap: 16,
+background: COLORS.surface,
+}}>
+{/* Breadcrumb */}
+<div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+<span style={{ fontSize: 12, color: COLORS.textMuted, fontFamily: "'DM Mono', m
+<ChevronRight size={12} color={COLORS.textDim} />
+<span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}>Atlas Platf
+<div style={{
+marginLeft: 8, padding: "2px 8px",
+background: "#00D9FF15", border: "1px solid #00D9FF30",
+borderRadius: 99, fontSize: 10, color: "#00D9FF",
+fontFamily: "'DM Mono', monospace", fontWeight: 600,
+}}>
+SPRINT 4
+</div>
+</div>
+{/* Search */}
+<div style={{
+display: "flex", alignItems: "center", gap: 8,
+background: COLORS.card, border: `1px solid ${searchFocused ? COLORS.borderLigh
+borderRadius: 8, padding: "7px 12px", width: 220,
+transition: "border-color 0.2s",
+}}>
+<Search size={13} color={COLORS.textMuted} />
+<input
+onFocus={() => setSearchFocused(true)}
+onBlur={() => setSearchFocused(false)}
+placeholder="Search tasks..."
+style={{
+background: "none", border: "none", outline: "none",
+fontSize: 12.5, color: COLORS.text, width: "100%",
+fontFamily: "'DM Mono', monospace",
+"::placeholder": { color: COLORS.textMuted },
+}}
+/>
+</div>
+{/* View toggle */}
+<div style={{
+display: "flex", background: COLORS.card,
+border: `1px solid ${COLORS.border}`, borderRadius: 8, overflow: "hidden",
+}}>
+{[{ v: "kanban", Icon: LayoutGrid }, { v: "list", Icon: List }].map(({ v, Icon
+<button key={v} onClick={() => setView(v)} style={{
+padding: "7px 10px", border: "none", cursor: "pointer",
+background: view === v ? `${COLORS.accent}20` : "none",
+color: view === v ? COLORS.accent : COLORS.textMuted,
+transition: "all 0.15s", display: "flex", alignItems: "center",
+}}>
+<Icon size={14} />
+</button>
+))}
+</div>
+{/* Filter */}
+<button style={{
+display: "flex", alignItems: "center", gap: 6,
+background: COLORS.card, border: `1px solid ${COLORS.border}`,
+borderRadius: 8, padding: "7px 12px", cursor: "pointer",
+color: COLORS.textMuted, fontSize: 12,
+fontFamily: "'DM Mono', monospace", transition: "all 0.15s",
+}}>
+<Filter size={12} />
+Filter
+<ChevronDown size={11} />
+</button>
+{/* Bell */}
+<div style={{ position: "relative" }}>
+<button onClick={() => setNotifOpen(!notifOpen)} style={{
+width: 34, height: 34, borderRadius: 8,
+background: COLORS.card, border: `1px solid ${COLORS.border}`,
+cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "ce
+color: COLORS.textMuted, transition: "all 0.15s",
+}}>
+<Bell size={14} />
+</button>
+<div style={{
+position: "absolute", top: 7, right: 7,
+width: 6, height: 6, borderRadius: "50%",
+background: COLORS.coral, border: `1.5px solid ${COLORS.surface}`,
+animation: "pulse 2s infinite",
+}} />
+</div>
+{/* New task */}
+<button style={{
+display: "flex", alignItems: "center", gap: 6,
+background: "linear-gradient(135deg, #6C63FF, #5855D6)",
+border: "none", borderRadius: 8,
+padding: "8px 16px", cursor: "pointer",
+color: "white", fontSize: 12.5, fontWeight: 600,
+fontFamily: "'Syne', sans-serif",
+boxShadow: "0 4px 16px rgba(108,99,255,0.35)",
+transition: "all 0.2s",
+}}
+onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(108,99,25
+onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(108,99,25
+<Plus size={14} />
+New Task
+</button>
+</header>
+{/* Body */}
+<div style={{ flex: 1, overflow: "auto", padding: "24px 28px" }}>
+{/* Stats Row */}
+<div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+<StatCard label="Total Tasks" value={totalTasks} color={COLORS.accent} Icon={Ha
+<StatCard label="In Progress" value={inProgressTasks} color="#00D9FF" Icon={Clo
+<StatCard label="Completed" value={doneTasks} color="#00F5A0" Icon={CheckCircle
+<StatCard label="Overdue" value={1} color={COLORS.coral} Icon={Flag} />
+</div>
+{/* Sprint progress bar */}
+<div style={{
+background: COLORS.card, border: `1px solid ${COLORS.border}`,
+borderRadius: 12, padding: "16px 20px", marginBottom: 28,
+display: "flex", alignItems: "center", gap: 20,
+}}>
+<div style={{ flex: 1 }}>
+<div style={{ display: "flex", justifyContent: "space-between", marginBottom:
+<span style={{ fontSize: 12, fontWeight: 700, color: COLORS.text }}>Sprint
+<span style={{ fontSize: 12, fontFamily: "'DM Mono', monospace", color: COL
+Apr 1 — Apr 14, 2026
+</span>
+</div>
+<div style={{ height: 6, background: COLORS.border, borderRadius: 99 }}>
+<div style={{
+height: "100%", width: "58%", borderRadius: 99,
+background: "linear-gradient(90deg, #6C63FF, #00D9FF)",
+boxShadow: "0 0 12px rgba(108,99,255,0.5)",
+transition: "width 0.8s ease",
+}} />
+</div>
+<div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+{["Done: 9", "Progress: 2", "Blocked: 1"].map((s, i) => (
+<span key={i} style={{ fontSize: 10, color: COLORS.textMuted, fontFamily:
+))}
+</div>
+</div>
+<div style={{ textAlign: "right" }}>
+<p style={{ fontSize: 28, fontWeight: 800, color: COLORS.text, letterSpacing:
+<p style={{ fontSize: 10, color: COLORS.textMuted, fontFamily: "'DM Mono', mo
+</div>
+</div>
+{/* Kanban Board */}
+<div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+{Object.entries(tasks).map(([colId, colTasks]) => (
+<Column key={colId} id={colId} tasks={colTasks} />
+))}
+</div>
+</div>
+</main>
+</div>
+</>
+);
+}

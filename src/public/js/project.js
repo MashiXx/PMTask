@@ -1,0 +1,113 @@
+// Project Modal
+function openProjectModal(id, name, color) {
+  const modal = document.getElementById('projectModal');
+  const title = document.getElementById('projectModalTitle');
+  const submitBtn = document.getElementById('projectSubmitBtn');
+  const nameInput = document.getElementById('projectName');
+  const idInput = document.getElementById('projectId');
+
+  if (id) {
+    title.textContent = 'Edit Project';
+    submitBtn.textContent = 'Save Changes';
+    idInput.value = id;
+    nameInput.value = name || '';
+    // Select the matching color radio
+    const radios = document.querySelectorAll('input[name="projectColor"]');
+    radios.forEach(r => {
+      r.checked = r.value === color;
+    });
+    updateSwatchBorders();
+  } else {
+    title.textContent = 'New Project';
+    submitBtn.textContent = 'Create Project';
+    idInput.value = '';
+    nameInput.value = '';
+    const radios = document.querySelectorAll('input[name="projectColor"]');
+    if (radios[0]) radios[0].checked = true;
+    updateSwatchBorders();
+  }
+
+  modal.classList.add('active');
+  nameInput.focus();
+}
+
+function closeProjectModal() {
+  document.getElementById('projectModal').classList.remove('active');
+}
+
+// Color swatch selection visual
+function updateSwatchBorders() {
+  document.querySelectorAll('.color-swatch').forEach(swatch => {
+    const radio = swatch.parentElement.querySelector('input[type="radio"]');
+    if (radio && radio.checked) {
+      swatch.style.borderColor = swatch.dataset.color;
+      swatch.style.boxShadow = '0 0 8px ' + swatch.dataset.color + '55';
+    } else {
+      swatch.style.borderColor = 'transparent';
+      swatch.style.boxShadow = 'none';
+    }
+  });
+}
+
+document.querySelectorAll('input[name="projectColor"]').forEach(radio => {
+  radio.addEventListener('change', updateSwatchBorders);
+});
+
+// Initialize swatch borders on load
+updateSwatchBorders();
+
+// Project form submit
+document.getElementById('projectForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const projectId = document.getElementById('projectId').value;
+  const name = document.getElementById('projectName').value.trim();
+  const color = document.querySelector('input[name="projectColor"]:checked')?.value || '#6C63FF';
+
+  if (!name) return;
+
+  try {
+    const url = projectId ? `/api/projects/${projectId}` : '/api/projects';
+    const method = projectId ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      closeProjectModal();
+      // Redirect to the new/updated project
+      window.location.href = '/dashboard?project=' + (data.project?.id || projectId);
+    }
+  } catch (err) {
+    console.error('Failed to save project:', err);
+  }
+});
+
+// Delete Project
+function deleteProject(id, name) {
+  document.getElementById('deleteProjectId').value = id;
+  document.getElementById('deleteProjectName').textContent = name;
+  document.getElementById('deleteProjectModal').classList.add('active');
+}
+
+function closeDeleteProjectModal() {
+  document.getElementById('deleteProjectModal').classList.remove('active');
+}
+
+async function confirmDeleteProject() {
+  const id = document.getElementById('deleteProjectId').value;
+  try {
+    const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      closeDeleteProjectModal();
+      window.location.href = '/dashboard';
+    }
+  } catch (err) {
+    console.error('Failed to delete project:', err);
+  }
+}

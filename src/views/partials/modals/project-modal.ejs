@@ -1,0 +1,52 @@
+<div class="modal-overlay" id="projectModal">
+  <div class="modal" style="max-width: 400px;">
+    <h2 class="modal-title" id="projectModalTitle">New Project</h2>
+
+    <form id="projectForm">
+      <input type="hidden" id="projectId" value="">
+
+      <div class="form-group">
+        <label>PROJECT NAME</label>
+        <input type="text" id="projectName" placeholder="Enter project name" required>
+      </div>
+
+      <div class="form-group">
+        <label>COLOR</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <% ['#6C63FF','#00D9FF','#00F5A0','#FF5C7A','#FFB347','#E8E8FF'].forEach((c, i) => { %>
+            <label style="cursor:pointer;">
+              <input type="radio" name="projectColor" value="<%= c %>" style="display:none;" <%= i === 0 ? 'checked' : '' %>>
+              <span class="color-swatch" data-color="<%= c %>" style="
+                display:block; width:28px; height:28px; border-radius:8px;
+                background:<%= c %>; border:2px solid transparent;
+                transition:all 0.15s;
+              "></span>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeProjectModal()">Cancel</button>
+        <button type="submit" class="btn-submit" id="projectSubmitBtn">Create Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteProjectModal">
+  <div class="modal" style="max-width: 380px; text-align: center;">
+    <h2 class="modal-title">Delete Project</h2>
+    <p style="color: var(--text-muted); font-size: 13px; font-family: var(--font-mono); margin-bottom: 8px;">
+      Delete <strong id="deleteProjectName" style="color:var(--text)"></strong>?
+    </p>
+    <p style="color: var(--coral); font-size: 11px; font-family: var(--font-mono); margin-bottom: 24px;">
+      All tasks in this project will also be deleted.
+    </p>
+    <input type="hidden" id="deleteProjectId" value="">
+    <div class="modal-actions" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeDeleteProjectModal()">Cancel</button>
+      <button class="btn-delete" onclick="confirmDeleteProject()">Delete</button>
+    </div>
+  </div>
+</div>

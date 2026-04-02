@@ -343,6 +343,15 @@ input, textarea, select {
   border-radius: 4px;
 }
 
+/* Project item hover actions */
+.project-item:hover .project-actions {
+  opacity: 1 !important;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
 /* User Footer */
 .sidebar-user {
   display: flex;
@@ -1260,20 +1269,20 @@ input, textarea, select {
    =================================================== */
 
 .modal-overlay {
+  display: none;
   position: fixed;
   inset: 0;
   background: rgba(8, 8, 15, 0.75);
   backdrop-filter: blur(4px);
   z-index: 1000;
-  display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   animation: fadeSlideIn 0.2s ease;
 }
 
-.modal-overlay.hidden {
-  display: none;
+.modal-overlay.active {
+  display: flex;
 }
 
 .modal {
