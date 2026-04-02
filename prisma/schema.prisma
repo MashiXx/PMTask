@@ -57,6 +57,18 @@ model Task {
   createdBy   User     @relation(fields: [createdById], references: [id])
   tags        TaskTag[]
   assignees   TaskAssignee[]
+  subtasks    SubTask[]
+}
+
+model SubTask {
+  id        Int      @id @default(autoincrement())
+  title     String
+  done      Boolean  @default(false)
+  position  Int      @default(0)
+  taskId    Int
+  createdAt DateTime @default(now())
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model Tag {

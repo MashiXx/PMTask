@@ -93,6 +93,45 @@
               </div>
             </div>
           <% } %>
+
+          <!-- Subtasks -->
+          <div class="task-detail-section">
+            <div class="subtask-header">
+              <h3 class="task-detail-label">SUBTASKS</h3>
+              <% if (task.subtasks.length > 0) { %>
+                <span class="subtask-count-badge"><%= task.subtasks.filter(s => s.done).length %>/<%= task.subtasks.length %></span>
+              <% } %>
+            </div>
+            <% if (task.subtasks.length > 0) { %>
+              <div class="subtask-progress-bar mt-6 mb-10">
+                <div class="subtask-progress-fill" style="width:<%= task.subtasks.length > 0 ? Math.round(task.subtasks.filter(s => s.done).length / task.subtasks.length * 100) : 0 %>%;"></div>
+              </div>
+            <% } %>
+            <div id="detailSubtaskList" class="subtask-list" data-task-id="<%= task.id %>">
+              <% task.subtasks.forEach(sub => { %>
+                <div class="subtask-item <%= sub.done ? 'done' : '' %>" data-subtask-id="<%= sub.id %>">
+                  <label class="subtask-check">
+                    <input type="checkbox" <%= sub.done ? 'checked' : '' %> onchange="toggleDetailSubtask(<%= sub.id %>, this.checked)">
+                    <span class="subtask-checkmark"></span>
+                  </label>
+                  <span class="subtask-title"><%= sub.title %></span>
+                  <% if (currentUser) { %>
+                    <button class="subtask-delete-btn" onclick="deleteDetailSubtask(<%= sub.id %>)">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+            <% if (currentUser) { %>
+              <div class="subtask-add mt-8">
+                <input type="text" id="detailSubtaskInput" class="subtask-input" placeholder="Add a subtask..." onkeydown="if(event.key==='Enter'){addDetailSubtask(); event.preventDefault();}">
+                <button class="subtask-add-btn" onclick="addDetailSubtask()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            <% } %>
+          </div>
         </div>
 
         <div class="task-detail-sidebar">
@@ -141,6 +180,7 @@
 <%- include('partials/modals/delete-modal') %>
 
 <script src="/js/modal.js"></script>
+<script src="/js/subtask.js"></script>
 <script>
   // Override delete redirect to go back to project
   const origConfirmDelete = confirmDelete;

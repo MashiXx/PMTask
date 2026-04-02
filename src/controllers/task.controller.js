@@ -186,6 +186,7 @@ exports.getTaskPage = async (req, res) => {
         project: true,
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
+        subtasks: { orderBy: { position: 'asc' } },
       },
     });
     if (!task) {
@@ -230,6 +231,7 @@ exports.getTask = async (req, res) => {
       include: {
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
+        subtasks: { orderBy: { position: 'asc' } },
       },
     });
     if (!task) return res.status(404).json({ error: 'Task not found' });

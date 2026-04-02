@@ -48,9 +48,23 @@
       </div>
     </div>
 
-    <div id="previewAssigneesWrap" class="mb-20 hidden">
+    <div id="previewAssigneesWrap" class="mb-16 hidden">
       <p class="label-meta">Assignees</p>
       <div id="previewAssignees" class="flex gap-6"></div>
+    </div>
+
+    <!-- Subtasks -->
+    <div class="mb-20">
+      <div class="subtask-header">
+        <p class="label-meta">Subtasks <span id="previewSubtaskCount" class="subtask-count-badge"></span></p>
+      </div>
+      <div id="previewSubtaskList" class="subtask-list"></div>
+      <div id="previewSubtaskAdd" class="subtask-add hidden">
+        <input type="text" id="previewSubtaskInput" class="subtask-input" placeholder="Add a subtask..." onkeydown="if(event.key==='Enter'){addPreviewSubtask(); event.preventDefault();}">
+        <button class="subtask-add-btn" onclick="addPreviewSubtask()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="modal-actions">

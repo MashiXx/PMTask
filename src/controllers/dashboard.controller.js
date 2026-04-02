@@ -56,6 +56,7 @@ exports.getDashboard = async (req, res) => {
       include: {
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
+        subtasks: { orderBy: { position: 'asc' } },
       },
       orderBy: { position: 'asc' },
     });

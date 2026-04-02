@@ -424,7 +424,6 @@ input, textarea, select {
   flex-direction: column;
   gap: 2px;
   padding: 0 12px 8px;
-  border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
 }
 
@@ -1910,8 +1909,213 @@ select option {
 }
 
 /* Filter hidden class */
-.filter-hidden {
-  display: none !important;
+.filter-hidden { display: none !important; }
+
+/* ── Subtasks ── */
+.subtask-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtask-count-badge {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(108, 99, 255, 0.12);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.subtask-progress-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.subtask-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.subtask-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+
+.subtask-item:hover {
+  background: var(--card-hover);
+}
+
+.subtask-item:hover .subtask-delete-btn { opacity: 1; }
+
+.subtask-item.done .subtask-title {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+/* Custom checkbox */
+.subtask-check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.subtask-check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.subtask-checkmark {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-light);
+  background: transparent;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subtask-check input:checked + .subtask-checkmark {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.subtask-check input:checked + .subtask-checkmark::after {
+  content: '';
+  width: 4px;
+  height: 7px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  margin-top: -1px;
+}
+
+.subtask-title {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.subtask-delete-btn {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+
+.subtask-delete-btn:hover {
+  color: var(--coral);
+  background: rgba(255, 92, 122, 0.1);
+}
+
+.subtask-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subtask-input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.subtask-input:focus {
+  border-color: var(--accent);
+}
+
+.subtask-input::placeholder {
+  color: var(--text-dim);
+}
+
+.subtask-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.subtask-add-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Task card subtask indicator */
+.task-subtask-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+.task-subtask-text {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.task-subtask-track {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.task-subtask-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.3s;
 }
 
 /* Tag Manager Modal */

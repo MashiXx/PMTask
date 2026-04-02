@@ -184,6 +184,11 @@ async function openTaskPreview(taskId) {
       assigneesWrap.classList.add('hidden');
     }
 
+    // Render subtasks
+    if (typeof renderPreviewSubtasks === 'function') {
+      renderPreviewSubtasks(task.subtasks || [], isGuest);
+    }
+
     document.getElementById('previewDetailsLink').href = '/tasks/' + task.id;
 
     // Guest mode: make fields read-only, hide edit/delete actions
