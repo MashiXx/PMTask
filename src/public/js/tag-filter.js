@@ -22,18 +22,17 @@ function clearTagFilters() {
 function applyTagFilters() {
   const clearBtn = document.querySelector('.sidebar-clear-filters');
 
+  // Filter both board cards and list rows
+  const items = document.querySelectorAll('.task-card, .list-row');
+
   if (activeTagFilters.size === 0) {
-    // Show all
-    document.querySelectorAll('.task-card').forEach(card => {
-      card.style.display = '';
-    });
+    items.forEach(el => { el.style.display = ''; });
     if (clearBtn) clearBtn.style.display = 'none';
   } else {
     if (clearBtn) clearBtn.style.display = 'block';
-    document.querySelectorAll('.task-card').forEach(card => {
-      const cardTags = (card.dataset.tags || '').split(',').filter(Boolean);
-      const matches = cardTags.some(t => activeTagFilters.has(t));
-      card.style.display = matches ? '' : 'none';
+    items.forEach(el => {
+      const tags = (el.dataset.tags || '').split(',').filter(Boolean);
+      el.style.display = tags.some(t => activeTagFilters.has(t)) ? '' : 'none';
     });
   }
 

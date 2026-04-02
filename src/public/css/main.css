@@ -857,6 +857,131 @@ input, textarea, select {
 }
 
 /* ===================================================
+   11b. LIST VIEW
+   =================================================== */
+
+.list-view {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row:hover {
+  background: var(--card);
+}
+
+.list-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.list-col-title {
+  flex: 3;
+  min-width: 0;
+}
+
+.list-col-status {
+  flex: 1.2;
+}
+
+.list-col-priority {
+  flex: 0.7;
+  font-size: 0.65rem;
+}
+
+.list-col-progress {
+  flex: 1.2;
+  gap: 8px;
+  font-size: 0.7rem;
+}
+
+.list-col-due {
+  flex: 1;
+  font-size: 0.7rem;
+}
+
+.list-col-tags {
+  flex: 0.8;
+  gap: 3px;
+}
+
+.list-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.list-task-name {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-status-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.list-progress-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.list-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.list-tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===================================================
    12. TASK CARD
    =================================================== */
 
@@ -2170,6 +2295,17 @@ select option {
   .stat-mini-progress {
     min-width: 80px;
   }
+
+  /* List view: hide some columns on mobile */
+  .list-col-progress,
+  .list-col-due,
+  .list-col-tags {
+    display: none;
+  }
+
+  .list-col-title { flex: 2; }
+  .list-col-status { flex: 1; }
+  .list-col-priority { flex: 0.6; }
 
   /* Kanban horizontal scroll */
   .kanban-board {
