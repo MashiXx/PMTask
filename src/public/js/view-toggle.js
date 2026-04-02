@@ -5,19 +5,24 @@
 function switchView(mode) {
   const boardStatus = document.querySelector('.kanban-board:not(#kanbanTagView)');
   const boardTag = document.getElementById('kanbanTagView');
-  const list = document.getElementById('listView');
-  if (!boardStatus || !boardTag || !list) return;
+  const listStatus = document.getElementById('listView');
+  const listTag = document.getElementById('listViewTag');
+  if (!boardStatus || !boardTag || !listStatus || !listTag) return;
 
   const groupBy = localStorage.getItem('pmtask-group') || 'status';
 
   boardStatus.classList.add('hidden');
   boardTag.classList.add('hidden');
-  list.classList.add('hidden');
+  listStatus.classList.add('hidden');
+  listTag.classList.add('hidden');
 
   if (mode === 'list') {
-    list.classList.remove('hidden');
+    if (groupBy === 'tag') {
+      listTag.classList.remove('hidden');
+    } else {
+      listStatus.classList.remove('hidden');
+    }
   } else {
-    // board mode — pick which board based on group-by
     if (groupBy === 'tag') {
       boardTag.classList.remove('hidden');
     } else {
@@ -98,9 +103,16 @@ function applyCompletedFilter(hide) {
   });
 
   // List view: hide/show rows with status "done"
-  document.querySelectorAll('#listView .list-row').forEach(row => {
+  document.querySelectorAll('#listView .list-row, #listViewTag .list-row').forEach(row => {
     if (row.dataset.status === 'done') {
       row.style.display = hide ? 'none' : '';
+    }
+  });
+
+  // List by status: hide/show the "done" group
+  document.querySelectorAll('#listView .list-group').forEach(group => {
+    if (group.dataset.status === 'done') {
+      group.style.display = hide ? 'none' : '';
     }
   });
 }

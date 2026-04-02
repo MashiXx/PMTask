@@ -1,0 +1,88 @@
+<%
+  const allTasksForTagList = [...tasks.todo, ...tasks.inprogress, ...tasks.review, ...tasks.done];
+  const statusLabelsTag = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
+  const statusColorsTag = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
+  const priorityColorsTag = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityLabelsTag = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+
+  // Group tasks by tag
+  const tagListGroups = {};
+  const noTagListTasks = [];
+
+  allTasksForTagList.forEach(task => {
+    if (task.tags.length === 0) {
+      noTagListTasks.push(task);
+    } else {
+      task.tags.forEach(tt => {
+        const tagName = tt.tag.name;
+        if (!tagListGroups[tagName]) {
+          tagListGroups[tagName] = { name: tagName, color: tt.tag.color || '#6B6B8E', tasks: [] };
+        }
+        tagListGroups[tagName].tasks.push(task);
+      });
+    }
+  });
+
+  const tagListColumns = Object.values(tagListGroups).sort((a, b) => a.name.localeCompare(b.name));
+  if (noTagListTasks.length > 0) {
+    tagListColumns.push({ name: 'No Tag', color: '#6B6B8E', tasks: noTagListTasks });
+  }
+%>
+
+<div class="list-view hidden" id="listViewTag">
+  <% if (tagListColumns.length === 0) { %>
+    <div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;">
+      No tags yet
+    </div>
+  <% } %>
+
+  <% tagListColumns.forEach(col => { %>
+    <div class="list-group" data-tag="<%= col.name %>">
+      <div class="list-group-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="list-group-title">
+          <span style="width:10px; height:10px; border-radius:50%; background:<%= col.color %>; display:inline-block; flex-shrink:0;"></span>
+          <span class="list-group-label"><%= col.name.charAt(0).toUpperCase() + col.name.slice(1) %></span>
+          <span class="list-group-count" style="background:color-mix(in srgb, <%= col.color %> 15%, transparent); color:<%= col.color %>"><%= col.tasks.length %></span>
+        </div>
+        <svg class="list-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <div class="list-group-body">
+        <div class="list-group-table-header">
+          <div class="list-col list-col-title">Task</div>
+          <div class="list-col list-col-status">Status</div>
+          <div class="list-col list-col-priority">Priority</div>
+          <div class="list-col list-col-progress">Progress</div>
+          <div class="list-col list-col-due">Due</div>
+        </div>
+
+        <% col.tasks.forEach(task => { %>
+          <% const pColor = priorityColorsTag[task.priority] || '#FFB347'; %>
+          <% const sColor = statusColorsTag[task.status] || '#6B6B8E'; %>
+          <% const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347'; %>
+          <div class="list-row" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
+            <div class="list-col list-col-title">
+              <div class="list-priority-dot" style="background:<%= pColor %>;"></div>
+              <div class="list-task-name"><%= task.title %></div>
+            </div>
+            <div class="list-col list-col-status">
+              <div class="list-status-badge" style="color:<%= sColor %>; background:color-mix(in srgb, <%= sColor %> 12%, transparent);"><%= statusLabelsTag[task.status] %></div>
+            </div>
+            <div class="list-col list-col-priority">
+              <div style="color:<%= pColor %>; font-weight:600;"><%= priorityLabelsTag[task.priority] %></div>
+            </div>
+            <div class="list-col list-col-progress">
+              <div class="list-progress-track">
+                <div class="list-progress-fill" style="width:<%= task.progress %>%; background:<%= progColor %>;"></div>
+              </div>
+              <div style="color:<%= progColor %>; font-weight:600; min-width:30px; text-align:right; padding-right:5px;"><%= task.progress %>%</div>
+            </div>
+            <div class="list-col list-col-due">
+              <% if (task.dueDate) { %><%= task.dueDate %><% } else { %>—<% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+</div>
