@@ -158,6 +158,7 @@ exports.getTaskPage = async (req, res) => {
       task,
       projects,
       activeProjectId: task.projectId,
+      activeProject: task.project,
       projectTags,
     });
   } catch (err) {

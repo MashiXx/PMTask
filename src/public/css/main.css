@@ -518,7 +518,7 @@ input, textarea, select {
 /* Search */
 .search-box {
   flex: 1;
-  max-width: 280px;
+  max-width: 320px;
   position: relative;
   margin-left: auto;
 }
@@ -1349,13 +1349,20 @@ input, textarea, select {
   font-family: var(--font-mono);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-input[type="number"],
-textarea,
-select {
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.modal input[type="text"],
+.modal input[type="email"],
+.modal input[type="password"],
+.modal input[type="date"],
+.modal input[type="number"],
+.modal textarea,
+.modal select,
+.form-group textarea,
+.form-group select {
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--border-light);
@@ -1370,18 +1377,19 @@ select {
   appearance: none;
 }
 
-input::placeholder,
-textarea::placeholder {
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.modal input::placeholder,
+.modal textarea::placeholder {
   color: var(--text-dim);
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="date"]:focus,
-input[type="number"]:focus,
-textarea:focus,
-select:focus {
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
   border-color: var(--accent);
 }
 
@@ -1574,6 +1582,39 @@ select option {
   background: color-mix(in srgb, var(--tag-color, var(--accent)) 12%, transparent);
 }
 
+/* Sidebar Active Project */
+.sidebar-active-project {
+  padding: 0 12px;
+  margin-bottom: 4px;
+}
+
+.sidebar-project-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.sidebar-project-link:hover {
+  border-color: var(--border-light);
+  background: var(--card-hover);
+}
+
+.sidebar-project-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Sidebar Tags */
 .sidebar-tags {
   padding: 0 12px;
@@ -1687,11 +1728,14 @@ select option {
 }
 
 .project-card {
+  display: block;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 20px;
   transition: all 0.15s ease;
+  cursor: pointer;
+  color: inherit;
 }
 
 .project-card:hover {

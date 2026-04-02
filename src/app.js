@@ -56,7 +56,7 @@ app.get('/tasks/:id', isAuthenticated, taskController.getTaskPage);
 
 // Root redirect
 app.get('/', (req, res) => {
-  if (req.isAuthenticated()) return res.redirect('/projects');
+  if (req.isAuthenticated()) return res.redirect('/dashboard');
   res.redirect('/auth/login');
 });
 

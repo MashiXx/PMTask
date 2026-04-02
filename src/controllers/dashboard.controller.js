@@ -12,7 +12,23 @@ exports.getDashboard = async (req, res) => {
       orderBy: { createdAt: 'asc' },
     });
 
-    const activeProjectId = projectId || (projects[0]?.id ?? null);
+    // Use query param, or session saved project, or first project
+    let activeProjectId = projectId || req.session.lastProjectId || (projects[0]?.id ?? null);
+
+    // Verify the project still exists and belongs to user
+    if (activeProjectId && !projects.find(p => p.id === activeProjectId)) {
+      activeProjectId = projects[0]?.id ?? null;
+    }
+
+    // Save to session for next visit
+    if (activeProjectId) {
+      req.session.lastProjectId = activeProjectId;
+    }
+
+    // No projects at all -> go to projects page to create one
+    if (!activeProjectId) {
+      return res.redirect('/projects');
+    }
 
     let tasks = { todo: [], inprogress: [], review: [], done: [] };
 
