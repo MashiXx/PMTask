@@ -1,92 +1,75 @@
 /* ===================================================
-   PMTask - Main Dark Theme CSS
+   PMTask — Inspired by VSCode Dark+ / Light+
    =================================================== */
 
 /* --- Google Fonts Import --- */
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
-/* --- CSS Custom Properties (Color Palette) --- */
+/* --- Dark Theme (default) — VSCode Dark+ inspired --- */
 :root {
-  --bg:           #08080F;
-  --surface:      #0F0F1A;
-  --card:         #151522;
-  --card-hover:   #1C1C2E;
-  --border:       #1E1E30;
-  --border-light: #2A2A40;
+  --bg:           #1E1E2E;
+  --surface:      #252536;
+  --card:         #2D2D40;
+  --card-hover:   #33334A;
+  --border:       #3B3B52;
+  --border-light: #4A4A64;
   --accent:       #6C63FF;
   --cyan:         #00D9FF;
   --coral:        #FF5C7A;
   --amber:        #FFB347;
   --mint:         #00F5A0;
-  --text:         #E8E8FF;
-  --text-muted:   #6B6B8E;
-  --text-dim:     #3D3D58;
+  --text:         #D4D4E8;
+  --text-muted:   #8888A8;
+  --text-dim:     #5A5A78;
   --font-display: 'Syne', sans-serif;
   --font-mono:    'DM Mono', monospace;
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --shadow-heavy: rgba(0, 0, 0, 0.6);
-  --overlay-bg:   rgba(8, 8, 15, 0.75);
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --shadow-heavy: rgba(0, 0, 0, 0.5);
+  --overlay-bg:   rgba(10, 10, 20, 0.7);
 }
 
-/* --- Light Theme Variables --- */
+/* --- Light Theme — VSCode Light+ inspired --- */
 [data-theme="light"] {
-  --bg:           #F0F1F6;
-  --surface:      #E4E5ED;
+  --bg:           #F8F8FC;
+  --surface:      #ECECF4;
   --card:         #FFFFFF;
-  --card-hover:   #F7F7FC;
-  --border:       #D0D1DC;
-  --border-light: #B8B9C8;
-  --accent:       #5B54E0;
-  --cyan:         #0085B5;
-  --coral:        #D43555;
-  --amber:        #C07C18;
-  --mint:         #0D9668;
-  --text:         #1B1D2A;
-  --text-muted:   #5C5E76;
-  --text-dim:     #8D8FA6;
-  --shadow-color: rgba(60, 60, 100, 0.12);
-  --shadow-heavy: rgba(60, 60, 100, 0.22);
-  --overlay-bg:   rgba(100, 100, 130, 0.45);
+  --card-hover:   #F2F2FA;
+  --border:       #D4D4DE;
+  --border-light: #BFBFCE;
+  --accent:       #5B52E0;
+  --cyan:         #0078AA;
+  --coral:        #CB3048;
+  --amber:        #BF7B1A;
+  --mint:         #0D8A5C;
+  --text:         #1E1E2E;
+  --text-muted:   #5C5C72;
+  --text-dim:     #9898AE;
+  --shadow-color: rgba(50, 50, 80, 0.08);
+  --shadow-heavy: rgba(50, 50, 80, 0.18);
+  --overlay-bg:   rgba(80, 80, 110, 0.35);
 }
 
 /* System preference: light when OS prefers light */
 @media (prefers-color-scheme: light) {
   [data-theme="system"] {
-    --bg:           #F0F1F6;
-    --surface:      #E4E5ED;
+    --bg:           #F8F8FC;
+    --surface:      #ECECF4;
     --card:         #FFFFFF;
-    --card-hover:   #F7F7FC;
-    --border:       #D0D1DC;
-    --border-light: #B8B9C8;
-    --accent:       #5B54E0;
-    --cyan:         #0085B5;
-    --coral:        #D43555;
-    --amber:        #C07C18;
-    --mint:         #0D9668;
-    --text:         #1B1D2A;
-    --text-muted:   #5C5E76;
-    --text-dim:     #8D8FA6;
-    --shadow-color: rgba(60, 60, 100, 0.12);
-    --shadow-heavy: rgba(60, 60, 100, 0.22);
-    --overlay-bg:   rgba(100, 100, 130, 0.45);
+    --card-hover:   #F2F2FA;
+    --border:       #D4D4DE;
+    --border-light: #BFBFCE;
+    --accent:       #5B52E0;
+    --cyan:         #0078AA;
+    --coral:        #CB3048;
+    --amber:        #BF7B1A;
+    --mint:         #0D8A5C;
+    --text:         #1E1E2E;
+    --text-muted:   #5C5C72;
+    --text-dim:     #9898AE;
+    --shadow-color: rgba(50, 50, 80, 0.08);
+    --shadow-heavy: rgba(50, 50, 80, 0.18);
+    --overlay-bg:   rgba(80, 80, 110, 0.35);
   }
-}
-
-/* --- Light-mode element overrides --- */
-[data-theme="light"] .sidebar { box-shadow: 2px 0 12px var(--shadow-color); }
-[data-theme="light"] .task-card { box-shadow: 0 1px 4px var(--shadow-color); }
-[data-theme="light"] .task-card:hover { box-shadow: 0 4px 16px var(--shadow-color); }
-[data-theme="light"] .project-card { box-shadow: 0 1px 4px var(--shadow-color); }
-[data-theme="light"] .project-card:hover { box-shadow: 0 4px 12px var(--shadow-color); }
-[data-theme="light"] .list-row:hover { background: var(--card-hover); }
-
-@media (prefers-color-scheme: light) {
-  [data-theme="system"] .sidebar { box-shadow: 2px 0 12px var(--shadow-color); }
-  [data-theme="system"] .task-card { box-shadow: 0 1px 4px var(--shadow-color); }
-  [data-theme="system"] .task-card:hover { box-shadow: 0 4px 16px var(--shadow-color); }
-  [data-theme="system"] .project-card { box-shadow: 0 1px 4px var(--shadow-color); }
-  [data-theme="system"] .project-card:hover { box-shadow: 0 4px 12px var(--shadow-color); }
-  [data-theme="system"] .list-row:hover { background: var(--card-hover); }
 }
 
 /* ===================================================
@@ -771,7 +754,7 @@ input, textarea, select {
 }
 
 .btn-new-task:hover {
-  background: #7d75ff;
+  filter: brightness(1.15); background: var(--accent);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(108, 99, 255, 0.35);
 }
@@ -1600,7 +1583,7 @@ select option {
 }
 
 .btn-submit:hover {
-  background: #7d75ff;
+  filter: brightness(1.15); background: var(--accent);
   box-shadow: 0 4px 16px rgba(108, 99, 255, 0.35);
 }
 
@@ -2530,7 +2513,7 @@ select option {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--overlay-bg);
     z-index: 999;
     backdrop-filter: blur(4px);
   }
