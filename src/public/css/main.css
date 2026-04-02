@@ -1107,7 +1107,7 @@ input, textarea, select {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .task-card:hover {
