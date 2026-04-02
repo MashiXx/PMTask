@@ -198,7 +198,7 @@ async function openTaskPreview(taskId) {
       previewPriority.disabled = true;
       previewTitle.classList.add('preview-readonly');
       previewDesc.classList.add('preview-readonly');
-      document.querySelectorAll('#taskPreviewModal .btn-delete').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.add('hidden'));
     } else {
       previewTitle.readOnly = false;
       previewDesc.readOnly = false;
@@ -206,7 +206,7 @@ async function openTaskPreview(taskId) {
       previewPriority.disabled = false;
       previewTitle.classList.remove('preview-readonly');
       previewDesc.classList.remove('preview-readonly');
-      document.querySelectorAll('#taskPreviewModal .btn-delete').forEach(el => el.classList.remove('hidden'));
+      document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.remove('hidden'));
     }
 
     document.getElementById('taskPreviewModal').classList.add('active');
@@ -314,6 +314,12 @@ function previewDelete() {
   closeTaskPreview();
   previewDirty = false;
   if (id) deleteTask(id);
+}
+
+function previewEdit() {
+  const id = previewTaskId;
+  closeTaskPreview();
+  if (id) openEditModal(id);
 }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
