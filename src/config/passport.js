@@ -38,16 +38,30 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       try {
         let user = await prisma.user.findUnique({ where: { googleId: profile.id } });
         if (!user) {
-          user = await prisma.user.create({
-            data: {
-              googleId: profile.id,
-              email: profile.emails[0].value,
-              name: profile.displayName,
-              avatar: profile.photos?.[0]?.value,
-              status: 'pending',
-            },
-          });
-          return done(null, false, { message: 'Account created. Please wait for admin approval.' });
+          // Check if a user with this email already exists (registered via email/password)
+          const email = profile.emails[0].value;
+          const existingUser = await prisma.user.findUnique({ where: { email } });
+          if (existingUser) {
+            // Link Google account to existing user
+            user = await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                googleId: profile.id,
+                avatar: existingUser.avatar || profile.photos?.[0]?.value,
+              },
+            });
+          } else {
+            user = await prisma.user.create({
+              data: {
+                googleId: profile.id,
+                email,
+                name: profile.displayName,
+                avatar: profile.photos?.[0]?.value,
+                status: 'pending',
+              },
+            });
+            return done(null, false, { message: 'Account created. Please wait for admin approval.' });
+          }
         }
         if (user.status === 'pending') {
           return done(null, false, { message: 'Your account is pending approval.' });
