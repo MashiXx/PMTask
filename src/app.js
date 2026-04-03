@@ -16,7 +16,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+      workerSrc: ["'self'", "blob:"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -68,6 +69,7 @@ app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/api/subtasks', require('./routes/subtask.routes'));
 app.use('/projects', require('./routes/project.routes'));
+app.use('/projects/:projectId/documents', require('./routes/document.routes'));
 app.use('/profile', require('./routes/profile.routes'));
 app.use('/admin', require('./routes/admin.routes'));
 
