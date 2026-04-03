@@ -26,6 +26,24 @@
         </div>
       </div>
 
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      <div class="form-group" id="projectPublicSettings" style="display:none;">
+        <label>PUBLIC ACCESS</label>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <label class="toggle-label">
+            <input type="checkbox" id="projectPublicTasks" class="toggle-input">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">Public Tasks <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; anyone can view tasks</span></span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="projectPublicDocuments" class="toggle-input">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">Public Documents <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; anyone can view documents</span></span>
+          </label>
+        </div>
+      </div>
+      <% } %>
+
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeProjectModal()">Cancel</button>
         <button type="submit" class="btn-submit" id="projectSubmitBtn">Create Project</button>

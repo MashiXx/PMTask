@@ -3,24 +3,25 @@ const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const doc = require('../controllers/document.controller');
 const upload = require('../config/upload');
 
-// All document routes require authentication
-router.use(isAuthenticated);
-
-// View routes
+// View routes — allow guests for public projects (controller checks access)
 router.get('/', doc.getDocumentsPage);
 router.get('/folder/:folderId', doc.getDocumentsPage);
 
-// Folder API
-router.post('/api/folders', doc.createFolder);
-router.put('/api/folders/:id', doc.updateFolder);
-router.delete('/api/folders/:id', doc.deleteFolder);
+// Mutation routes — require authentication
+router.post('/api/folders', isAuthenticated, doc.createFolder);
+router.put('/api/folders/:id', isAuthenticated, doc.updateFolder);
+router.delete('/api/folders/:id', isAuthenticated, doc.deleteFolder);
 
 // Folder password (admin only for set, all users for unlock)
-router.put('/api/folders/:id/password', isAdmin, doc.setFolderPassword);
-router.post('/api/folders/:id/unlock', doc.unlockFolder);
+router.put('/api/folders/:id/password', isAuthenticated, isAdmin, doc.setFolderPassword);
+router.post('/api/folders/:id/unlock', isAuthenticated, doc.unlockFolder);
 
-// Document API (with multer error handling)
-router.post('/api/upload/:projectId', (req, res, next) => {
+// File read routes — allow guests for public projects (controller checks access)
+router.get('/api/files/:id/download', doc.downloadDocument);
+router.get('/api/files/:id/preview', doc.previewDocument);
+
+// File mutation routes — require authentication
+router.post('/api/upload/:projectId', isAuthenticated, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
       const message = err.code === 'LIMIT_FILE_SIZE' ? 'File too large (max 10 MB)'
@@ -31,9 +32,7 @@ router.post('/api/upload/:projectId', (req, res, next) => {
     next();
   });
 }, doc.uploadDocument);
-router.put('/api/files/:id', doc.updateDocument);
-router.delete('/api/files/:id', doc.deleteDocument);
-router.get('/api/files/:id/download', doc.downloadDocument);
-router.get('/api/files/:id/preview', doc.previewDocument);
+router.put('/api/files/:id', isAuthenticated, doc.updateDocument);
+router.delete('/api/files/:id', isAuthenticated, doc.deleteDocument);
 
 module.exports = router;

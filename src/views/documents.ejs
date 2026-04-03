@@ -27,6 +27,7 @@
           <svg class="theme-icon theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="theme-icon theme-icon-system" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </button>
+        <% if (!isGuest) { %>
         <button class="btn-new-task" onclick="openFolderModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           New Folder
@@ -35,6 +36,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Upload
         </button>
+        <% } %>
       </div>
     </div>
 
@@ -109,6 +111,7 @@
                         </span>
                       <% } %>
                     </div>
+                    <% if (!isGuest) { %>
                     <div class="doc-card-actions">
                       <% if (currentUser && currentUser.role === 'admin') { %>
                         <button class="column-add-btn" onclick="event.stopPropagation(); openPasswordModal(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>', <%= !!folder.password %>)" title="<%= folder.password ? 'Change/Remove Password' : 'Set Password' %>">
@@ -122,6 +125,7 @@
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                       </button>
                     </div>
+                    <% } %>
                   </div>
                   <a href="/projects/<%= activeProjectId %>/documents/folder/<%= folder.id %>" class="no-decoration">
                     <p class="doc-card-name"><%= folder.name %></p>
@@ -133,6 +137,11 @@
               <!-- Documents -->
               <% documents.forEach(doc => { %>
                 <div class="doc-file-card" onclick="previewDoc(<%= doc.id %>, '<%= doc.mimeType %>', '<%= doc.title.replace(/'/g, "\\'") %>')" style="cursor:pointer;">
+                  <% if (doc.mimeType.startsWith('image/')) { %>
+                    <div class="doc-card-thumb">
+                      <img src="/projects/<%= activeProjectId %>/documents/api/files/<%= doc.id %>/preview" alt="<%= doc.title %>" loading="lazy">
+                    </div>
+                  <% } %>
                   <div class="doc-card-top">
                     <div class="doc-card-icon doc-card-icon-file" data-type="<%= doc.mimeType %>">
                       <% if (doc.mimeType.startsWith('image/')) { %>
@@ -144,15 +153,17 @@
                       <% } %>
                     </div>
                     <div class="doc-card-actions">
-                      <button class="column-add-btn" onclick="downloadDoc(<%= doc.id %>)" title="Download">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); downloadDoc(<%= doc.id %>)" title="Download">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                       </button>
-                      <button class="column-add-btn" onclick="renameDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Rename">
+                      <% if (!isGuest) { %>
+                      <button class="column-add-btn" onclick="event.stopPropagation(); renameDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Rename">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
-                      <button class="column-add-btn text-coral" onclick="deleteDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Delete">
+                      <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Delete">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                       </button>
+                      <% } %>
                     </div>
                   </div>
                   <p class="doc-card-name" title="<%= doc.title %>"><%= doc.title %></p>
@@ -164,12 +175,14 @@
           <% } %>
 
           <!-- Upload drop zone -->
+          <% if (!isGuest) { %>
           <div class="doc-upload-zone" id="dropZone">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="doc-upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <p style="margin-top: 10px; font-size: 0.85rem;">Drop files here or <strong style="color:var(--accent); cursor:pointer;" onclick="document.getElementById('fileInput').click()">browse</strong></p>
             <p style="margin-top: 4px; font-size: 0.75rem; color: var(--text-dim);">Max 10 MB per file</p>
             <input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(this.files)">
           </div>
+          <% } %>
         </div>
       </div>
     </div>

@@ -126,6 +126,13 @@ exports.getDocumentsPage = async (req, res) => {
       return res.redirect('/projects');
     }
 
+    const isGuest = !req.user;
+
+    // Guests can only access public document projects
+    if (isGuest && !project.publicDocuments) {
+      return res.redirect('/auth/login');
+    }
+
     // Check password protection
     const access = await checkFolderAccess(req, folderId);
     if (!access.allowed) {
@@ -153,6 +160,7 @@ exports.getDocumentsPage = async (req, res) => {
         allFolders,
         folderLocked: true,
         lockedFolderId: access.lockedFolder.id,
+        isGuest,
       });
     }
 
@@ -195,6 +203,7 @@ exports.getDocumentsPage = async (req, res) => {
       allFolders,
       folderLocked: false,
       lockedFolderId: null,
+      isGuest,
     });
   } catch (err) {
     console.error(err);
@@ -465,8 +474,16 @@ exports.deleteDocument = async (req, res) => {
 exports.downloadDocument = async (req, res) => {
   try {
     const { id } = req.params;
-    const doc = await prisma.document.findUnique({ where: { id: parseInt(id) } });
+    const doc = await prisma.document.findUnique({
+      where: { id: parseInt(id) },
+      include: { project: { select: { publicDocuments: true } } },
+    });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // Guests can only download from public document projects
+    if (!req.user && !doc.project.publicDocuments) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     // Check folder password access
     if (doc.folderId) {
@@ -501,8 +518,16 @@ const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingm
 exports.previewDocument = async (req, res) => {
   try {
     const { id } = req.params;
-    const doc = await prisma.document.findUnique({ where: { id: parseInt(id) } });
+    const doc = await prisma.document.findUnique({
+      where: { id: parseInt(id) },
+      include: { project: { select: { publicDocuments: true } } },
+    });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // Guests can only preview from public document projects
+    if (!req.user && !doc.project.publicDocuments) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     // Check folder password access
     if (doc.folderId) {

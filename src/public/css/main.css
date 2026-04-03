@@ -1618,6 +1618,56 @@ select option {
 }
 
 /* Modal Actions */
+/* Toggle switch */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  min-width: 36px;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--card);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-input:checked + .toggle-switch {
+  background: var(--accent);
+}
+
+.toggle-input:checked + .toggle-switch::after {
+  transform: translateX(16px);
+}
+
+.toggle-text {
+  line-height: 1.3;
+}
+
 .modal-actions {
   display: flex;
   align-items: center;
@@ -3282,8 +3332,42 @@ select option {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px;
+  overflow: hidden;
   transition: all 0.15s;
+}
+
+.doc-file-card {
+  padding: 16px;
+}
+
+.doc-file-card:has(.doc-card-thumb) {
+  padding: 0;
+}
+
+.doc-file-card:has(.doc-card-thumb) .doc-card-top,
+.doc-file-card:has(.doc-card-thumb) .doc-card-name,
+.doc-file-card:has(.doc-card-thumb) .doc-card-meta {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.doc-file-card:has(.doc-card-thumb) .doc-card-meta:last-child {
+  padding-bottom: 16px;
+}
+
+.doc-card-thumb {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: var(--surface);
+  position: relative;
+}
+
+.doc-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .doc-file-card:hover {
@@ -3295,6 +3379,14 @@ select option {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.doc-card-thumb + .doc-card-top {
+  margin-top: 10px;
+}
+
+.doc-card-thumb + .doc-card-top .doc-card-icon {
+  display: none;
 }
 
 .doc-card-icon {

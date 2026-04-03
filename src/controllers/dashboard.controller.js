@@ -7,8 +7,13 @@ exports.getDashboard = async (req, res) => {
     const isGuest = !user;
     const projectId = req.query.project ? parseInt(req.query.project) : null;
 
-    // Guests and developers see all projects; admins see their own
-    const projectFilter = user && user.role === 'admin' ? { userId: user.id } : {};
+    // Admins see their own projects; developers see all; guests see only public
+    let projectFilter = {};
+    if (user && user.role === 'admin') {
+      projectFilter = { userId: user.id };
+    } else if (!user) {
+      projectFilter = { publicTasks: true };
+    }
     const projects = await prisma.project.findMany({
       where: projectFilter,
       include: { _count: { select: { tasks: true } } },

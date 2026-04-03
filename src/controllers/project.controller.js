@@ -4,7 +4,12 @@ const prisma = new PrismaClient();
 exports.getProjects = async (req, res) => {
   try {
     const isGuest = !req.user;
-    const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
+    let projectFilter = {};
+    if (req.user && req.user.role === 'admin') {
+      projectFilter = { userId: req.user.id };
+    } else if (!req.user) {
+      projectFilter = { OR: [{ publicTasks: true }, { publicDocuments: true }] };
+    }
     const projects = await prisma.project.findMany({
       where: projectFilter,
       include: {
@@ -68,9 +73,18 @@ exports.updateProject = async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    const data = { name, color: color || '#6C63FF' };
+
+    // Only admin can toggle public settings
+    if (req.user.role === 'admin') {
+      const { publicTasks, publicDocuments } = req.body;
+      if (publicTasks !== undefined) data.publicTasks = Boolean(publicTasks);
+      if (publicDocuments !== undefined) data.publicDocuments = Boolean(publicDocuments);
+    }
+
     const updated = await prisma.project.update({
       where: { id: parseInt(id) },
-      data: { name, color: color || '#6C63FF' },
+      data,
     });
 
     res.json({ success: true, project: updated });

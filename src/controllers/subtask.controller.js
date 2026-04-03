@@ -38,6 +38,18 @@ async function recalcTaskProgress(taskId) {
 exports.getSubtasks = async (req, res) => {
   try {
     const taskId = parseInt(req.params.taskId);
+
+    // If not logged in, check if the task's project allows public access
+    if (!req.user) {
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: { project: { select: { publicTasks: true } } },
+      });
+      if (!task || !task.project.publicTasks) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
     const subtasks = await prisma.subTask.findMany({
       where: { taskId },
       orderBy: { position: 'asc' },

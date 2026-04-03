@@ -249,12 +249,19 @@ exports.getTask = async (req, res) => {
     const task = await prisma.task.findUnique({
       where: { id: parseInt(id) },
       include: {
+        project: { select: { publicTasks: true } },
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },
       },
     });
     if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    // If not logged in, only allow if project has publicTasks enabled
+    if (!req.user && !task.project.publicTasks) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     res.json(task);
   } catch (err) {
     console.error(err);

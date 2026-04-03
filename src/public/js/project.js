@@ -1,22 +1,27 @@
 // Project Modal
-function openProjectModal(id, name, color) {
+function openProjectModal(id, name, color, publicTasks, publicDocuments) {
   const modal = document.getElementById('projectModal');
   const title = document.getElementById('projectModalTitle');
   const submitBtn = document.getElementById('projectSubmitBtn');
   const nameInput = document.getElementById('projectName');
   const idInput = document.getElementById('projectId');
+  const publicSettings = document.getElementById('projectPublicSettings');
+  const ptCheck = document.getElementById('projectPublicTasks');
+  const pdCheck = document.getElementById('projectPublicDocuments');
 
   if (id) {
     title.textContent = 'Edit Project';
     submitBtn.textContent = 'Save Changes';
     idInput.value = id;
     nameInput.value = name || '';
-    // Select the matching color radio
     const radios = document.querySelectorAll('input[name="projectColor"]');
-    radios.forEach(r => {
-      r.checked = r.value === color;
-    });
+    radios.forEach(r => { r.checked = r.value === color; });
     updateSwatchBorders();
+    if (publicSettings) {
+      publicSettings.style.display = '';
+      if (ptCheck) ptCheck.checked = !!publicTasks;
+      if (pdCheck) pdCheck.checked = !!publicDocuments;
+    }
   } else {
     title.textContent = 'New Project';
     submitBtn.textContent = 'Create Project';
@@ -25,6 +30,9 @@ function openProjectModal(id, name, color) {
     const radios = document.querySelectorAll('input[name="projectColor"]');
     if (radios[0]) radios[0].checked = true;
     updateSwatchBorders();
+    if (publicSettings) publicSettings.style.display = 'none';
+    if (ptCheck) ptCheck.checked = false;
+    if (pdCheck) pdCheck.checked = false;
   }
 
   modal.classList.add('active');
@@ -72,7 +80,12 @@ document.getElementById('projectForm').addEventListener('submit', async (e) => {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, color }),
+      body: JSON.stringify({
+        name,
+        color,
+        publicTasks: document.getElementById('projectPublicTasks')?.checked || false,
+        publicDocuments: document.getElementById('projectPublicDocuments')?.checked || false,
+      }),
     });
 
     const data = await res.json();

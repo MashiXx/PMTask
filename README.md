@@ -8,6 +8,18 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/image1.png" alt="Dashboard - Kanban Board" width="100%">
+  <br><em>Dashboard with Kanban board and task management</em>
+</p>
+
+<p align="center">
+  <img src="docs/image2.png" alt="Document Management" width="100%">
+  <br><em>Document management with folder organization</em>
+</p>
+
 ## Tech Stack
 
 | Layer | Technology |
