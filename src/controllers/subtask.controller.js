@@ -1,6 +1,19 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Check if user has access to modify a task (admin, creator, or assignee)
+async function canModifyTask(taskId, user) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { assignees: true },
+  });
+  if (!task) return null;
+  if (user.role === 'admin') return task;
+  if (task.createdById === user.id) return task;
+  if (task.assignees.some(a => a.userId === user.id)) return task;
+  return false;
+}
+
 // Recalculate parent task progress based on subtasks
 // Formula: doneSubtasks / (totalSubtasks + 1) * 100
 // The +1 represents the parent task itself; only status=done gives 100%
@@ -42,6 +55,10 @@ exports.createSubtask = async (req, res) => {
     const { title } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
 
+    const access = await canModifyTask(taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
     const maxPos = await prisma.subTask.aggregate({
       where: { taskId },
       _max: { position: true },
@@ -67,6 +84,13 @@ exports.updateSubtask = async (req, res) => {
     const id = parseInt(req.params.id);
     const { title, done } = req.body;
 
+    const existing = await prisma.subTask.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Subtask not found' });
+
+    const access = await canModifyTask(existing.taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
     const data = {};
     if (title !== undefined) data.title = title;
     if (done !== undefined) data.done = done;
@@ -87,6 +111,12 @@ exports.deleteSubtask = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const subtask = await prisma.subTask.findUnique({ where: { id } });
+    if (!subtask) return res.status(404).json({ error: 'Subtask not found' });
+
+    const access = await canModifyTask(subtask.taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+
     await prisma.subTask.delete({ where: { id } });
     if (subtask) await recalcTaskProgress(subtask.taskId);
     res.json({ success: true });
