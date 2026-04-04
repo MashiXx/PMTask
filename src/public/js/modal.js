@@ -367,6 +367,11 @@ function closeTaskPreview() {
   const textarea = document.getElementById('previewDescription');
   if (rendered) rendered.classList.remove('hidden');
   if (textarea) textarea.classList.add('hidden');
+  // Reload dashboard if any changes were made
+  if (previewDirty) {
+    window.location.reload();
+    return;
+  }
   previewTaskId = null;
   previewDirty = false;
 }
