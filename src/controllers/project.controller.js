@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { generateSlug } = require('../utils/slug');
 
 exports.getProjects = async (req, res) => {
   try {
@@ -48,6 +49,7 @@ exports.createProject = async (req, res) => {
     const project = await prisma.project.create({
       data: {
         name,
+        slug: generateSlug(name),
         color: color || '#6C63FF',
         userId: req.user.id,
       },
@@ -73,7 +75,7 @@ exports.updateProject = async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const data = { name, color: color || '#6C63FF' };
+    const data = { name, slug: generateSlug(name), color: color || '#6C63FF' };
 
     // Only admin can toggle public settings
     if (req.user.role === 'admin') {

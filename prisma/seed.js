@@ -2,6 +2,7 @@ require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
+const { generateSlug } = require('../src/utils/slug');
 
 async function main() {
   await prisma.taskAssignee.deleteMany();
@@ -19,12 +20,16 @@ async function main() {
     data: { name: 'Dev User', email: 'dev@pmtask.com', password, role: 'developer' },
   });
 
-  const projects = {
-    atlas: await prisma.project.create({ data: { name: 'Atlas Platform', color: '#6C63FF', userId: user.id } }),
-    mobile: await prisma.project.create({ data: { name: 'Mobile App', color: '#00D9FF', userId: user.id } }),
-    data: await prisma.project.create({ data: { name: 'Data Pipeline', color: '#00F5A0', userId: user.id } }),
-    marketing: await prisma.project.create({ data: { name: 'Marketing Site', color: '#FF5C7A', userId: user.id } }),
-  };
+  const projectNames = [
+    { key: 'atlas', name: 'Atlas Platform', color: '#6C63FF' },
+    { key: 'mobile', name: 'Mobile App', color: '#00D9FF' },
+    { key: 'data', name: 'Data Pipeline', color: '#00F5A0' },
+    { key: 'marketing', name: 'Marketing Site', color: '#FF5C7A' },
+  ];
+  const projects = {};
+  for (const p of projectNames) {
+    projects[p.key] = await prisma.project.create({ data: { name: p.name, slug: generateSlug(p.name), color: p.color, userId: user.id } });
+  }
 
   const tagData = [
     { name: 'design', color: '#6C63FF' },
@@ -57,6 +62,7 @@ async function main() {
     const task = await prisma.task.create({
       data: {
         title: td.title,
+        slug: generateSlug(td.title),
         priority: td.priority,
         status: td.status,
         progress: td.progress,

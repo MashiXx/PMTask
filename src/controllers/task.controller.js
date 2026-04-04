@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { generateSlug, parseIdFromSlug } = require('../utils/slug');
 
 const VALID_STATUSES = ['todo', 'inprogress', 'review', 'done'];
 const VALID_PRIORITIES = ['low', 'medium', 'high'];
@@ -34,23 +35,24 @@ exports.createTask = async (req, res) => {
       _max: { position: true },
     });
 
+    const pid = parseInt(projectId);
     const task = await prisma.task.create({
       data: {
         title,
+        slug: generateSlug(title),
         description: description || null,
         priority: safePriority,
         status: safeStatus,
         dueDate: dueDate || null,
         progress: safeProgress,
         position: (maxPos._max.position || 0) + 1,
-        projectId: parseInt(projectId),
+        projectId: pid,
         createdById: req.user.id,
       },
     });
 
     if (tags && tags.length > 0) {
       const tagList = Array.isArray(tags) ? tags : [tags];
-      const pid = parseInt(projectId);
       for (const tagName of tagList) {
         const tag = await prisma.tag.upsert({
           where: { name_projectId: { name: tagName, projectId: pid } },
@@ -94,6 +96,9 @@ exports.updateTask = async (req, res) => {
       dueDate: dueDate || null,
       progress: safeProgress,
     };
+    if (title && title !== access.title) {
+      updateData.slug = generateSlug(title);
+    }
     if (status && VALID_STATUSES.includes(status)) {
       updateData.status = status;
     }
@@ -199,9 +204,16 @@ exports.deleteTask = async (req, res) => {
 
 exports.getTaskPage = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
+    // Parse ID from slug (e.g. "42-my-task-title" -> 42)
+    const taskId = parseIdFromSlug(slug);
+    if (!taskId) {
+      req.flash('error', 'Task not found');
+      return res.redirect('/dashboard');
+    }
+
     const task = await prisma.task.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: taskId },
       include: {
         project: true,
         tags: { include: { tag: true } },
@@ -212,6 +224,12 @@ exports.getTaskPage = async (req, res) => {
     if (!task) {
       req.flash('error', 'Task not found');
       return res.redirect('/dashboard');
+    }
+
+    // Redirect bare ID or wrong slug to canonical URL
+    const canonical = `${task.id}-${task.slug}`;
+    if (slug !== canonical) {
+      return res.redirect(301, `/tasks/${canonical}`);
     }
 
     const isGuest = !req.user;

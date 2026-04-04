@@ -1,11 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { parseIdFromSlug } = require('../utils/slug');
 
 exports.getDashboard = async (req, res) => {
   try {
     const user = req.user;
     const isGuest = !user;
-    const projectId = req.query.project ? parseInt(req.query.project) : null;
+    const projectParam = req.query.project || null;
+    const projectId = projectParam ? parseIdFromSlug(projectParam) : null;
 
     // Admins see their own projects; developers see all; guests see only public
     let projectFilter = {};
@@ -84,6 +86,14 @@ exports.getDashboard = async (req, res) => {
     const sprintProgress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
     const activeProject = projects.find(p => p.id === activeProjectId);
+
+    // Redirect to canonical ID-slug URL
+    if (activeProject && projectParam) {
+      const canonical = `${activeProject.id}-${activeProject.slug}`;
+      if (projectParam !== canonical) {
+        return res.redirect(301, `/dashboard?project=${canonical}`);
+      }
+    }
 
     const projectTags = activeProjectId
       ? await prisma.tag.findMany({ where: { projectId: activeProjectId }, orderBy: { name: 'asc' } })

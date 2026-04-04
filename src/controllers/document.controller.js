@@ -111,16 +111,30 @@ async function checkFolderAccess(req, folderId) {
   return { allowed: true, lockedFolder: null };
 }
 
-// GET /projects/:projectId/documents
+// GET /projects/:projectSlug/documents
 exports.getDocumentsPage = async (req, res) => {
   try {
-    const projectId = parseInt(req.params.projectId);
+    const projectSlug = req.params.projectSlug;
     const folderId = req.params.folderId ? parseInt(req.params.folderId) : null;
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: { tags: true },
-    });
+    // Parse ID from slug (e.g. "1-atlas-platform" -> 1)
+    const { parseIdFromSlug } = require('../utils/slug');
+    const projectId = parseIdFromSlug(projectSlug);
+    if (!projectId) {
+      req.flash('error', 'Project not found');
+      return res.redirect('/projects');
+    }
+
+    const project = await prisma.project.findUnique({ where: { id: projectId }, include: { tags: true } });
+
+    // Redirect to canonical URL
+    if (project) {
+      const canonical = `${project.id}-${project.slug}`;
+      if (projectSlug !== canonical) {
+        const folderPart = folderId ? `/folder/${folderId}` : '';
+        return res.redirect(301, `/projects/${canonical}/documents${folderPart}`);
+      }
+    }
     if (!project) {
       req.flash('error', 'Project not found');
       return res.redirect('/projects');
