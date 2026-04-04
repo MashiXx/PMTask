@@ -215,6 +215,12 @@ exports.getTaskPage = async (req, res) => {
     }
 
     const isGuest = !req.user;
+    let canEdit = false;
+    if (req.user) {
+      const access = await canModifyTask(task.id, req.user);
+      canEdit = access !== null && access !== false;
+    }
+
     const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
     const projects = await prisma.project.findMany({
       where: projectFilter,
@@ -235,6 +241,7 @@ exports.getTaskPage = async (req, res) => {
       activeProject: task.project,
       projectTags,
       isGuest,
+      canEdit,
     });
   } catch (err) {
     console.error(err);
