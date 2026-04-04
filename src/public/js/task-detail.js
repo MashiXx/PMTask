@@ -13,7 +13,13 @@
     if (!el) return;
 
     if (TASK.description && TASK.description.trim()) {
-      const html = DOMPurify.sanitize(marked.parse(TASK.description));
+      const rawHtml = marked.parse(TASK.description);
+      const html = DOMPurify.sanitize(rawHtml, {
+        FORBID_TAGS: ['style', 'form', 'input', 'textarea', 'select', 'button', 'iframe', 'object', 'embed'],
+        FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+        ALLOW_DATA_ATTR: false,
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      });
       el.innerHTML = '<div class="markdown-body">' + html + '</div>';
     } else if (TASK.canEdit) {
       el.innerHTML = '<span class="desc-placeholder">Click to add description...</span>';
@@ -50,6 +56,11 @@
           'preview', 'side-by-side', '|',
           'guide'
         ],
+        renderingConfig: {
+          sanitizerFunction: function (html) {
+            return DOMPurify.sanitize(html);
+          },
+        },
       });
     } else {
       easyMDE.codemirror.focus();

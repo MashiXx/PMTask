@@ -234,7 +234,7 @@
   window.TASK_DATA = {
     id: <%= task.id %>,
     projectId: <%= task.projectId %>,
-    description: <%- JSON.stringify(task.description || '') %>,
+    description: <%- JSON.stringify(task.description || '').replace(/<\//g, '<\\/').replace(/<!--/g, '<\\!--') %>,
     canEdit: <%= canEdit %>
   };
 </script>
