@@ -140,6 +140,9 @@ async function openTaskPreview(taskId) {
     document.getElementById('previewStatusSelect').value = task.status;
     document.getElementById('previewPrioritySelect').value = task.priority;
 
+    // Render markdown description
+    renderPreviewDescription(task.description || '', isGuest);
+
     const tagsEl = document.getElementById('previewTags');
     previewCurrentTags = (task.tags || []).map(tt => tt.tag.name);
     renderPreviewTagBadges();
@@ -208,7 +211,6 @@ async function openTaskPreview(taskId) {
       previewStatus.disabled = true;
       previewPriority.disabled = true;
       previewTitle.classList.add('preview-readonly');
-      previewDesc.classList.add('preview-readonly');
       document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.add('hidden'));
     } else {
       previewTitle.readOnly = false;
@@ -216,7 +218,6 @@ async function openTaskPreview(taskId) {
       previewStatus.disabled = false;
       previewPriority.disabled = false;
       previewTitle.classList.remove('preview-readonly');
-      previewDesc.classList.remove('preview-readonly');
       document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.remove('hidden'));
     }
 
@@ -312,13 +313,60 @@ function updateColumnCount(status) {
 
 // Auto-save on blur for text fields
 document.getElementById('previewTitle').addEventListener('blur', savePreviewField);
-document.getElementById('previewDescription').addEventListener('blur', savePreviewField);
 // Auto-save on change for selects
 document.getElementById('previewStatusSelect').addEventListener('change', savePreviewField);
 document.getElementById('previewPrioritySelect').addEventListener('change', savePreviewField);
 
+// ── Preview Description: Rendered Markdown + Click-to-Edit ──
+function renderPreviewDescription(description, isGuest) {
+  const rendered = document.getElementById('previewDescRendered');
+  const textarea = document.getElementById('previewDescription');
+  if (!rendered) return;
+
+  // Always show rendered, hide textarea
+  rendered.classList.remove('hidden');
+  textarea.classList.add('hidden');
+
+  if (description && description.trim()) {
+    const safeHtml = (typeof DOMPurify !== 'undefined' && typeof marked !== 'undefined')
+      ? DOMPurify.sanitize(marked.parse(description))
+      : description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    rendered.innerHTML = '<div class="markdown-body">' + safeHtml + '</div>';
+  } else {
+    rendered.innerHTML = isGuest
+      ? '<span class="preview-desc-empty">No description</span>'
+      : '<span class="preview-desc-empty">Click to add description...</span>';
+  }
+
+  // Editable: click to switch to textarea
+  if (!isGuest) {
+    rendered.style.cursor = 'pointer';
+    rendered.onclick = function () {
+      rendered.classList.add('hidden');
+      textarea.classList.remove('hidden');
+      textarea.focus();
+    };
+  } else {
+    rendered.style.cursor = 'default';
+    rendered.onclick = null;
+  }
+}
+
+// Save description on blur, then re-render markdown
+document.getElementById('previewDescription').addEventListener('blur', function () {
+  savePreviewField().then(function () {
+    const desc = document.getElementById('previewDescription').value;
+    renderPreviewDescription(desc, window.IS_GUEST);
+  });
+});
+
 function closeTaskPreview() {
   document.getElementById('taskPreviewModal').classList.remove('active');
+  // Reset description view state
+  const rendered = document.getElementById('previewDescRendered');
+  const textarea = document.getElementById('previewDescription');
+  if (rendered) rendered.classList.remove('hidden');
+  if (textarea) textarea.classList.add('hidden');
   previewTaskId = null;
   previewDirty = false;
 }

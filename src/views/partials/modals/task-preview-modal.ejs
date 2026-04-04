@@ -22,9 +22,10 @@
       </select>
     </div>
 
-    <!-- Editable Description -->
+    <!-- Description: rendered markdown with scroll, click to edit -->
     <div class="mb-16">
-      <textarea id="previewDescription" class="preview-editable-desc" placeholder="Add a description..." rows="2"></textarea>
+      <div id="previewDescRendered" class="preview-desc-rendered" title="Click to edit"></div>
+      <textarea id="previewDescription" class="preview-editable-desc hidden" placeholder="Add a description..." rows="6"></textarea>
     </div>
 
     <div id="previewTagsWrap" class="mb-16">

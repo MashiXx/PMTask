@@ -2939,6 +2939,58 @@ select option {
   border-color: var(--accent);
 }
 
+/* ── Preview Description: Rendered Markdown with Scroll ── */
+.preview-desc-rendered {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.65;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.preview-desc-rendered:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.preview-desc-rendered .markdown-body {
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.preview-desc-rendered .markdown-body h1 { font-size: 1.1rem; }
+.preview-desc-rendered .markdown-body h2 { font-size: 0.95rem; }
+.preview-desc-rendered .markdown-body h3 { font-size: 0.85rem; }
+
+.preview-desc-empty {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 0.78rem;
+}
+
+/* Scrollbar styling for preview description */
+.preview-desc-rendered::-webkit-scrollbar {
+  width: 5px;
+}
+
+.preview-desc-rendered::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-desc-rendered::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.preview-desc-rendered::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
 .preview-editable-desc {
   width: 100%;
   background: transparent;
