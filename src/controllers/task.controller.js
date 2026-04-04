@@ -251,8 +251,15 @@ exports.getTaskPage = async (req, res) => {
       orderBy: { name: 'asc' },
     });
 
+    // Build OG description from task details
+    const ogDesc = task.description
+      ? task.description.replace(/[#*_`>\-\[\]()]/g, '').substring(0, 200)
+      : `Task in project ${task.project.name}`;
+
     res.render('task-detail', {
       title: task.title,
+      ogDescription: `${task.title} — ${ogDesc}`,
+      ogUrl: `${req.protocol}://${req.get('host')}/tasks/${task.id}`,
       task,
       projects,
       activeProjectId: task.projectId,

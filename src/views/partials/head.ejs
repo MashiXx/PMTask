@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PMTask - <%= typeof title !== 'undefined' ? title : 'Task Manager' %></title>
+  <% var pageTitle = 'PMTask - ' + (typeof title !== 'undefined' ? title : 'Task Manager'); %>
+  <% var pageDescription = typeof ogDescription !== 'undefined' && ogDescription ? ogDescription : 'PMTask - A collaborative project management and task tracking application.'; %>
+  <% var pageImage = typeof ogImage !== 'undefined' && ogImage ? ogImage : '/images/og-default.svg'; %>
+  <% var pageUrl = typeof ogUrl !== 'undefined' && ogUrl ? ogUrl : ''; %>
+  <title><%= pageTitle %></title>
+  <meta name="description" content="<%= pageDescription %>">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= pageDescription %>">
+  <meta property="og:site_name" content="PMTask">
+  <% if (pageUrl) { %><meta property="og:url" content="<%= pageUrl %>"><% } %>
+  <meta property="og:image" content="<%= pageImage %>">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= pageTitle %>">
+  <meta name="twitter:description" content="<%= pageDescription %>">
+  <meta name="twitter:image" content="<%= pageImage %>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/main.css">
