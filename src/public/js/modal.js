@@ -262,43 +262,377 @@ async function savePreviewField() {
 }
 
 function updateCardInDOM(taskId, changes) {
+  // Update board view card
+  const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+  if (card) {
+    const titleEl = card.querySelector('.task-title');
+    if (titleEl && changes.title) titleEl.textContent = changes.title;
+
+    if (changes.priority) {
+      const pColor = priorityColors[changes.priority] || '#FFB347';
+      const badge = card.querySelector('.task-priority-badge');
+      if (badge) {
+        badge.textContent = priorityLabels[changes.priority] || 'MEDIUM';
+        badge.style.color = pColor;
+      }
+      const line = card.querySelector('.task-priority-line');
+      if (line) line.style.background = pColor;
+    }
+
+    if (changes.status && card.dataset.status !== changes.status) {
+      const oldStatus = card.dataset.status;
+      const newStatus = changes.status;
+      card.dataset.status = newStatus;
+
+      const newList = document.querySelector(`.tasks-list[data-status="${newStatus}"]`);
+      if (newList) {
+        card.remove();
+        const addBtn = newList.querySelector('.add-task-btn');
+        newList.insertBefore(card, addBtn);
+      }
+
+      updateColumnCount(oldStatus);
+      updateColumnCount(newStatus);
+    }
+  }
+
+  // Update list view rows (status view + tag view)
+  updateListRowsInDOM(taskId, changes);
+}
+
+const listPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+const statusLabelsMap = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
+const statusColorsMap = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
+
+function updateListRowsInDOM(taskId, changes) {
+  const rows = document.querySelectorAll(`.list-row[data-task-id="${taskId}"]`);
+  rows.forEach(row => {
+    if (changes.title) {
+      const nameEl = row.querySelector('.list-task-name');
+      if (nameEl) nameEl.textContent = changes.title;
+    }
+
+    if (changes.priority) {
+      const pColor = priorityColors[changes.priority] || '#FFB347';
+      const dot = row.querySelector('.list-priority-dot');
+      if (dot) dot.style.background = pColor;
+      const prioCol = row.querySelector('.list-col-priority > div');
+      if (prioCol) {
+        prioCol.textContent = listPriorityLabels[changes.priority] || 'MED';
+        prioCol.style.color = pColor;
+      }
+    }
+
+    if (changes.status) {
+      const statusBadge = row.querySelector('.list-status-badge');
+      if (statusBadge) {
+        const sColor = statusColorsMap[changes.status] || '#6B6B8E';
+        statusBadge.textContent = statusLabelsMap[changes.status] || changes.status;
+        statusBadge.style.color = sColor;
+        statusBadge.style.background = `color-mix(in srgb, ${sColor} 12%, transparent)`;
+      }
+    }
+  });
+
+  // Move row in status-grouped list view if status changed
+  if (changes.status) {
+    const statusRow = document.querySelector(`#listView .list-row[data-task-id="${taskId}"]`);
+    if (statusRow && statusRow.dataset.status !== changes.status) {
+      const oldStatus = statusRow.dataset.status;
+      statusRow.dataset.status = changes.status;
+
+      const newGroup = document.querySelector(`#listView .list-group[data-status="${changes.status}"] .list-group-body`);
+      if (newGroup) {
+        statusRow.remove();
+        newGroup.appendChild(statusRow);
+        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${oldStatus}"]`));
+        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${changes.status}"]`));
+      }
+    }
+  }
+}
+
+function updateListGroupCount(group) {
+  if (!group) return;
+  const count = group.querySelectorAll('.list-row').length;
+  const badge = group.querySelector('.list-group-count');
+  if (badge) badge.textContent = count;
+  // Update empty row
+  const body = group.querySelector('.list-group-body');
+  const emptyRow = body.querySelector('.list-empty-row');
+  if (count === 0 && !emptyRow) {
+    const div = document.createElement('div');
+    div.className = 'list-empty-row';
+    div.textContent = 'No tasks';
+    body.appendChild(div);
+  } else if (count > 0 && emptyRow) {
+    emptyRow.remove();
+  }
+}
+
+// Full card refresh from API — smooth update without page reload
+async function refreshCardFromAPI(taskId) {
   const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
   if (!card) return;
 
-  // Update title
-  const titleEl = card.querySelector('.task-title');
-  if (titleEl && changes.title) titleEl.textContent = changes.title;
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`);
+    const task = await res.json();
+    if (!task || task.error) return;
 
-  // Update priority badge + line
-  if (changes.priority) {
-    const pColor = priorityColors[changes.priority] || '#FFB347';
-    const badge = card.querySelector('.task-priority-badge');
-    if (badge) {
-      badge.textContent = priorityLabels[changes.priority] || 'MEDIUM';
-      badge.style.color = pColor;
-    }
+    const pColor = priorityColors[task.priority] || '#FFB347';
+    const pLabel = priorityLabels[task.priority] || 'MEDIUM';
+    const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+
+    // Priority line + badge
     const line = card.querySelector('.task-priority-line');
     if (line) line.style.background = pColor;
-  }
+    const badge = card.querySelector('.task-priority-badge');
+    if (badge) { badge.textContent = pLabel; badge.style.color = pColor; }
 
-  // Move card to new column if status changed
-  if (changes.status && card.dataset.status !== changes.status) {
-    const oldStatus = card.dataset.status;
-    const newStatus = changes.status;
-    card.dataset.status = newStatus;
+    // Title
+    const titleEl = card.querySelector('.task-title');
+    if (titleEl) titleEl.textContent = task.title;
 
-    const newList = document.querySelector(`.tasks-list[data-status="${newStatus}"]`);
-    if (newList) {
-      card.remove();
-      // Insert before the "Add task" button
-      const addBtn = newList.querySelector('.add-task-btn');
-      newList.insertBefore(card, addBtn);
+    // Tags
+    const tagsEl = card.querySelector('.task-tags');
+    if (tagsEl) {
+      tagsEl.innerHTML = (task.tags || []).map(tt => {
+        const c = tt.tag.color || '#6B6B8E';
+        const label = tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1);
+        return `<span class="tag-badge" style="background:color-mix(in srgb, ${c} 12%, transparent); border:1px solid color-mix(in srgb, ${c} 35%, transparent); color:${c};">${label}</span>`;
+      }).join('');
+      card.dataset.tags = (task.tags || []).map(tt => tt.tag.name).join(',');
     }
 
-    // Update column counts
-    updateColumnCount(oldStatus);
-    updateColumnCount(newStatus);
+    // Subtask indicator
+    let subtaskEl = card.querySelector('.task-subtask-indicator');
+    if (task.subtasks && task.subtasks.length > 0) {
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      const subPercent = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+      const subtaskHTML = `
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="task-subtask-text">${doneCount}/${task.subtasks.length}</span>
+        <div class="task-subtask-track"><div class="task-subtask-fill" style="width:${subPercent}%;"></div></div>`;
+      if (subtaskEl) {
+        subtaskEl.innerHTML = subtaskHTML;
+      } else {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'task-subtask-indicator';
+        wrapper.innerHTML = subtaskHTML;
+        const tagsAfter = card.querySelector('.task-tags');
+        if (tagsAfter) tagsAfter.after(wrapper);
+      }
+    } else if (subtaskEl) {
+      subtaskEl.remove();
+    }
+
+    // Progress bar
+    let progressEl = card.querySelector('.task-progress');
+    if (task.progress > 0) {
+      const progressHTML = `
+        <div class="task-progress-header">
+          <span class="task-progress-label">Progress</span>
+          <span class="task-progress-value" style="color:${progressColor}">${task.progress}%</span>
+        </div>
+        <div class="task-progress-track">
+          <div class="task-progress-fill" style="width:${task.progress}%; background:${progressColor}; ${task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : ''}"></div>
+        </div>`;
+      if (progressEl) {
+        progressEl.innerHTML = progressHTML;
+      } else {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'task-progress';
+        wrapper.innerHTML = progressHTML;
+        const footer = card.querySelector('.task-footer');
+        if (footer) footer.before(wrapper);
+      }
+    } else if (progressEl) {
+      progressEl.remove();
+    }
+
+    // Due date
+    const footer = card.querySelector('.task-footer');
+    let dueEl = card.querySelector('.task-due');
+    if (task.dueDate) {
+      const dueHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${task.dueDate}`;
+      if (dueEl) {
+        dueEl.innerHTML = dueHTML;
+      } else if (footer) {
+        const span = document.createElement('span');
+        span.className = 'task-due';
+        span.innerHTML = dueHTML;
+        footer.appendChild(span);
+      }
+    } else if (dueEl) {
+      dueEl.remove();
+    }
+
+    // Status column move
+    if (card.dataset.status !== task.status) {
+      const oldStatus = card.dataset.status;
+      card.dataset.status = task.status;
+      const newList = document.querySelector(`.tasks-list[data-status="${task.status}"]`);
+      if (newList) {
+        card.remove();
+        const addBtn = newList.querySelector('.add-task-btn');
+        newList.insertBefore(card, addBtn);
+      }
+      updateColumnCount(oldStatus);
+      updateColumnCount(task.status);
+    }
+  } catch (err) {
+    console.error('Failed to refresh card:', err);
   }
+}
+
+// Full list-row refresh from API — smooth update without page reload
+async function refreshListRowsFromAPI(taskId) {
+  const rows = document.querySelectorAll(`.list-row[data-task-id="${taskId}"]`);
+  if (rows.length === 0) return;
+
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`);
+    const task = await res.json();
+    if (!task || task.error) return;
+
+    const pColor = priorityColors[task.priority] || '#FFB347';
+    const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+
+    rows.forEach(row => {
+      // Title
+      const nameEl = row.querySelector('.list-task-name');
+      if (nameEl) nameEl.textContent = task.title;
+
+      // Priority dot + label
+      const dot = row.querySelector('.list-priority-dot');
+      if (dot) dot.style.background = pColor;
+      const prioCol = row.querySelector('.list-col-priority > div');
+      if (prioCol) {
+        prioCol.textContent = listPriorityLabels[task.priority] || 'MED';
+        prioCol.style.color = pColor;
+      }
+
+      // Progress
+      const progFill = row.querySelector('.list-progress-fill');
+      if (progFill) {
+        progFill.style.width = task.progress + '%';
+        progFill.style.background = progColor;
+      }
+      const progText = row.querySelector('.list-col-progress > div:last-child');
+      if (progText && !progText.classList.contains('list-progress-track')) {
+        progText.textContent = task.progress + '%';
+        progText.style.color = progColor;
+      }
+
+      // Due date
+      const dueCol = row.querySelector('.list-col-due');
+      if (dueCol) dueCol.textContent = task.dueDate || '—';
+
+      // Status badge (tag view rows)
+      const statusBadge = row.querySelector('.list-status-badge');
+      if (statusBadge) {
+        const sColor = statusColorsMap[task.status] || '#6B6B8E';
+        statusBadge.textContent = statusLabelsMap[task.status] || task.status;
+        statusBadge.style.color = sColor;
+        statusBadge.style.background = `color-mix(in srgb, ${sColor} 12%, transparent)`;
+      }
+
+      // Tags (dots in status view)
+      const tagsCol = row.querySelector('.list-col-tags');
+      if (tagsCol) {
+        tagsCol.innerHTML = (task.tags || []).map(tt => {
+          const tColor = tt.tag.color || '#6B6B8E';
+          return `<div class="list-tag-dot" style="background:${tColor};" title="${tt.tag.name}"></div>`;
+        }).join('');
+      }
+
+      row.dataset.tags = (task.tags || []).map(tt => tt.tag.name).join(',');
+    });
+
+    // Move row in status list view if status changed
+    const statusRow = document.querySelector(`#listView .list-row[data-task-id="${taskId}"]`);
+    if (statusRow && statusRow.dataset.status !== task.status) {
+      const oldStatus = statusRow.dataset.status;
+      statusRow.dataset.status = task.status;
+
+      const newGroup = document.querySelector(`#listView .list-group[data-status="${task.status}"] .list-group-body`);
+      if (newGroup) {
+        statusRow.remove();
+        newGroup.appendChild(statusRow);
+        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${oldStatus}"]`));
+        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${task.status}"]`));
+      }
+    }
+
+    // Handle tag view: remove and re-add rows if tags changed
+    refreshTagViewRows(taskId, task);
+  } catch (err) {
+    console.error('Failed to refresh list rows:', err);
+  }
+}
+
+function refreshTagViewRows(taskId, task) {
+  const tagView = document.getElementById('listViewTag');
+  if (!tagView) return;
+
+  // Remove existing rows for this task in tag view
+  const existingRows = tagView.querySelectorAll(`.list-row[data-task-id="${taskId}"]`);
+  const affectedGroups = new Set();
+  existingRows.forEach(row => {
+    const group = row.closest('.list-group');
+    if (group) affectedGroups.add(group);
+    row.remove();
+  });
+
+  // Re-create rows in appropriate tag groups
+  const taskTags = (task.tags || []).map(tt => tt.tag.name);
+  const pColor = priorityColors[task.priority] || '#FFB347';
+  const sColor = statusColorsMap[task.status] || '#6B6B8E';
+  const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+
+  const targetTagNames = taskTags.length > 0 ? taskTags : ['No Tag'];
+
+  targetTagNames.forEach(tagName => {
+    const group = tagView.querySelector(`.list-group[data-tag="${tagName}"]`);
+    if (!group) return;
+    const body = group.querySelector('.list-group-body');
+    if (!body) return;
+
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.dataset.taskId = taskId;
+    row.dataset.status = task.status;
+    row.dataset.tags = taskTags.join(',');
+    row.setAttribute('onclick', `openTaskPreview(${taskId})`);
+
+    row.innerHTML = `
+      <div class="list-col list-col-title">
+        <div class="list-priority-dot" style="background:${pColor};"></div>
+        <div class="list-task-name">${task.title}</div>
+      </div>
+      <div class="list-col list-col-status">
+        <div class="list-status-badge" style="color:${sColor}; background:color-mix(in srgb, ${sColor} 12%, transparent);">${statusLabelsMap[task.status] || task.status}</div>
+      </div>
+      <div class="list-col list-col-priority">
+        <div style="color:${pColor}; font-weight:600;">${listPriorityLabels[task.priority] || 'MED'}</div>
+      </div>
+      <div class="list-col list-col-progress">
+        <div class="list-progress-track">
+          <div class="list-progress-fill" style="width:${task.progress}%; background:${progColor};"></div>
+        </div>
+        <div style="color:${progColor}; font-weight:600; min-width:30px; text-align:right; padding-right:5px;">${task.progress}%</div>
+      </div>
+      <div class="list-col list-col-due">
+        ${task.dueDate || '—'}
+      </div>`;
+
+    body.appendChild(row);
+    affectedGroups.add(group);
+  });
+
+  // Update counts for all affected groups
+  affectedGroups.forEach(group => updateListGroupCount(group));
 }
 
 function updateColumnCount(status) {
@@ -367,10 +701,10 @@ function closeTaskPreview() {
   const textarea = document.getElementById('previewDescription');
   if (rendered) rendered.classList.remove('hidden');
   if (textarea) textarea.classList.add('hidden');
-  // Reload dashboard if any changes were made
-  if (previewDirty) {
-    window.location.reload();
-    return;
+  // Refresh card/row in-place if changes were made
+  if (previewDirty && previewTaskId) {
+    refreshCardFromAPI(previewTaskId);
+    refreshListRowsFromAPI(previewTaskId);
   }
   previewTaskId = null;
   previewDirty = false;
@@ -444,7 +778,7 @@ async function togglePreviewTag(tagName) {
     });
     previewDirty = true;
 
-    // Update card tags in DOM
+    // Update card tags in DOM (board view)
     const card = document.querySelector(`.task-card[data-task-id="${previewTaskId}"]`);
     if (card) {
       const cardTags = card.querySelector('.task-tags');
@@ -457,6 +791,19 @@ async function togglePreviewTag(tagName) {
       }
       card.dataset.tags = previewCurrentTags.join(',');
     }
+
+    // Update list row tags in DOM (status list view)
+    const listRows = document.querySelectorAll(`.list-row[data-task-id="${previewTaskId}"]`);
+    listRows.forEach(row => {
+      const tagsCol = row.querySelector('.list-col-tags');
+      if (tagsCol) {
+        tagsCol.innerHTML = previewCurrentTags.map(name => {
+          const c = tagColorMap[name] || '#6B6B8E';
+          return `<div class="list-tag-dot" style="background:${c};" title="${name}"></div>`;
+        }).join('');
+      }
+      row.dataset.tags = previewCurrentTags.join(',');
+    });
   } catch (err) {
     console.error('Failed to update tags:', err);
   }
