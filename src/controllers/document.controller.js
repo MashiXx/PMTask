@@ -297,8 +297,19 @@ exports.moveFolder = async (req, res) => {
     const folderId = parseInt(id);
     const newParentId = parentId ? parseInt(parentId) : null;
 
+    if (isNaN(folderId) || (newParentId !== null && isNaN(newParentId))) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
+
     const folder = await prisma.folder.findUnique({ where: { id: folderId } });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
+
+    // IDOR protection: only project owner or admin can move folders
+    const project = await prisma.project.findUnique({ where: { id: folder.projectId } });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (req.user.role !== 'admin' && project.userId !== req.user.id) {
+      return res.status(403).json({ error: 'You do not have permission to move this folder' });
+    }
 
     // Cannot move folder into itself
     if (newParentId === folderId) {
@@ -486,9 +497,18 @@ exports.updateDocument = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, folderId } = req.body;
+    const docId = parseInt(id);
 
-    const doc = await prisma.document.findUnique({ where: { id: parseInt(id) } });
+    if (isNaN(docId)) return res.status(400).json({ error: 'Invalid ID' });
+
+    const doc = await prisma.document.findUnique({ where: { id: docId } });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // IDOR protection: only project owner, uploader, or admin can update
+    const project = await prisma.project.findUnique({ where: { id: doc.projectId } });
+    if (req.user.role !== 'admin' && project.userId !== req.user.id && doc.uploadedById !== req.user.id) {
+      return res.status(403).json({ error: 'You do not have permission to update this document' });
+    }
 
     const data = {};
     if (title !== undefined) {
@@ -496,10 +516,39 @@ exports.updateDocument = async (req, res) => {
       if (!safeTitle) return res.status(400).json({ error: 'Invalid title' });
       data.title = safeTitle;
     }
-    if (folderId !== undefined) data.folderId = folderId ? parseInt(folderId) : null;
+    if (folderId !== undefined) {
+      const targetFolderId = folderId ? parseInt(folderId) : null;
+      if (folderId && isNaN(targetFolderId)) return res.status(400).json({ error: 'Invalid folder ID' });
+
+      if (targetFolderId) {
+        // Verify target folder belongs to the same project
+        const targetFolder = await prisma.folder.findUnique({ where: { id: targetFolderId } });
+        if (!targetFolder || targetFolder.projectId !== doc.projectId) {
+          return res.status(400).json({ error: 'Invalid target folder' });
+        }
+
+        // Check password protection on target folder (non-admin must have unlocked)
+        if (req.user.role !== 'admin') {
+          const access = await checkFolderAccess(req, targetFolderId);
+          if (!access.allowed) {
+            return res.status(403).json({ error: 'Target folder is locked' });
+          }
+        }
+      }
+
+      // Check password protection on source folder (non-admin must have unlocked)
+      if (doc.folderId && req.user.role !== 'admin') {
+        const access = await checkFolderAccess(req, doc.folderId);
+        if (!access.allowed) {
+          return res.status(403).json({ error: 'Source folder is locked' });
+        }
+      }
+
+      data.folderId = targetFolderId;
+    }
 
     const updated = await prisma.document.update({
-      where: { id: parseInt(id) },
+      where: { id: docId },
       data,
     });
 
