@@ -192,6 +192,78 @@ async function deleteDoc(id, name) {
   }
 }
 
+// ===== Move Modal =====
+function openMoveModal(id, type, name) {
+  const modal = document.getElementById('moveModal');
+  if (!modal) return;
+
+  document.getElementById('moveItemId').value = id;
+  document.getElementById('moveItemType').value = type;
+  document.getElementById('moveModalTitle').textContent = type === 'folder' ? 'Move Folder' : 'Move Document';
+  document.getElementById('moveItemName').innerHTML =
+    (type === 'folder' ? 'Folder: ' : 'File: ') +
+    '<strong style="color:var(--text)">' + escapeHtml(name) + '</strong>';
+
+  const select = document.getElementById('moveFolderSelect');
+  // Disable the folder itself and its children from being selected as destination (for folder moves)
+  for (const option of select.options) {
+    option.disabled = false;
+    if (type === 'folder' && option.value === String(id)) {
+      option.disabled = true;
+    }
+  }
+
+  // Pre-select current folder
+  select.value = CURRENT_FOLDER_ID || '';
+
+  modal.classList.add('active');
+}
+
+function closeMoveModal() {
+  const modal = document.getElementById('moveModal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function submitMove(e) {
+  e.preventDefault();
+  const id = document.getElementById('moveItemId').value;
+  const type = document.getElementById('moveItemType').value;
+  const folderId = document.getElementById('moveFolderSelect').value;
+
+  const btn = document.getElementById('moveSubmitBtn');
+  btn.textContent = 'Moving...';
+  btn.disabled = true;
+
+  try {
+    let url, method, body;
+
+    if (type === 'folder') {
+      url = `/projects/${PROJECT_ID}/documents/api/folders/${id}/move`;
+      method = 'PATCH';
+      body = JSON.stringify({ parentId: folderId || null });
+    } else {
+      url = `/projects/${PROJECT_ID}/documents/api/files/${id}`;
+      method = 'PUT';
+      body = JSON.stringify({ folderId: folderId || null });
+    }
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.error || 'Failed to move');
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    alert('An error occurred');
+  } finally {
+    btn.textContent = 'Move';
+    btn.disabled = false;
+  }
+}
+
 // ===== Password Modal (Admin) =====
 function openPasswordModal(folderId, folderName, hasPassword) {
   const modal = document.getElementById('passwordModal');
