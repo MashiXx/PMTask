@@ -117,16 +117,24 @@ exports.getDocumentsPage = async (req, res) => {
     const projectSlug = req.params.projectSlug;
     const folderId = req.params.folderId ? parseInt(req.params.folderId) : null;
 
-    // Support both slug and legacy numeric ID
-    const isNumeric = /^\d+$/.test(projectSlug);
-    const project = isNumeric
-      ? await prisma.project.findUnique({ where: { id: parseInt(projectSlug) }, include: { tags: true } })
-      : await prisma.project.findUnique({ where: { slug: projectSlug }, include: { tags: true } });
-    if (project && isNumeric && project.slug) {
-      const folderPart = folderId ? `/folder/${folderId}` : '';
-      return res.redirect(301, `/projects/${project.slug}/documents${folderPart}`);
+    // Parse ID from slug (e.g. "1-atlas-platform" -> 1)
+    const { parseIdFromSlug } = require('../utils/slug');
+    const projectId = parseIdFromSlug(projectSlug);
+    if (!projectId) {
+      req.flash('error', 'Project not found');
+      return res.redirect('/projects');
     }
-    const projectId = project ? project.id : null;
+
+    const project = await prisma.project.findUnique({ where: { id: projectId }, include: { tags: true } });
+
+    // Redirect to canonical URL
+    if (project) {
+      const canonical = `${project.id}-${project.slug}`;
+      if (projectSlug !== canonical) {
+        const folderPart = folderId ? `/folder/${folderId}` : '';
+        return res.redirect(301, `/projects/${canonical}/documents${folderPart}`);
+      }
+    }
     if (!project) {
       req.flash('error', 'Project not found');
       return res.redirect('/projects');

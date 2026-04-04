@@ -4,23 +4,23 @@
 require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { uniqueProjectSlug, uniqueTaskSlug } = require('../src/utils/slug');
+const { generateSlug } = require('../src/utils/slug');
 
 async function main() {
   // Migrate projects
   const projects = await prisma.project.findMany({ where: { slug: '' } });
   for (const project of projects) {
-    const slug = await uniqueProjectSlug(prisma, project.name, project.id);
+    const slug = generateSlug(project.name);
     await prisma.project.update({ where: { id: project.id }, data: { slug } });
-    console.log(`Project "${project.name}" -> ${slug}`);
+    console.log(`Project "${project.name}" -> ${project.id}-${slug}`);
   }
 
   // Migrate tasks
   const tasks = await prisma.task.findMany({ where: { slug: '' } });
   for (const task of tasks) {
-    const slug = await uniqueTaskSlug(prisma, task.title, task.projectId, task.id);
+    const slug = generateSlug(task.title);
     await prisma.task.update({ where: { id: task.id }, data: { slug } });
-    console.log(`Task "${task.title}" -> ${slug}`);
+    console.log(`Task "${task.title}" -> ${task.id}-${slug}`);
   }
 
   console.log('Slug migration complete!');

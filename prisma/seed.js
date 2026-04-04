@@ -2,7 +2,7 @@ require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
-const { uniqueProjectSlug, uniqueTaskSlug } = require('../src/utils/slug');
+const { generateSlug } = require('../src/utils/slug');
 
 async function main() {
   await prisma.taskAssignee.deleteMany();
@@ -28,8 +28,7 @@ async function main() {
   ];
   const projects = {};
   for (const p of projectNames) {
-    const slug = await uniqueProjectSlug(prisma, p.name);
-    projects[p.key] = await prisma.project.create({ data: { name: p.name, slug, color: p.color, userId: user.id } });
+    projects[p.key] = await prisma.project.create({ data: { name: p.name, slug: generateSlug(p.name), color: p.color, userId: user.id } });
   }
 
   const tagData = [
@@ -60,11 +59,10 @@ async function main() {
   ];
 
   for (const td of taskData) {
-    const taskSlug = await uniqueTaskSlug(prisma, td.title, projects.atlas.id);
     const task = await prisma.task.create({
       data: {
         title: td.title,
-        slug: taskSlug,
+        slug: generateSlug(td.title),
         priority: td.priority,
         status: td.status,
         progress: td.progress,

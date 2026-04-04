@@ -198,7 +198,7 @@ async function openTaskPreview(taskId) {
       renderPreviewSubtasks(task.subtasks || [], isGuest);
     }
 
-    document.getElementById('previewDetailsLink').href = '/tasks/' + (task.slug || task.id);
+    document.getElementById('previewDetailsLink').href = '/tasks/' + encodeURIComponent(task.id + '-' + (task.slug || ''));
 
     // Guest mode: make fields read-only, hide edit/delete actions
     const previewTitle = document.getElementById('previewTitle');

@@ -1,21 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { parseIdFromSlug } = require('../utils/slug');
 
 exports.getDashboard = async (req, res) => {
   try {
     const user = req.user;
     const isGuest = !user;
     const projectParam = req.query.project || null;
-    let projectId = null;
-    if (projectParam) {
-      if (/^\d+$/.test(projectParam)) {
-        projectId = parseInt(projectParam);
-      } else {
-        // Look up project by slug
-        const projectBySlug = await prisma.project.findUnique({ where: { slug: projectParam } });
-        if (projectBySlug) projectId = projectBySlug.id;
-      }
-    }
+    const projectId = projectParam ? parseIdFromSlug(projectParam) : null;
 
     // Admins see their own projects; developers see all; guests see only public
     let projectFilter = {};
@@ -95,9 +87,12 @@ exports.getDashboard = async (req, res) => {
 
     const activeProject = projects.find(p => p.id === activeProjectId);
 
-    // Redirect numeric project ID to slug URL
-    if (activeProject && projectParam && /^\d+$/.test(projectParam) && activeProject.slug) {
-      return res.redirect(301, `/dashboard?project=${activeProject.slug}`);
+    // Redirect to canonical ID-slug URL
+    if (activeProject && projectParam) {
+      const canonical = `${activeProject.id}-${activeProject.slug}`;
+      if (projectParam !== canonical) {
+        return res.redirect(301, `/dashboard?project=${canonical}`);
+      }
     }
 
     const projectTags = activeProjectId
