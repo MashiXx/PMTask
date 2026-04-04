@@ -10,6 +10,7 @@ router.get('/folder/:folderId', doc.getDocumentsPage);
 // Mutation routes — require authentication
 router.post('/api/folders', isAuthenticated, doc.createFolder);
 router.put('/api/folders/:id', isAuthenticated, doc.updateFolder);
+router.patch('/api/folders/:id/move', isAuthenticated, doc.moveFolder);
 router.delete('/api/folders/:id', isAuthenticated, doc.deleteFolder);
 
 // Folder password (admin only for set, all users for unlock)

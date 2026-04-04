@@ -289,6 +289,65 @@ exports.updateFolder = async (req, res) => {
   }
 };
 
+// PATCH /api/documents/folders/:id/move
+exports.moveFolder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { parentId } = req.body;
+    const folderId = parseInt(id);
+    const newParentId = parentId ? parseInt(parentId) : null;
+
+    const folder = await prisma.folder.findUnique({ where: { id: folderId } });
+    if (!folder) return res.status(404).json({ error: 'Folder not found' });
+
+    // Cannot move folder into itself
+    if (newParentId === folderId) {
+      return res.status(400).json({ error: 'Cannot move folder into itself' });
+    }
+
+    // Prevent circular reference: newParentId must not be a descendant of folderId
+    if (newParentId) {
+      let current = newParentId;
+      while (current) {
+        if (current === folderId) {
+          return res.status(400).json({ error: 'Cannot move folder into its own subfolder' });
+        }
+        const parent = await prisma.folder.findUnique({ where: { id: current }, select: { parentId: true } });
+        current = parent ? parent.parentId : null;
+      }
+
+      // Verify target folder belongs to the same project
+      const targetFolder = await prisma.folder.findUnique({ where: { id: newParentId } });
+      if (!targetFolder || targetFolder.projectId !== folder.projectId) {
+        return res.status(400).json({ error: 'Invalid target folder' });
+      }
+    }
+
+    // Check duplicate name at target level
+    const existing = await prisma.folder.findFirst({
+      where: {
+        name: folder.name,
+        projectId: folder.projectId,
+        parentId: newParentId,
+        NOT: { id: folderId },
+      },
+    });
+    if (existing) {
+      return res.status(400).json({ error: 'A folder with this name already exists in the target location' });
+    }
+
+    const updated = await prisma.folder.update({
+      where: { id: folderId },
+      data: { parentId: newParentId },
+    });
+
+    res.json({ success: true, folder: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to move folder' });
+  }
+};
+
 // DELETE /api/documents/folders/:id
 exports.deleteFolder = async (req, res) => {
   try {
