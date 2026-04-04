@@ -33,7 +33,7 @@
     <div class="dashboard-body">
       <div class="projects-grid">
         <% projects.forEach(p => { %>
-          <a href="/dashboard?project=<%= p.id %>" class="project-card no-decoration" style="border-left: 3px solid <%= p.color %>">
+          <a href="/dashboard?project=<%= p.slug %>" class="project-card no-decoration" style="border-left: 3px solid <%= p.color %>">
             <div class="project-card-header">
               <div style="display:flex; align-items:center; gap:10px;">
                 <span class="project-dot" style="background: <%= p.color %>; box-shadow: 0 0 6px <%= p.color %>55; width:10px; height:10px;"></span>

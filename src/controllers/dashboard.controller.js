@@ -5,7 +5,17 @@ exports.getDashboard = async (req, res) => {
   try {
     const user = req.user;
     const isGuest = !user;
-    const projectId = req.query.project ? parseInt(req.query.project) : null;
+    const projectParam = req.query.project || null;
+    let projectId = null;
+    if (projectParam) {
+      if (/^\d+$/.test(projectParam)) {
+        projectId = parseInt(projectParam);
+      } else {
+        // Look up project by slug
+        const projectBySlug = await prisma.project.findUnique({ where: { slug: projectParam } });
+        if (projectBySlug) projectId = projectBySlug.id;
+      }
+    }
 
     // Admins see their own projects; developers see all; guests see only public
     let projectFilter = {};
@@ -84,6 +94,11 @@ exports.getDashboard = async (req, res) => {
     const sprintProgress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
     const activeProject = projects.find(p => p.id === activeProjectId);
+
+    // Redirect numeric project ID to slug URL
+    if (activeProject && projectParam && /^\d+$/.test(projectParam) && activeProject.slug) {
+      return res.redirect(301, `/dashboard?project=${activeProject.slug}`);
+    }
 
     const projectTags = activeProjectId
       ? await prisma.tag.findMany({ where: { projectId: activeProjectId }, orderBy: { name: 'asc' } })

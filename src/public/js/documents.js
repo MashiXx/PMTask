@@ -39,7 +39,7 @@ async function submitFolder(e) {
 
   try {
     if (editId) {
-      const res = await fetch(`/projects/${PROJECT_ID}/documents/api/folders/${editId}`, {
+      const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders/${editId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -47,7 +47,7 @@ async function submitFolder(e) {
       const data = await res.json();
       if (!res.ok) return alert(data.error || 'Failed to rename folder');
     } else {
-      const res = await fetch(`/projects/${PROJECT_ID}/documents/api/folders`, {
+      const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, projectId: PROJECT_ID, parentId: CURRENT_FOLDER_ID }),
@@ -65,7 +65,7 @@ async function submitFolder(e) {
 async function deleteFolder(id, name) {
   if (!confirm(`Delete folder "${name}" and all its contents?`)) return;
   try {
-    const res = await fetch(`/projects/${PROJECT_ID}/documents/api/folders/${id}`, {
+    const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders/${id}`, {
       method: 'DELETE',
     });
     const data = await res.json();
@@ -134,7 +134,7 @@ async function submitUpload() {
       formData.append('file', file);
       if (folderId) formData.append('folderId', folderId);
 
-      const res = await fetch(`/projects/${PROJECT_ID}/documents/api/upload/${PROJECT_ID}`, {
+      const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
         method: 'POST',
         body: formData,
       });
@@ -155,7 +155,7 @@ async function submitUpload() {
 
 // ===== Document actions =====
 function downloadDoc(id) {
-  window.open(`/projects/${PROJECT_ID}/documents/api/files/${id}/download`, '_blank');
+  window.open(`/projects/${PROJECT_SLUG}/documents/api/files/${id}/download`, '_blank');
 }
 
 async function renameDoc(id, currentName) {
@@ -163,7 +163,7 @@ async function renameDoc(id, currentName) {
   if (!name || name === currentName) return;
 
   try {
-    const res = await fetch(`/projects/${PROJECT_ID}/documents/api/files/${id}`, {
+    const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/files/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: name }),
@@ -180,7 +180,7 @@ async function renameDoc(id, currentName) {
 async function deleteDoc(id, name) {
   if (!confirm(`Delete "${name}"?`)) return;
   try {
-    const res = await fetch(`/projects/${PROJECT_ID}/documents/api/files/${id}`, {
+    const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/files/${id}`, {
       method: 'DELETE',
     });
     const data = await res.json();
@@ -238,11 +238,11 @@ async function submitMove(e) {
     let url, method, body;
 
     if (type === 'folder') {
-      url = `/projects/${PROJECT_ID}/documents/api/folders/${id}/move`;
+      url = `/projects/${PROJECT_SLUG}/documents/api/folders/${id}/move`;
       method = 'PATCH';
       body = JSON.stringify({ parentId: folderId || null });
     } else {
-      url = `/projects/${PROJECT_ID}/documents/api/files/${id}`;
+      url = `/projects/${PROJECT_SLUG}/documents/api/files/${id}`;
       method = 'PUT';
       body = JSON.stringify({ folderId: folderId || null });
     }
@@ -303,7 +303,7 @@ async function submitPassword(e) {
   const password = document.getElementById('folderPasswordInput').value;
 
   try {
-    const res = await fetch(`/projects/${PROJECT_ID}/documents/api/folders/${folderId}/password`, {
+    const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders/${folderId}/password`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
@@ -325,7 +325,7 @@ async function submitUnlock(e) {
   const errorEl = document.getElementById('unlockError');
 
   try {
-    const res = await fetch(`/projects/${PROJECT_ID}/documents/api/folders/${folderId}/unlock`, {
+    const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders/${folderId}/unlock`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
@@ -370,7 +370,7 @@ dropZone.addEventListener('drop', async e => {
     if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
 
     try {
-      await fetch(`/projects/${PROJECT_ID}/documents/api/upload/${PROJECT_ID}`, {
+      await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
         method: 'POST',
         body: formData,
       });
@@ -392,7 +392,7 @@ document.getElementById('fileInput').addEventListener('change', async function (
     if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
 
     try {
-      await fetch(`/projects/${PROJECT_ID}/documents/api/upload/${PROJECT_ID}`, {
+      await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
         method: 'POST',
         body: formData,
       });
@@ -441,7 +441,7 @@ function previewDoc(id, mimeType, title) {
     downloadDoc(id);
   };
 
-  const previewUrl = `/projects/${PROJECT_ID}/documents/api/files/${id}/preview`;
+  const previewUrl = `/projects/${PROJECT_SLUG}/documents/api/files/${id}/preview`;
 
   if (mimeType.startsWith('image/')) {
     previewImage(previewUrl, body);

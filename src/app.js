@@ -69,14 +69,14 @@ app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/api/subtasks', require('./routes/subtask.routes'));
 app.use('/projects', require('./routes/project.routes'));
-app.use('/projects/:projectId/documents', require('./routes/document.routes'));
+app.use('/projects/:projectSlug/documents', require('./routes/document.routes'));
 app.use('/profile', require('./routes/profile.routes'));
 app.use('/admin', require('./routes/admin.routes'));
 
 // Task detail page
 const { isAuthenticated } = require('./middleware/auth');
 const taskController = require('./controllers/task.controller');
-app.get('/tasks/:id', taskController.getTaskPage);
+app.get('/tasks/:slug', taskController.getTaskPage);
 
 // Root -> dashboard (guests welcome)
 app.get('/', (req, res) => {

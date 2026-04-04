@@ -22,7 +22,7 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <a href="/dashboard?project=<%= task.projectId %>" class="breadcrumb-text breadcrumb-link">
+          <a href="/dashboard?project=<%= task.project.slug %>" class="breadcrumb-text breadcrumb-link">
             <%= task.project.name %>
           </a>
           <span class="breadcrumb-separator">/</span>
@@ -250,7 +250,7 @@
     const taskId = document.getElementById('deleteTaskId').value;
     try {
       await fetch('/api/tasks/' + taskId, { method: 'DELETE' });
-      window.location.href = '/dashboard?project=<%= task.projectId %>';
+      window.location.href = '/dashboard?project=<%= task.project.slug %>';
     } catch (err) {
       console.error('Failed to delete task:', err);
     }

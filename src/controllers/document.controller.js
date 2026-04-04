@@ -111,16 +111,22 @@ async function checkFolderAccess(req, folderId) {
   return { allowed: true, lockedFolder: null };
 }
 
-// GET /projects/:projectId/documents
+// GET /projects/:projectSlug/documents
 exports.getDocumentsPage = async (req, res) => {
   try {
-    const projectId = parseInt(req.params.projectId);
+    const projectSlug = req.params.projectSlug;
     const folderId = req.params.folderId ? parseInt(req.params.folderId) : null;
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: { tags: true },
-    });
+    // Support both slug and legacy numeric ID
+    const isNumeric = /^\d+$/.test(projectSlug);
+    const project = isNumeric
+      ? await prisma.project.findUnique({ where: { id: parseInt(projectSlug) }, include: { tags: true } })
+      : await prisma.project.findUnique({ where: { slug: projectSlug }, include: { tags: true } });
+    if (project && isNumeric && project.slug) {
+      const folderPart = folderId ? `/folder/${folderId}` : '';
+      return res.redirect(301, `/projects/${project.slug}/documents${folderPart}`);
+    }
+    const projectId = project ? project.id : null;
     if (!project) {
       req.flash('error', 'Project not found');
       return res.redirect('/projects');

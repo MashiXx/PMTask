@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { uniqueTaskSlug } = require('../utils/slug');
 
 const VALID_STATUSES = ['todo', 'inprogress', 'review', 'done'];
 const VALID_PRIORITIES = ['low', 'medium', 'high'];
@@ -34,23 +35,25 @@ exports.createTask = async (req, res) => {
       _max: { position: true },
     });
 
+    const pid = parseInt(projectId);
+    const slug = await uniqueTaskSlug(prisma, title, pid);
     const task = await prisma.task.create({
       data: {
         title,
+        slug,
         description: description || null,
         priority: safePriority,
         status: safeStatus,
         dueDate: dueDate || null,
         progress: safeProgress,
         position: (maxPos._max.position || 0) + 1,
-        projectId: parseInt(projectId),
+        projectId: pid,
         createdById: req.user.id,
       },
     });
 
     if (tags && tags.length > 0) {
       const tagList = Array.isArray(tags) ? tags : [tags];
-      const pid = parseInt(projectId);
       for (const tagName of tagList) {
         const tag = await prisma.tag.upsert({
           where: { name_projectId: { name: tagName, projectId: pid } },
@@ -94,6 +97,9 @@ exports.updateTask = async (req, res) => {
       dueDate: dueDate || null,
       progress: safeProgress,
     };
+    if (title && title !== access.title) {
+      updateData.slug = await uniqueTaskSlug(prisma, title, access.projectId, taskId);
+    }
     if (status && VALID_STATUSES.includes(status)) {
       updateData.status = status;
     }
@@ -199,19 +205,35 @@ exports.deleteTask = async (req, res) => {
 
 exports.getTaskPage = async (req, res) => {
   try {
-    const { id } = req.params;
-    const task = await prisma.task.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        project: true,
-        tags: { include: { tag: true } },
-        assignees: { include: { user: true } },
-        subtasks: { orderBy: { position: 'asc' } },
-      },
-    });
+    const { slug } = req.params;
+    // Support both slug and legacy numeric ID
+    const isNumeric = /^\d+$/.test(slug);
+    const task = isNumeric
+      ? await prisma.task.findUnique({
+          where: { id: parseInt(slug) },
+          include: {
+            project: true,
+            tags: { include: { tag: true } },
+            assignees: { include: { user: true } },
+            subtasks: { orderBy: { position: 'asc' } },
+          },
+        })
+      : await prisma.task.findFirst({
+          where: { slug },
+          include: {
+            project: true,
+            tags: { include: { tag: true } },
+            assignees: { include: { user: true } },
+            subtasks: { orderBy: { position: 'asc' } },
+          },
+        });
     if (!task) {
       req.flash('error', 'Task not found');
       return res.redirect('/dashboard');
+    }
+    // Redirect numeric ID to slug URL
+    if (isNumeric && task.slug) {
+      return res.redirect(301, `/tasks/${task.slug}`);
     }
 
     const isGuest = !req.user;
