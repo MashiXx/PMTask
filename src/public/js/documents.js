@@ -425,6 +425,43 @@ function escapeHtml(str) {
 
 // ===== Preview =====
 let currentBlobUrl = null;
+let currentPreviewIndex = -1;
+
+function getDocList() {
+  return typeof DOC_LIST !== 'undefined' ? DOC_LIST : [];
+}
+
+function updateNavButtons() {
+  var docs = getDocList();
+  var prevBtn = document.getElementById('previewPrevBtn');
+  var nextBtn = document.getElementById('previewNextBtn');
+  var counter = document.getElementById('previewCounter');
+
+  if (docs.length <= 1) {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (counter) counter.textContent = '';
+    return;
+  }
+
+  if (prevBtn) {
+    prevBtn.style.display = currentPreviewIndex > 0 ? '' : 'none';
+  }
+  if (nextBtn) {
+    nextBtn.style.display = currentPreviewIndex < docs.length - 1 ? '' : 'none';
+  }
+  if (counter) {
+    counter.textContent = (currentPreviewIndex + 1) + ' / ' + docs.length;
+  }
+}
+
+function previewNavigate(dir) {
+  var docs = getDocList();
+  var newIndex = currentPreviewIndex + dir;
+  if (newIndex < 0 || newIndex >= docs.length) return;
+  var doc = docs[newIndex];
+  previewDoc(doc.id, doc.mimeType, doc.title);
+}
 
 function previewDoc(id, mimeType, title) {
   const modal = document.getElementById('previewModal');
@@ -434,6 +471,11 @@ function previewDoc(id, mimeType, title) {
   filename.textContent = title;
   body.innerHTML = '<div class="preview-loading">Loading preview...</div>';
   modal.classList.add('active');
+
+  // Track current index for navigation
+  var docs = getDocList();
+  currentPreviewIndex = docs.findIndex(function(d) { return d.id === id; });
+  updateNavButtons();
 
   // Download button
   document.getElementById('previewDownloadBtn').onclick = function (e) {
@@ -552,12 +594,18 @@ function closePreviewModal() {
   }
 }
 
-// Escape key to close preview
+// Keyboard shortcuts for preview modal
 document.addEventListener('keydown', function (e) {
+  var preview = document.getElementById('previewModal');
+  if (!preview || !preview.classList.contains('active')) return;
+
   if (e.key === 'Escape') {
-    const preview = document.getElementById('previewModal');
-    if (preview && preview.classList.contains('active')) {
-      closePreviewModal();
-    }
+    closePreviewModal();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    previewNavigate(-1);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    previewNavigate(1);
   }
 });

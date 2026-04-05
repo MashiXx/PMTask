@@ -36,6 +36,109 @@
         </div>
 
         <div class="profile-forms">
+          <div class="profile-section theme-picker-section">
+            <h3 class="profile-section-title">Theme</h3>
+            <p style="color: var(--text-muted); font-size: 0.8125rem; margin-bottom: 8px;">Choose a theme for the interface</p>
+            <div class="theme-picker-grid">
+              <!-- System -->
+              <div class="theme-picker-card <%= userTheme === 'system' ? 'active' : '' %>" data-theme="system" onclick="applyTheme('system')">
+                <div class="theme-preview" style="background: linear-gradient(135deg, #1E1E2E 50%, #F8F8FC 50%);">
+                  <div class="theme-preview-sidebar" style="background: linear-gradient(180deg, #252536 50%, #ECECF4 50%);"></div>
+                  <div class="theme-preview-main" style="background: transparent;">
+                    <div class="theme-preview-topbar" style="background: linear-gradient(90deg, #3B3B52 50%, #D4D4DE 50%);"></div>
+                    <div class="theme-preview-columns">
+                      <div class="theme-preview-col" style="background: linear-gradient(180deg, #2D2D40 50%, #FFFFFF 50%);"></div>
+                      <div class="theme-preview-col" style="background: linear-gradient(180deg, #2D2D40 50%, #FFFFFF 50%);"></div>
+                      <div class="theme-preview-col" style="background: linear-gradient(180deg, #2D2D40 50%, #FFFFFF 50%);"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="theme-picker-info">
+                  <span class="theme-picker-name">System</span>
+                  <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+              </div>
+
+              <!-- Light -->
+              <div class="theme-picker-card <%= userTheme === 'light' ? 'active' : '' %>" data-theme="light" onclick="applyTheme('light')">
+                <div class="theme-preview" style="background: #F8F8FC;">
+                  <div class="theme-preview-sidebar" style="background: #ECECF4;"></div>
+                  <div class="theme-preview-main" style="background: #F8F8FC;">
+                    <div class="theme-preview-topbar" style="background: #D4D4DE;"></div>
+                    <div class="theme-preview-columns">
+                      <div class="theme-preview-col" style="background: #FFFFFF;"></div>
+                      <div class="theme-preview-col" style="background: #FFFFFF;"></div>
+                      <div class="theme-preview-col" style="background: #FFFFFF;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="theme-picker-info">
+                  <span class="theme-picker-name">Light</span>
+                  <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+              </div>
+
+              <!-- Dark -->
+              <div class="theme-picker-card <%= userTheme === 'dark' ? 'active' : '' %>" data-theme="dark" onclick="applyTheme('dark')">
+                <div class="theme-preview" style="background: #1E1E2E;">
+                  <div class="theme-preview-sidebar" style="background: #252536;"></div>
+                  <div class="theme-preview-main" style="background: #1E1E2E;">
+                    <div class="theme-preview-topbar" style="background: #3B3B52;"></div>
+                    <div class="theme-preview-columns">
+                      <div class="theme-preview-col" style="background: #2D2D40;"></div>
+                      <div class="theme-preview-col" style="background: #2D2D40;"></div>
+                      <div class="theme-preview-col" style="background: #2D2D40;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="theme-picker-info">
+                  <span class="theme-picker-name">Dark</span>
+                  <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+              </div>
+
+              <!-- Vintage (Light) -->
+              <div class="theme-picker-card <%= userTheme === 'vintage' ? 'active' : '' %>" data-theme="vintage" onclick="applyTheme('vintage')">
+                <div class="theme-preview" style="background: #F2EBD9;">
+                  <div class="theme-preview-sidebar" style="background: #E8E0CE;"></div>
+                  <div class="theme-preview-main" style="background: #F2EBD9;">
+                    <div class="theme-preview-topbar" style="background: #D4C9B5;"></div>
+                    <div class="theme-preview-columns">
+                      <div class="theme-preview-col" style="background: #E8DFF5;"></div>
+                      <div class="theme-preview-col" style="background: #D5E5F5;"></div>
+                      <div class="theme-preview-col" style="background: #F5D5DD;"></div>
+                      <div class="theme-preview-col" style="background: #D5F0D0;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="theme-picker-info">
+                  <span class="theme-picker-name">Vintage</span>
+                  <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+              </div>
+
+              <!-- Vintage Dark -->
+              <div class="theme-picker-card <%= userTheme === 'vintage-dark' ? 'active' : '' %>" data-theme="vintage-dark" onclick="applyTheme('vintage-dark')">
+                <div class="theme-preview" style="background: #1A1625;">
+                  <div class="theme-preview-sidebar" style="background: #252036;"></div>
+                  <div class="theme-preview-main" style="background: #1A1625;">
+                    <div class="theme-preview-topbar" style="background: #3E3655;"></div>
+                    <div class="theme-preview-columns">
+                      <div class="theme-preview-col" style="background: rgba(108,80,180,0.25);"></div>
+                      <div class="theme-preview-col" style="background: rgba(80,140,200,0.25);"></div>
+                      <div class="theme-preview-col" style="background: rgba(200,100,120,0.25);"></div>
+                      <div class="theme-preview-col" style="background: rgba(100,180,100,0.25);"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="theme-picker-info">
+                  <span class="theme-picker-name">Vintage Dark</span>
+                  <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="profile-section">
             <h3 class="profile-section-title">Profile Information</h3>
             <form action="/profile/update" method="POST">

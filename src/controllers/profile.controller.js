@@ -95,7 +95,7 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-const VALID_THEMES = ['light', 'dark', 'system'];
+const VALID_THEMES = ['light', 'dark', 'system', 'vintage', 'vintage-dark'];
 
 exports.updateTheme = async (req, res) => {
   try {
