@@ -344,6 +344,8 @@ input, textarea, select {
   gap: 10px;
   padding: 0 20px 24px;
   border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
 }
 
 .sidebar-logo-icon {
@@ -483,6 +485,14 @@ input, textarea, select {
 }
 
 /* Admin Nav */
+.sidebar-general-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
 .sidebar-admin-nav {
   display: flex;
   flex-direction: column;
@@ -2916,25 +2926,31 @@ select option {
    19. PROFILE PAGE
    =================================================== */
 
-.profile-grid {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 24px;
-  max-width: 800px;
+.profile-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
-.profile-card {
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 28px 20px;
-  text-align: center;
-  height: fit-content;
+  padding: 20px 24px;
+}
+
+.profile-header-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .profile-avatar-large {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--accent-alpha);
   border: 2px solid rgba(108, 99, 255, 0.35);
@@ -2944,23 +2960,22 @@ select option {
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.2rem;
-  margin: 0 auto 12px;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .profile-name {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .profile-email {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 8px;
 }
 
 .profile-badge {
@@ -2972,12 +2987,7 @@ select option {
   background: var(--cyan-alpha, rgba(0, 217, 255, 0.12));
   border: 1px solid rgba(0, 217, 255, 0.3);
   color: var(--cyan);
-}
-
-.profile-forms {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  flex-shrink: 0;
 }
 
 .profile-section {
@@ -3390,11 +3400,6 @@ select option {
     grid-template-columns: 1fr;
   }
 
-  /* Profile single col */
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-
   /* Kanban columns smaller */
   .kanban-column {
     width: 220px;
@@ -3543,11 +3548,6 @@ select option {
 
   /* Projects grid 1-col */
   .projects-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Profile stacked */
-  .profile-grid {
     grid-template-columns: 1fr;
   }
 
@@ -4291,8 +4291,8 @@ select option {
 
 .theme-picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
   margin-top: 12px;
 }
 

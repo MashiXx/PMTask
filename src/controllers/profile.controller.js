@@ -15,6 +15,7 @@ exports.getProfile = async (req, res) => {
       projects,
       activeProjectId: null,
       projectTags: [],
+      activePage: 'profile',
     });
   } catch (err) {
     console.error(err);
