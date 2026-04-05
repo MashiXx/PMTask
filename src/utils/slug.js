@@ -1,8 +1,18 @@
+function removeVietnameseTones(str) {
+  return str
+    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+    .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+    .replace(/[ìíịỉĩ]/g, 'i')
+    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+    .replace(/[ùúụủũưừứựửữ]/g, 'u')
+    .replace(/[ỳýỵỷỹ]/g, 'y')
+    .replace(/đ/g, 'd');
+}
+
 function generateSlug(text) {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
+  return removeVietnameseTones(
+    text.toString().toLowerCase().trim()
+  )
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s_]+/g, '-')
     .replace(/-+/g, '-')
