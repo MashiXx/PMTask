@@ -4090,6 +4090,41 @@ select option {
   border-radius: 3px;
 }
 
+/* Preview navigation buttons */
+.preview-nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1002;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+.preview-nav-btn:hover {
+  background: var(--card-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 16px var(--shadow-heavy);
+}
+.preview-nav-prev { left: max(12px, calc((100vw - 920px) / 2 - 56px)); }
+.preview-nav-next { right: max(12px, calc((100vw - 920px) / 2 - 56px)); }
+
+.preview-counter {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding: 2px 8px;
+}
+
 /* Preview modal */
 .preview-modal {
   max-width: 900px;
@@ -4232,6 +4267,17 @@ select option {
     width: 100%;
     margin: 8px;
     max-height: 90vh;
+  }
+
+  .preview-nav-prev { left: 8px; }
+  .preview-nav-next { right: 8px; }
+  .preview-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .preview-nav-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }
 

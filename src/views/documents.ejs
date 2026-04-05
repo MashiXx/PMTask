@@ -307,14 +307,21 @@
 
 <!-- Preview Modal -->
 <div class="modal-overlay" id="previewModal">
+  <button class="preview-nav-btn preview-nav-prev" id="previewPrevBtn" onclick="previewNavigate(-1)" title="Previous (←)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button class="preview-nav-btn preview-nav-next" id="previewNextBtn" onclick="previewNavigate(1)" title="Next (→)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
   <div class="modal preview-modal">
     <div class="preview-header">
       <span class="preview-filename" id="previewFilename"></span>
       <div class="preview-header-actions">
+        <span class="preview-counter" id="previewCounter"></span>
         <button class="column-add-btn" id="previewDownloadBtn" title="Download">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
-        <button class="column-add-btn" onclick="closePreviewModal()" title="Close">
+        <button class="column-add-btn" onclick="closePreviewModal()" title="Close (Esc)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -330,6 +337,7 @@
   const PROJECT_SLUG = <%- JSON.stringify(activeProject.id + '-' + activeProject.slug) %>;
   const CURRENT_FOLDER_ID = <%= currentFolder ? currentFolder.id : 'null' %>;
   const IS_ADMIN = <%= currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>;
+  const DOC_LIST = <%- JSON.stringify(documents.map(function(d) { return { id: d.id, mimeType: d.mimeType, title: d.title }; })) %>;
 </script>
 <script src="/js/documents.js"></script>
 <script src="/js/theme.js"></script>
