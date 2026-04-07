@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EV Charge — Trạm sạc xe điện</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2e7d32;
+    --green-light: #4caf50;
+    --green-bg: #e8f5e9;
+    --green-dark: #1b5e20;
+    --bg: #f5f5f5;
+    --white: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border: #e5e7eb;
+    --border-light: #f0f0f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --blue: #2196f3;
+    --blue-bg: #e3f2fd;
+    --orange: #ff9800;
+    --orange-bg: #fff3e0;
+    --red: #e53935;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: #e0e0e0;
+    font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ═══ APP SHELL ═══ */
+  .app {
+    max-width: 420px;
+    height: 100dvh;
+    margin: 0 auto;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 40px rgba(0,0,0,0.15);
+  }
+
+  /* ═══ TOP BAR ═══ */
+  .topbar {
+    background: var(--white);
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+
+  .btn-back {
+    width: 34px; height: 34px;
+    border-radius: 50%; border: none;
+    background: var(--green-bg); color: var(--green);
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-back:active { background: #c8e6c9; }
+
+  .brand { display: flex; align-items: center; gap: 7px; }
+
+  .brand-logo {
+    width: 30px; height: 30px;
+    background: var(--green); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px; font-weight: 800;
+  }
+
+  .brand-name { font-size: 17px; font-weight: 800; color: var(--green); letter-spacing: -0.3px; }
+  .brand-sub { font-size: 9px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; margin-top: -2px; }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+  .btn-icon {
+    width: 34px; height: 34px;
+    border-radius: 50%; border: none;
+    background: var(--green-bg); color: var(--green);
+    font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-icon:active { background: #c8e6c9; }
+
+  /* ═══ SCROLLABLE ═══ */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { width: 0; }
+
+  /* ═══ STATION HERO ═══ */
+  .station-hero {
+    background: var(--white);
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .station-badge {
+    display: inline-block;
+    background: var(--green-bg); color: var(--green);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .station-badge.occupied { background: var(--orange-bg); color: var(--orange); }
+
+  .station-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+
+  .station-address { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+
+  .station-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+
+  .tag {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg); padding: 5px 10px; border-radius: 20px;
+  }
+  .tag .tag-icon { font-size: 12px; }
+
+  .station-stats { display: flex; gap: 8px; }
+
+  .stat-box {
+    flex: 1; background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px; text-align: center;
+  }
+
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--green); }
+  .stat-value.orange { color: var(--orange); }
+
+  .stat-label { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+  /* ═══ TABS ═══ */
+  .tabs {
+    display: flex; background: var(--white);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky; top: 0; z-index: 5;
+  }
+
+  .tab {
+    flex: 1; padding: 12px; text-align: center;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    background: none; border: none; cursor: pointer;
+    position: relative; transition: color 0.2s;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab.active { color: var(--green); }
+  .tab.active::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 16px; right: 16px;
+    height: 2.5px; background: var(--green);
+    border-radius: 2px 2px 0 0;
+  }
+
+  /* ═══ SECTION ═══ */
+  .section-title {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 10px;
+  }
+
+  /* ═══ PORTS LIST ═══ */
+  .ports-section { padding: 14px 16px 120px; }
+
+  .port-group {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    animation: fadeUp 0.35s ease both;
+  }
+  .port-group:nth-child(2) { animation-delay: 0.05s; }
+  .port-group:nth-child(3) { animation-delay: 0.1s; }
+  .port-group:nth-child(4) { animation-delay: 0.15s; }
+  .port-group:nth-child(5) { animation-delay: 0.2s; }
+  .port-group:nth-child(6) { animation-delay: 0.25s; }
+  .port-group:nth-child(7) { animation-delay: 0.3s; }
+  .port-group:nth-child(8) { animation-delay: 0.35s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .port-card {
+    display: flex; align-items: center;
+    padding: 14px 16px;
+    cursor: pointer; transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent; gap: 12px;
+  }
+  .port-card:active { background: #f9fafb; }
+
+  .port-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .port-icon-wrap.available { background: var(--green-bg); }
+  .port-icon-wrap.charging { background: var(--blue-bg); }
+
+  .port-info { flex: 1; min-width: 0; }
+
+  .port-title {
+    font-size: 14px; font-weight: 600;
+    margin-bottom: 2px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .port-connector-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--green-bg); color: var(--green);
+  }
+
+  .port-card.charging-state .port-connector-badge {
+    background: var(--blue-bg); color: var(--blue);
+  }
+
+  .port-meta { font-size: 11.5px; color: var(--text-secondary); }
+
+  .port-right { text-align: right; flex-shrink: 0; }
+
+  .port-status {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+  }
+  .port-status.available { background: var(--green-bg); color: var(--green); }
+  .port-status.charging {
+    background: var(--blue-bg); color: var(--blue);
+    animation: pulse-status 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* ═══ BOTTOM BAR ═══ */
+  .bottom-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    background: var(--white);
+    border-top: 1px solid var(--border-light);
+    display: flex; gap: 10px; z-index: 10;
+  }
+
+  .btn-bottom {
+    flex: 1; padding: 13px;
+    border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; border: none;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-bottom:active { transform: scale(0.97); }
+
+  .btn-scan {
+    background: var(--green); color: white;
+    box-shadow: 0 2px 10px rgba(46, 125, 50, 0.3);
+  }
+
+  .btn-direction {
+    background: var(--green-bg); color: var(--green);
+    border: 1.5px solid #c8e6c9;
+  }
+
+  /* ═══ QR SCANNER OVERLAY ═══ */
+  .scanner-overlay {
+    position: fixed; inset: 0;
+    background: #000;
+    z-index: 500;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s;
+  }
+  .scanner-overlay.active { opacity: 1; pointer-events: auto; }
+
+  .scanner-close {
+    position: absolute; top: 16px; left: 16px;
+    width: 40px; height: 40px;
+    border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.15);
+    color: white; font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+
+  .scanner-title {
+    color: white; font-size: 15px; font-weight: 600;
+    position: absolute; top: 24px;
+    text-align: center; width: 100%;
+  }
+
+  .scanner-frame {
+    width: 220px; height: 220px;
+    position: relative;
+    margin-bottom: 30px;
+  }
+
+  /* Corner brackets */
+  .scanner-frame::before,
+  .scanner-frame::after,
+  .scanner-corner-bl,
+  .scanner-corner-br {
+    content: '';
+    position: absolute;
+    width: 36px; height: 36px;
+    border-color: var(--green-light);
+    border-style: solid;
+    border-width: 0;
+  }
+  .scanner-frame::before { top: 0; left: 0; border-top-width: 3px; border-left-width: 3px; border-radius: 6px 0 0 0; }
+  .scanner-frame::after { top: 0; right: 0; border-top-width: 3px; border-right-width: 3px; border-radius: 0 6px 0 0; }
+  .scanner-corner-bl { bottom: 0; left: 0; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 6px; }
+  .scanner-corner-br { bottom: 0; right: 0; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 6px 0; }
+
+  .scanner-line {
+    position: absolute;
+    top: 0; left: 10px; right: 10px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green-light), transparent);
+    animation: scanLine 2.5s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--green-light);
+  }
+
+  @keyframes scanLine {
+    0%, 100% { top: 10px; }
+    50% { top: calc(100% - 10px); }
+  }
+
+  .scanner-hint {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+  }
+
+  /* Port selector in scanner */
+  .scanner-ports {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(12px);
+  }
+
+  .scanner-ports-title {
+    color: rgba(255,255,255,0.5);
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px; text-align: center;
+  }
+
+  .scanner-port-chips {
+    display: flex; flex-wrap: wrap;
+    gap: 8px; justify-content: center;
+  }
+
+  .scanner-port-chip {
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: white; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: inherit;
+  }
+  .scanner-port-chip:active { transform: scale(0.95); }
+  .scanner-port-chip .chip-sub {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+
+  /* ═══ BOTTOM SHEET / OVERLAY ═══ */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s; z-index: 100;
+  }
+  .overlay.active { opacity: 1; pointer-events: auto; }
+
+  .bottom-sheet {
+    position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 420px;
+    background: var(--white);
+    border-radius: 20px 20px 0 0;
+    z-index: 101;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.1);
+  }
+  .bottom-sheet.active { transform: translateX(-50%) translateY(0); }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: #d1d5db; border-radius: 2px;
+    margin: 10px auto 0;
+  }
+
+  .sheet-body { padding: 16px 20px 28px; }
+
+  .sheet-header {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 16px;
+  }
+
+  .sheet-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .sheet-icon.green { background: var(--green-bg); }
+  .sheet-icon.blue { background: var(--blue-bg); }
+
+  .sheet-title { font-size: 18px; font-weight: 700; }
+
+  .sheet-subtitle { font-size: 12.5px; color: var(--text-secondary); }
+  .sheet-subtitle span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; color: var(--green); font-size: 11.5px;
+  }
+
+  .sheet-info-card {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 16px;
+  }
+
+  .sheet-info-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 7px 0;
+  }
+  .sheet-info-row + .sheet-info-row { border-top: 1px solid var(--border-light); }
+
+  .sheet-info-label { font-size: 12.5px; color: var(--text-secondary); }
+  .sheet-info-val { font-size: 13px; font-weight: 600; }
+
+  /* ═══ CAR LIST IN SHEET ═══ */
+  .car-list-title {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 10px;
+  }
+
+  .car-list-sheet { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+
+  .car-row {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .car-row:active:not(.disabled) { transform: scale(0.98); }
+
+  .car-row.compatible { border-color: var(--border); }
+  .car-row.compatible:hover { border-color: #a5d6a7; background: #f9fff9; }
+
+  .car-row.selected {
+    background: var(--green-bg);
+    border-color: var(--green-light);
+  }
+
+  .car-row.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+  }
+
+  .car-row-emoji { font-size: 24px; flex-shrink: 0; }
+
+  .car-row-info { flex: 1; }
+  .car-row-name { font-size: 13.5px; font-weight: 600; }
+  .car-row-detail { font-size: 11.5px; color: var(--text-secondary); margin-top: 1px; }
+  .car-row-detail span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600; font-size: 10.5px;
+  }
+
+  .car-row-right { flex-shrink: 0; }
+
+  .car-row-badge {
+    font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    white-space: nowrap;
+  }
+  .car-row-badge.ok { background: var(--green-bg); color: var(--green); }
+  .car-row-badge.no { background: #f3f4f6; color: var(--text-muted); }
+
+  .car-row.selected .car-row-badge.ok {
+    background: var(--green); color: white;
+  }
+
+  /* Charging progress */
+  .charge-progress { margin-bottom: 18px; display: none; }
+  .charge-progress.active { display: block; }
+
+  .charge-bar-outer {
+    height: 8px; background: #e5e7eb;
+    border-radius: 4px; overflow: hidden; margin-bottom: 10px;
+  }
+  .charge-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-light), var(--green));
+    border-radius: 4px; width: 0%; transition: width 0.5s;
+  }
+
+  .charge-stats { display: flex; justify-content: space-around; }
+  .charge-stat { text-align: center; }
+  .charge-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; font-weight: 700; color: var(--green);
+  }
+  .charge-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Action button */
+  .btn-action {
+    width: 100%; padding: 14px;
+    border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14.5px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-action:active { transform: scale(0.98); }
+
+  .btn-action.green {
+    background: var(--green); color: white;
+    box-shadow: 0 3px 12px rgba(46, 125, 50, 0.3);
+  }
+  .btn-action.red {
+    background: var(--red); color: white;
+    box-shadow: 0 3px 12px rgba(229, 57, 53, 0.25);
+  }
+  .btn-action:disabled {
+    background: #e5e7eb; color: var(--text-muted);
+    box-shadow: none; cursor: not-allowed;
+  }
+
+  /* ═══ TOAST ═══ */
+  .toast {
+    position: fixed; top: 16px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px; font-weight: 500;
+    z-index: 200;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 360px; text-align: center;
+    box-shadow: var(--shadow-lg);
+    border-left: 3px solid var(--green);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ═══ CAR SELECTOR ═══ */
+  .car-selector {
+    background: var(--white);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .car-selector-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 8px;
+  }
+
+  .car-chips {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .car-chips::-webkit-scrollbar { display: none; }
+
+  .car-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .car-chip:active { transform: scale(0.96); }
+
+  .car-chip.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: white; font-weight: 600;
+  }
+
+  .car-chip-emoji { font-size: 16px; }
+
+  /* ═══ PORT FILTER DIVIDER ═══ */
+  .ports-divider {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted);
+    padding: 12px 0 8px;
+  }
+  .ports-divider:first-child { padding-top: 0; }
+
+  .port-group.incompatible {
+    opacity: 0.4;
+    filter: grayscale(0.6);
+  }
+  .port-group.incompatible .port-card { cursor: default; }
+  .port-group.incompatible .port-card:active { background: var(--white); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="btn-back">‹</button>
+      <div class="brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <div class="brand-name">EVCharge</div>
+          <div class="brand-sub">Powering Green Lifestyle</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-icon">♡</button>
+      <button class="btn-icon">⋮</button>
+    </div>
+  </div>
+
+  <!-- Scrollable -->
+  <div class="content">
+
+    <!-- Station hero -->
+    <div class="station-hero">
+      <span class="station-badge" id="stationBadge">● Trống</span>
+      <h1 class="station-name">CHUNG CƯ MINI VIỆT ANH</h1>
+      <p class="station-address">
+        Xe Máy Chung Cư Mini Việt Anh<br>
+        28e/84 Ng. 84 Võ Thị Sáu, Phường Bạch Mai, TP. Hà Nội
+      </p>
+      <div class="station-tags">
+        <div class="tag"><span class="tag-icon">🏢</span> Chung Cư</div>
+        <div class="tag"><span class="tag-icon">🔒</span> Trạm nội bộ</div>
+        <div class="tag"><span class="tag-icon">⏰</span> 24/7</div>
+        <div class="tag"><span class="tag-icon">🏠</span> Trong nhà</div>
+      </div>
+      <div class="station-stats">
+        <div class="stat-box">
+          <div class="stat-value" id="statAvailable">8</div>
+          <div class="stat-label">Cổng trống</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value orange" id="statCharging">0</div>
+          <div class="stat-label">Đang sạc</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--text-muted)" id="statTotal">8</div>
+          <div class="stat-label">Tổng cổng</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Car selector -->
+    <div class="car-selector">
+      <div class="car-selector-label">Xe của tôi</div>
+      <div class="car-chips" id="carChips"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this, 'ports')">Cổng sạc</button>
+      <button class="tab" onclick="switchTab(this, 'info')">Thông tin</button>
+    </div>
+
+    <!-- Ports list -->
+    <div class="ports-section" id="portsContainer"></div>
+
+    <!-- Info tab (hidden) -->
+    <div class="ports-section" id="infoTab" style="display:none;">
+      <div class="port-group">
+        <div style="padding: 16px;">
+          <div class="section-title" style="margin-bottom:14px;">Thông tin trạm</div>
+          <div class="sheet-info-card" style="margin-bottom:12px;">
+            <div class="sheet-info-row">
+              <span class="sheet-info-label">Chủ trạm</span>
+              <span class="sheet-info-val">Chung Cư Việt Anh</span>
+            </div>
+            <div class="sheet-info-row">
+              <span class="sheet-info-label">Giờ mở cửa</span>
+              <span class="sheet-info-val">24/7</span>
+            </div>
+            <div class="sheet-info-row">
+              <span class="sheet-info-label">Loại trạm</span>
+              <span class="sheet-info-val">Nội bộ</span>
+            </div>
+            <div class="sheet-info-row">
+              <span class="sheet-info-label">Phí tối thiểu</span>
+              <span class="sheet-info-val" style="color:var(--green)">4,900 VND</span>
+            </div>
+            <div class="sheet-info-row">
+              <span class="sheet-info-label">Phí sạc</span>
+              <span class="sheet-info-val" style="color:var(--green)">7,900 VND/kWh</span>
+            </div>
+          </div>
+          <div class="section-title" style="margin-bottom:10px;">Loại đầu sạc có sẵn</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px;background:var(--green-bg);border:1px solid #a5d6a7;color:var(--green-dark);">CCS2 (4 cổng)</span>
+            <span style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px;background:var(--green-bg);border:1px solid #a5d6a7;color:var(--green-dark);">Type2 (2 cổng)</span>
+            <span style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px;background:var(--green-bg);border:1px solid #a5d6a7;color:var(--green-dark);">CHAdeMO (2 cổng)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <button class="btn-bottom btn-scan" onclick="openScanner()">
+      📷 Quét mã
+    </button>
+    <button class="btn-bottom btn-direction">
+      📍 1.2 km
+    </button>
+  </div>
+
+</div>
+
+<!-- QR Scanner -->
+<div class="scanner-overlay" id="scannerOverlay">
+  <button class="scanner-close" onclick="closeScanner()">✕</button>
+  <div class="scanner-title">Quét mã QR trên cổng sạc</div>
+  <div class="scanner-frame">
+    <div class="scanner-corner-bl"></div>
+    <div class="scanner-corner-br"></div>
+    <div class="scanner-line"></div>
+  </div>
+  <div class="scanner-hint">Hướng camera vào mã QR</div>
+  <div class="scanner-ports">
+    <div class="scanner-ports-title">Hoặc chọn cổng sạc (demo)</div>
+    <div class="scanner-port-chips" id="scannerChips"></div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+
+<!-- Bottom sheet -->
+<div class="bottom-sheet" id="bottomSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ═══════════════════════════════════════
+  // DATA
+  // ═══════════════════════════════════════
+
+  // Xe của người dùng (giả lập user đã đăng ký nhiều xe)
+  const userCars = [
+    { id: 'vf5',    name: 'VinFast VF 5',      emoji: '🚗', connector: 'CCS2',    battery: '37.2 kWh' },
+    { id: 'vfe34',  name: 'VinFast VF e34',     emoji: '🚙', connector: 'CCS2',    battery: '42 kWh' },
+    { id: 'model3', name: 'Tesla Model 3',      emoji: '⚡', connector: 'Type2',   battery: '60 kWh' },
+    { id: 'leaf',   name: 'Nissan Leaf',        emoji: '🍃', connector: 'CHAdeMO', battery: '40 kWh' },
+    { id: 'ioniq5', name: 'Hyundai Ioniq 5',    emoji: '🚀', connector: 'CCS2',    battery: '72.6 kWh' },
+    { id: 'byd',    name: 'BYD Atto 3',         emoji: '🐬', connector: 'CCS2',    battery: '60.5 kWh' },
+  ];
+
+  const ports = [
+    { id: 'A1', connector: 'CCS2',    power: '150 kW', price: '7,900 VND/kWh' },
+    { id: 'A2', connector: 'CCS2',    power: '150 kW', price: '7,900 VND/kWh' },
+    { id: 'B1', connector: 'Type2',   power: '22 kW',  price: '6,500 VND/kWh' },
+    { id: 'B2', connector: 'Type2',   power: '22 kW',  price: '6,500 VND/kWh' },
+    { id: 'C1', connector: 'CHAdeMO', power: '50 kW',  price: '7,200 VND/kWh' },
+    { id: 'C2', connector: 'CCS2',    power: '100 kW', price: '7,500 VND/kWh' },
+    { id: 'D1', connector: 'Type2',   power: '11 kW',  price: '5,900 VND/kWh' },
+    { id: 'D2', connector: 'CHAdeMO', power: '50 kW',  price: '7,200 VND/kWh' },
+  ];
+
+  // ═══════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════
+  let selectedFilterCarId = null; // xe được chọn trên home để filter
+  let scannedPortId = null;   // cổng đã quét QR
+  let selectedCarId = null;   // xe được chọn cho cổng đó
+  let chargingPortId = null;  // cổng đang sạc
+  let chargingCarId = null;   // xe đang sạc
+  let chargingInterval = null;
+  let chargePercent = 0;
+
+  // ═══════════════════════════════════════
+  // RENDER CAR SELECTOR (home)
+  // ═══════════════════════════════════════
+  function renderCarSelector() {
+    const container = document.getElementById('carChips');
+    let html = userCars.map(car => {
+      const active = selectedFilterCarId === car.id ? 'active' : '';
+      return `<div class="car-chip ${active}" onclick="selectFilterCar('${car.id}')">
+        <span class="car-chip-emoji">${car.emoji}</span> ${car.name}
+      </div>`;
+    }).join('');
+
+    container.innerHTML = html;
+  }
+
+  function selectFilterCar(carId) {
+    selectedFilterCarId = selectedFilterCarId === carId ? null : carId;
+    selectedCarId = selectedFilterCarId;
+    renderCarSelector();
+    renderPorts();
+  }
+
+  // ═══════════════════════════════════════
+  // RENDER PORTS (main page)
+  // ═══════════════════════════════════════
+  function renderPortCard(port) {
+    const isCharging = chargingPortId === port.id;
+    const iconBg = isCharging ? 'charging' : 'available';
+    const cardClass = isCharging ? 'charging-state' : '';
+    const statusClass = isCharging ? 'charging' : 'available';
+    const statusText = isCharging ? '⚡ Đang sạc' : '● Trống';
+
+    return `
+      <div class="port-card ${cardClass}" onclick="${isCharging ? `openChargingSheet('${port.id}')` : `onScanSuccess('${port.id}')`}">
+        <div class="port-icon-wrap ${iconBg}">
+          ${isCharging ? '⚡' : '🔌'}
+        </div>
+        <div class="port-info">
+          <div class="port-title">
+            Cổng ${port.id}
+            <span class="port-connector-badge">${port.connector}</span>
+          </div>
+          <div class="port-meta">${port.power} · ${port.price}</div>
+        </div>
+        <div class="port-right">
+          <div class="port-status ${statusClass}">${statusText}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderPorts() {
+    const container = document.getElementById('portsContainer');
+
+    if (!selectedFilterCarId) {
+      // Không filter — hiện tất cả bình thường
+      container.innerHTML = ports.map(port =>
+        `<div class="port-group">${renderPortCard(port)}</div>`
+      ).join('');
+    } else {
+      const car = userCars.find(c => c.id === selectedFilterCarId);
+      const compatible = ports.filter(p => p.connector === car.connector);
+      const incompatible = ports.filter(p => p.connector !== car.connector);
+
+      let html = '';
+
+      if (compatible.length) {
+        html += `<div class="ports-divider">Cổng phù hợp · ${car.connector}</div>`;
+        html += compatible.map(port =>
+          `<div class="port-group">${renderPortCard(port)}</div>`
+        ).join('');
+      }
+
+      if (incompatible.length) {
+        html += `<div class="ports-divider">Cổng khác</div>`;
+        html += incompatible.map(port =>
+          `<div class="port-group incompatible">${renderPortCard(port)}</div>`
+        ).join('');
+      }
+
+      container.innerHTML = html;
+    }
+
+    updateStats();
+  }
+
+  function updateStats() {
+    let charging = chargingPortId ? 1 : 0;
+    document.getElementById('statAvailable').textContent = ports.length - charging;
+    document.getElementById('statCharging').textContent = charging;
+    document.getElementById('statTotal').textContent = ports.length;
+
+    const badge = document.getElementById('stationBadge');
+    if (charging > 0) {
+      badge.textContent = '⚡ Đang sạc';
+      badge.className = 'station-badge occupied';
+    } else {
+      badge.textContent = '● Trống';
+      badge.className = 'station-badge';
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // TABS
+  // ═══════════════════════════════════════
+  function switchTab(el, tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('portsContainer').style.display = tab === 'ports' ? '' : 'none';
+    document.getElementById('infoTab').style.display = tab === 'ports' ? 'none' : '';
+  }
+
+  // ═══════════════════════════════════════
+  // QR SCANNER
+  // ═══════════════════════════════════════
+  function openScanner(portId) {
+    // Nếu click trực tiếp vào cổng đang sạc -> mở sheet luôn
+    if (portId && chargingPortId === portId) {
+      openChargingSheet(portId);
+      return;
+    }
+
+    // Render port chips cho demo
+    const chips = document.getElementById('scannerChips');
+    chips.innerHTML = ports.filter(p => p.id !== chargingPortId).map(p => `
+      <div class="scanner-port-chip" onclick="onScanSuccess('${p.id}')">
+        ${p.id}
+        <span class="chip-sub">${p.connector}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('scannerOverlay').classList.add('active');
+  }
+
+  function closeScanner() {
+    document.getElementById('scannerOverlay').classList.remove('active');
+  }
+
+  // Quét thành công -> hiển thị thông tin cổng + list xe user
+  function onScanSuccess(portId) {
+    closeScanner();
+    scannedPortId = portId;
+    selectedCarId = selectedFilterCarId || null;
+
+    showToast('✅ Quét mã thành công — Cổng ' + portId);
+
+    setTimeout(() => openPortSheet(portId), 300);
+  }
+
+  // ═══════════════════════════════════════
+  // PORT SHEET (sau khi quét QR)
+  // ═══════════════════════════════════════
+  function openPortSheet(portId) {
+    const port = ports.find(p => p.id === portId);
+
+    document.getElementById('sheetBody').innerHTML = `
+      <div class="sheet-header">
+        <div class="sheet-icon green">🔌</div>
+        <div>
+          <div class="sheet-title">Cổng ${port.id}</div>
+          <div class="sheet-subtitle">
+            <span>${port.connector}</span> · ${port.power}
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet-info-card">
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Loại đầu sạc</span>
+          <span class="sheet-info-val">${port.connector}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Công suất</span>
+          <span class="sheet-info-val">${port.power}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Phí sạc</span>
+          <span class="sheet-info-val" style="color:var(--green)">${port.price}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Trạng thái</span>
+          <span class="sheet-info-val" style="color:var(--green)">● Sẵn sàng</span>
+        </div>
+      </div>
+
+      <div class="car-list-title">Chọn xe của bạn</div>
+      <div class="car-list-sheet" id="carListSheet">
+        ${renderCarList(port)}
+      </div>
+
+      <button class="btn-action green" id="btnStartCharge"
+              onclick="startCharge('${port.id}')"
+              ${!selectedCarId ? 'disabled' : ''}>
+        ${selectedCarId ? '⚡  Bắt đầu sạc — ' + userCars.find(c => c.id === selectedCarId).name : '⚡  Chọn xe để bắt đầu sạc'}
+      </button>
+    `;
+
+    document.getElementById('overlay').classList.add('active');
+    document.getElementById('bottomSheet').classList.add('active');
+  }
+
+  function renderCarList(port) {
+    return userCars.map(car => {
+      const compatible = car.connector === port.connector;
+      const isSelected = selectedCarId === car.id;
+
+      let rowClass = 'car-row';
+      if (!compatible) rowClass += ' disabled';
+      else if (isSelected) rowClass += ' selected';
+      else rowClass += ' compatible';
+
+      const badgeClass = compatible ? 'ok' : 'no';
+      const badgeText = compatible ? '✓ Tương thích' : '✕ ' + car.connector;
+
+      const onclick = compatible
+        ? `onclick="selectCarForPort('${car.id}', '${port.id}')"`
+        : '';
+
+      return `
+        <div class="${rowClass}" ${onclick}>
+          <span class="car-row-emoji">${car.emoji}</span>
+          <div class="car-row-info">
+            <div class="car-row-name">${car.name}</div>
+            <div class="car-row-detail"><span>${car.connector}</span> · ${car.battery}</div>
+          </div>
+          <div class="car-row-right">
+            <span class="car-row-badge ${badgeClass}">${badgeText}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function selectCarForPort(carId, portId) {
+    selectedCarId = carId;
+    const port = ports.find(p => p.id === portId);
+    const car = userCars.find(c => c.id === carId);
+
+    // Re-render car list
+    document.getElementById('carListSheet').innerHTML = renderCarList(port);
+
+    // Enable button
+    const btn = document.getElementById('btnStartCharge');
+    btn.disabled = false;
+    btn.textContent = '⚡  Bắt đầu sạc — ' + car.name;
+  }
+
+  // ═══════════════════════════════════════
+  // CHARGING SHEET (xem trạng thái sạc)
+  // ═══════════════════════════════════════
+  function openChargingSheet(portId) {
+    const port = ports.find(p => p.id === portId);
+    const car = userCars.find(c => c.id === chargingCarId);
+
+    document.getElementById('sheetBody').innerHTML = `
+      <div class="sheet-header">
+        <div class="sheet-icon blue">⚡</div>
+        <div>
+          <div class="sheet-title">Cổng ${port.id}</div>
+          <div class="sheet-subtitle">
+            <span>${port.connector}</span> · ${port.power}
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet-info-card">
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Xe đang sạc</span>
+          <span class="sheet-info-val">${car ? car.emoji + ' ' + car.name : '—'}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Loại đầu sạc</span>
+          <span class="sheet-info-val">${port.connector}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Phí sạc</span>
+          <span class="sheet-info-val" style="color:var(--green)">${port.price}</span>
+        </div>
+        <div class="sheet-info-row">
+          <span class="sheet-info-label">Trạng thái</span>
+          <span class="sheet-info-val" style="color:var(--blue)">⚡ Đang sạc</span>
+        </div>
+      </div>
+
+      <div class="charge-progress active" id="chargeProgress">
+        <div class="charge-bar-outer">
+          <div class="charge-bar-inner" id="chargeBar" style="width:${chargePercent}%"></div>
+        </div>
+        <div class="charge-stats">
+          <div class="charge-stat">
+            <div class="charge-stat-val" id="chargePct">${chargePercent.toFixed(0)}%</div>
+            <div class="charge-stat-label">Pin</div>
+          </div>
+          <div class="charge-stat">
+            <div class="charge-stat-val" id="chargeTime">${getTime()}</div>
+            <div class="charge-stat-label">Thời gian</div>
+          </div>
+          <div class="charge-stat">
+            <div class="charge-stat-val" id="chargeKwh">${getKwh()}</div>
+            <div class="charge-stat-label">kWh</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-action red" onclick="stopCharge('${port.id}')">
+        ■  Dừng sạc
+      </button>
+    `;
+
+    document.getElementById('overlay').classList.add('active');
+    document.getElementById('bottomSheet').classList.add('active');
+  }
+
+  // ═══════════════════════════════════════
+  // CLOSE SHEET
+  // ═══════════════════════════════════════
+  function closeSheet() {
+    document.getElementById('overlay').classList.remove('active');
+    document.getElementById('bottomSheet').classList.remove('active');
+  }
+
+  // ═══════════════════════════════════════
+  // START / STOP CHARGING
+  // ═══════════════════════════════════════
+  function startCharge(portId) {
+    if (!selectedCarId) return;
+
+    chargingPortId = portId;
+    chargingCarId = selectedCarId;
+    chargePercent = 0;
+
+    closeSheet();
+
+    const car = userCars.find(c => c.id === chargingCarId);
+    showToast('⚡ Bắt đầu sạc ' + car.name + ' tại cổng ' + portId);
+
+    chargingInterval = setInterval(() => {
+      chargePercent += Math.random() * 3 + 1;
+      if (chargePercent >= 100) {
+        chargePercent = 100;
+        clearInterval(chargingInterval);
+        chargingInterval = null;
+        showToast('✅ Sạc hoàn tất!');
+        chargingPortId = null;
+        chargingCarId = null;
+        renderPorts();
+        return;
+      }
+
+      // Update sheet nếu đang mở
+      const bar = document.getElementById('chargeBar');
+      if (bar) {
+        bar.style.width = chargePercent.toFixed(0) + '%';
+        document.getElementById('chargePct').textContent = chargePercent.toFixed(0) + '%';
+        document.getElementById('chargeTime').textContent = getTime();
+        document.getElementById('chargeKwh').textContent = getKwh();
+      }
+    }, 800);
+
+    renderPorts();
+
+    // Mở lại sheet hiển thị trạng thái sạc
+    setTimeout(() => openChargingSheet(portId), 350);
+  }
+
+  function stopCharge(portId) {
+    if (chargingInterval) clearInterval(chargingInterval);
+    chargingInterval = null;
+    chargingPortId = null;
+    chargingCarId = null;
+    chargePercent = 0;
+    closeSheet();
+    showToast('⏹ Đã dừng sạc');
+    renderPorts();
+  }
+
+  function getTime() {
+    return Math.floor(chargePercent * 0.45) + ' ph';
+  }
+
+  function getKwh() {
+    const car = userCars.find(c => c.id === chargingCarId);
+    if (!car) return '0';
+    return (parseFloat(car.battery) * chargePercent / 100).toFixed(1);
+  }
+
+  // ═══════════════════════════════════════
+  // TOAST
+  // ═══════════════════════════════════════
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ═══════════════════════════════════════
+  // SWIPE TO CLOSE SHEET
+  // ═══════════════════════════════════════
+  (() => {
+    const sheet = document.getElementById('bottomSheet');
+    let startY = 0, dy = 0, dragging = false;
+
+    sheet.addEventListener('touchstart', e => {
+      if (e.target.closest('.btn-action') || e.target.closest('.car-row')) return;
+      startY = e.touches[0].clientY;
+      dragging = true;
+      sheet.style.transition = 'none';
+    });
+
+    sheet.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      dy = e.touches[0].clientY - startY;
+      if (dy > 0) sheet.style.transform = `translateX(-50%) translateY(${dy}px)`;
+    });
+
+    sheet.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false;
+      sheet.style.transition = '';
+      if (dy > 100) closeSheet();
+      else if (document.getElementById('overlay').classList.contains('active')) {
+        sheet.classList.add('active');
+        sheet.style.transform = '';
+      }
+      dy = 0;
+    });
+  })();
+
+  // ═══════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════
+  renderCarSelector();
+  renderPorts();
+</script>
+
+</body>
+</html>
