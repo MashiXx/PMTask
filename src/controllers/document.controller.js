@@ -480,12 +480,16 @@ exports.uploadDocument = async (req, res) => {
       return res.status(400).json({ error: 'Invalid file path' });
     }
 
-    const safeTitle = sanitizeName(req.file.originalname) || 'untitled';
+    // Multer decodes Content-Disposition filenames as latin1 by default,
+    // which corrupts non-ASCII characters (e.g. Vietnamese diacritics).
+    // Re-decode from latin1 to utf8 to restore the original filename.
+    const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+    const safeTitle = sanitizeName(originalName) || 'untitled';
 
     const document = await prisma.document.create({
       data: {
         title: safeTitle,
-        filename: req.file.originalname,
+        filename: originalName,
         filepath: req.file.path,
         mimeType: req.file.mimetype,
         size: req.file.size,
@@ -624,7 +628,11 @@ exports.downloadDocument = async (req, res) => {
       return res.status(404).json({ error: 'File not found on disk' });
     }
 
-    res.download(absolutePath, doc.filename);
+    // Use RFC 5987 encoding for non-ASCII filenames (e.g. Vietnamese)
+    const encodedFilename = encodeURIComponent(doc.filename).replace(/['()]/g, escape);
+    res.setHeader('Content-Disposition',
+      `attachment; filename="${doc.filename}"; filename*=UTF-8''${encodedFilename}`);
+    res.sendFile(absolutePath);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to download document' });

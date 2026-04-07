@@ -106,10 +106,14 @@ function updateFileList() {
     return;
   }
   list.innerHTML = selectedFiles.map((f, i) => `
-    <div class="doc-upload-file-item">
-      <span>${escapeHtml(f.name)}</span>
+    <div class="doc-upload-file-item" id="upload-item-${i}">
+      <span class="file-name">${escapeHtml(f.name)}</span>
       <span class="file-size">${formatSize(f.size)}</span>
+      <span class="file-status"></span>
       <span class="file-remove" onclick="removeFile(${i})">&times;</span>
+      <div class="doc-upload-progress" style="display:none;">
+        <div class="doc-upload-progress-bar" style="width:0%"></div>
+      </div>
     </div>
   `).join('');
 }
@@ -117,6 +121,54 @@ function updateFileList() {
 function removeFile(index) {
   selectedFiles.splice(index, 1);
   updateFileList();
+}
+
+function uploadFileWithProgress(file, folderId, index) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const item = document.getElementById(`upload-item-${index}`);
+    const progressWrap = item ? item.querySelector('.doc-upload-progress') : null;
+    const progressBar = item ? item.querySelector('.doc-upload-progress-bar') : null;
+    const statusEl = item ? item.querySelector('.file-status') : null;
+    const removeBtn = item ? item.querySelector('.file-remove') : null;
+
+    if (removeBtn) removeBtn.style.display = 'none';
+    if (progressWrap) progressWrap.style.display = '';
+    if (statusEl) { statusEl.textContent = '0%'; statusEl.className = 'file-status uploading'; }
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        if (progressBar) progressBar.style.width = pct + '%';
+        if (statusEl) statusEl.textContent = pct + '%';
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (progressBar) progressBar.style.width = '100%';
+        if (statusEl) { statusEl.textContent = 'Done'; statusEl.className = 'file-status done'; }
+        resolve();
+      } else {
+        let msg = 'Unknown error';
+        try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
+        if (statusEl) { statusEl.textContent = 'Failed'; statusEl.className = 'file-status error'; }
+        reject(new Error(`Failed to upload ${file.name}: ${msg}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      if (statusEl) { statusEl.textContent = 'Failed'; statusEl.className = 'file-status error'; }
+      reject(new Error(`Upload failed for ${file.name}`));
+    });
+
+    const formData = new FormData();
+    formData.append('file', file);
+    if (folderId) formData.append('folderId', folderId);
+
+    xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+    xhr.send(formData);
+  });
 }
 
 async function submitUpload() {
@@ -127,27 +179,26 @@ async function submitUpload() {
   btn.disabled = true;
 
   const folderId = document.getElementById('uploadFolderSelect').value;
+  let hasError = false;
 
   try {
-    for (const file of selectedFiles) {
-      const formData = new FormData();
-      formData.append('file', file);
-      if (folderId) formData.append('folderId', folderId);
-
-      const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(`Failed to upload ${file.name}: ${data.error || 'Unknown error'}`);
+    for (let i = 0; i < selectedFiles.length; i++) {
+      try {
+        await uploadFileWithProgress(selectedFiles[i], folderId, i);
+      } catch (err) {
+        hasError = true;
+        alert(err.message);
       }
     }
-    window.location.reload();
+    if (!hasError) {
+      window.location.reload();
+    } else {
+      btn.textContent = 'Retry';
+      btn.disabled = false;
+    }
   } catch (err) {
     console.error(err);
     alert('Upload failed');
-  } finally {
     btn.textContent = 'Upload';
     btn.disabled = false;
   }
@@ -364,18 +415,39 @@ dropZone.addEventListener('drop', async e => {
   const files = e.dataTransfer.files;
   if (!files.length) return;
 
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+  // Show inline progress in drop zone
+  const origHTML = dropZone.innerHTML;
+  dropZone.innerHTML = `
+    <div class="dropzone-progress">
+      <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+      <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
+        <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
+      </div>
+    </div>`;
+
+  for (let i = 0; i < files.length; i++) {
+    const counter = document.getElementById('dzCurrent');
+    if (counter) counter.textContent = i + 1;
 
     try {
-      await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
-        method: 'POST',
-        body: formData,
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const bar = document.getElementById('dzProgressBar');
+        xhr.upload.addEventListener('progress', (ev) => {
+          if (ev.lengthComputable && bar) {
+            bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
+          }
+        });
+        xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
+        xhr.addEventListener('error', reject);
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+        xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+        xhr.send(formData);
       });
     } catch (err) {
-      console.error('Upload failed for', file.name, err);
+      console.error('Upload failed for', files[i].name, err);
     }
   }
   window.location.reload();
@@ -386,18 +458,39 @@ document.getElementById('fileInput').addEventListener('change', async function (
   const files = this.files;
   if (!files.length) return;
 
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+  // Reuse drop zone progress UI
+  const origHTML = dropZone.innerHTML;
+  dropZone.innerHTML = `
+    <div class="dropzone-progress">
+      <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+      <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
+        <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
+      </div>
+    </div>`;
+
+  for (let i = 0; i < files.length; i++) {
+    const counter = document.getElementById('dzCurrent');
+    if (counter) counter.textContent = i + 1;
 
     try {
-      await fetch(`/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`, {
-        method: 'POST',
-        body: formData,
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const bar = document.getElementById('dzProgressBar');
+        xhr.upload.addEventListener('progress', (ev) => {
+          if (ev.lengthComputable && bar) {
+            bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
+          }
+        });
+        xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
+        xhr.addEventListener('error', reject);
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+        xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+        xhr.send(formData);
       });
     } catch (err) {
-      console.error('Upload failed for', file.name, err);
+      console.error('Upload failed for', files[i].name, err);
     }
   }
   window.location.reload();

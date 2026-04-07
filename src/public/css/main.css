@@ -4090,6 +4090,41 @@ select option {
   border-radius: 3px;
 }
 
+.doc-upload-file-item {
+  position: relative;
+}
+
+.doc-upload-file-item .doc-upload-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.file-status {
+  font-size: 0.7rem;
+  min-width: 36px;
+  text-align: right;
+}
+
+.file-status.uploading {
+  color: var(--accent);
+}
+
+.file-status.done {
+  color: var(--green, #22c55e);
+}
+
+.file-status.error {
+  color: var(--coral, #ef4444);
+}
+
+.dropzone-progress {
+  text-align: center;
+  padding: 16px;
+}
+
 /* Preview navigation buttons */
 .preview-nav-btn {
   position: fixed;
