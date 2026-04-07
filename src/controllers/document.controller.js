@@ -648,19 +648,24 @@ exports.previewDocument = async (req, res) => {
 
     // Guests can only preview from public document projects
     if (!req.user && !doc.project.publicDocuments) {
+      console.log('[Preview] Access denied: guest user, publicDocuments =', doc.project.publicDocuments);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     // Check folder password access
     if (doc.folderId) {
       const access = await checkFolderAccess(req, doc.folderId);
-      if (!access.allowed) return res.status(403).json({ error: 'Folder is locked' });
+      if (!access.allowed) {
+        console.log('[Preview] Access denied: folder locked, folderId =', doc.folderId);
+        return res.status(403).json({ error: 'Folder is locked' });
+      }
     }
 
     const absolutePath = path.resolve(doc.filepath);
 
     // Path traversal protection
     if (!isPathSafe(absolutePath)) {
+      console.log('[Preview] Access denied: unsafe path =', absolutePath);
       return res.status(403).json({ error: 'Access denied' });
     }
 
