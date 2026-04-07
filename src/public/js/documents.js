@@ -400,101 +400,107 @@ async function submitUnlock(e) {
 // ===== Drag & Drop on main zone =====
 const dropZone = document.getElementById('dropZone');
 
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('drag-over');
-});
+if (dropZone) {
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
 
-dropZone.addEventListener('dragleave', () => {
-  dropZone.classList.remove('drag-over');
-});
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('drag-over');
+  });
 
-dropZone.addEventListener('drop', async e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const files = e.dataTransfer.files;
-  if (!files.length) return;
+  dropZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (!files.length) return;
 
-  // Show inline progress in drop zone
-  const origHTML = dropZone.innerHTML;
-  dropZone.innerHTML = `
-    <div class="dropzone-progress">
-      <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
-      <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
-        <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
-      </div>
-    </div>`;
+    // Show inline progress in drop zone
+    const origHTML = dropZone.innerHTML;
+    dropZone.innerHTML = `
+      <div class="dropzone-progress">
+        <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+        <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
+          <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
+        </div>
+      </div>`;
 
-  for (let i = 0; i < files.length; i++) {
-    const counter = document.getElementById('dzCurrent');
-    if (counter) counter.textContent = i + 1;
+    for (let i = 0; i < files.length; i++) {
+      const counter = document.getElementById('dzCurrent');
+      if (counter) counter.textContent = i + 1;
 
-    try {
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const bar = document.getElementById('dzProgressBar');
-        xhr.upload.addEventListener('progress', (ev) => {
-          if (ev.lengthComputable && bar) {
-            bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
-          }
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const bar = document.getElementById('dzProgressBar');
+          xhr.upload.addEventListener('progress', (ev) => {
+            if (ev.lengthComputable && bar) {
+              bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
+            }
+          });
+          xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
+          xhr.addEventListener('error', reject);
+          const formData = new FormData();
+          formData.append('file', files[i]);
+          if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+          xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+          xhr.send(formData);
         });
-        xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
-        xhr.addEventListener('error', reject);
-        const formData = new FormData();
-        formData.append('file', files[i]);
-        if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
-        xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
-        xhr.send(formData);
-      });
-    } catch (err) {
-      console.error('Upload failed for', files[i].name, err);
+      } catch (err) {
+        console.error('Upload failed for', files[i].name, err);
+      }
     }
-  }
-  window.location.reload();
-});
+    window.location.reload();
+  });
+}
 
 // Also handle file input on the main drop zone
-document.getElementById('fileInput').addEventListener('change', async function () {
-  const files = this.files;
-  if (!files.length) return;
+var fileInput = document.getElementById('fileInput');
+if (fileInput) {
+  fileInput.addEventListener('change', async function () {
+    const files = this.files;
+    if (!files.length) return;
 
-  // Reuse drop zone progress UI
-  const origHTML = dropZone.innerHTML;
-  dropZone.innerHTML = `
-    <div class="dropzone-progress">
-      <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
-      <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
-        <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
-      </div>
-    </div>`;
-
-  for (let i = 0; i < files.length; i++) {
-    const counter = document.getElementById('dzCurrent');
-    if (counter) counter.textContent = i + 1;
-
-    try {
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const bar = document.getElementById('dzProgressBar');
-        xhr.upload.addEventListener('progress', (ev) => {
-          if (ev.lengthComputable && bar) {
-            bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
-          }
-        });
-        xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
-        xhr.addEventListener('error', reject);
-        const formData = new FormData();
-        formData.append('file', files[i]);
-        if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
-        xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
-        xhr.send(formData);
-      });
-    } catch (err) {
-      console.error('Upload failed for', files[i].name, err);
+    // Reuse drop zone progress UI
+    if (dropZone) {
+      dropZone.innerHTML = `
+        <div class="dropzone-progress">
+          <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+          <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
+            <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
+          </div>
+        </div>`;
     }
-  }
-  window.location.reload();
-});
+
+    for (let i = 0; i < files.length; i++) {
+      const counter = document.getElementById('dzCurrent');
+      if (counter) counter.textContent = i + 1;
+
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const bar = document.getElementById('dzProgressBar');
+          xhr.upload.addEventListener('progress', (ev) => {
+            if (ev.lengthComputable && bar) {
+              bar.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
+            }
+          });
+          xhr.addEventListener('load', () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject());
+          xhr.addEventListener('error', reject);
+          const formData = new FormData();
+          formData.append('file', files[i]);
+          if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+          xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+          xhr.send(formData);
+        });
+      } catch (err) {
+        console.error('Upload failed for', files[i].name, err);
+      }
+    }
+    window.location.reload();
+  });
+}
 
 // ===== Close modals on overlay click =====
 document.querySelectorAll('.modal-overlay').forEach(overlay => {

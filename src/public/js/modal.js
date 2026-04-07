@@ -646,10 +646,13 @@ function updateColumnCount(status) {
 }
 
 // Auto-save on blur for text fields
-document.getElementById('previewTitle').addEventListener('blur', savePreviewField);
+var _previewTitle = document.getElementById('previewTitle');
+if (_previewTitle) _previewTitle.addEventListener('blur', savePreviewField);
 // Auto-save on change for selects
-document.getElementById('previewStatusSelect').addEventListener('change', savePreviewField);
-document.getElementById('previewPrioritySelect').addEventListener('change', savePreviewField);
+var _previewStatus = document.getElementById('previewStatusSelect');
+if (_previewStatus) _previewStatus.addEventListener('change', savePreviewField);
+var _previewPriority = document.getElementById('previewPrioritySelect');
+if (_previewPriority) _previewPriority.addEventListener('change', savePreviewField);
 
 // ── Preview Description: Rendered Markdown + Click-to-Edit ──
 function renderPreviewDescription(description, isGuest) {
@@ -687,12 +690,15 @@ function renderPreviewDescription(description, isGuest) {
 }
 
 // Save description on blur, then re-render markdown
-document.getElementById('previewDescription').addEventListener('blur', function () {
-  savePreviewField().then(function () {
-    const desc = document.getElementById('previewDescription').value;
-    renderPreviewDescription(desc, window.IS_GUEST);
+var _previewDesc = document.getElementById('previewDescription');
+if (_previewDesc) {
+  _previewDesc.addEventListener('blur', function () {
+    savePreviewField().then(function () {
+      const desc = document.getElementById('previewDescription').value;
+      renderPreviewDescription(desc, window.IS_GUEST);
+    });
   });
-});
+}
 
 function closeTaskPreview() {
   document.getElementById('taskPreviewModal').classList.remove('active');
