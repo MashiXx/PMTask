@@ -6,7 +6,7 @@ exports.getDashboard = async (req, res) => {
   try {
     const user = req.user;
     const isGuest = !user;
-    const projectParam = req.query.project || null;
+    const projectParam = req.params.projectSlug || req.query.project || null;
     const projectId = projectParam ? parseIdFromSlug(projectParam) : null;
 
     // Admins see their own projects; developers see all; guests see only public
@@ -91,7 +91,7 @@ exports.getDashboard = async (req, res) => {
     if (activeProject && projectParam) {
       const canonical = `${activeProject.id}-${activeProject.slug}`;
       if (projectParam !== canonical) {
-        return res.redirect(301, `/dashboard?project=${canonical}`);
+        return res.redirect(301, `/dashboard/${canonical}`);
       }
     }
 

@@ -93,7 +93,7 @@ document.getElementById('projectForm').addEventListener('submit', async (e) => {
       closeProjectModal();
       // Redirect to the new/updated project
       const p = data.project;
-      window.location.href = '/dashboard?project=' + (p ? p.id + '-' + p.slug : projectId);
+      window.location.href = '/dashboard/' + (p ? p.id + '-' + p.slug : projectId);
     }
   } catch (err) {
     console.error('Failed to save project:', err);

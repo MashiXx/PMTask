@@ -120,7 +120,7 @@
 
   <% if (typeof activeProjectId !== 'undefined' && activeProjectId) { %>
     <nav class="sidebar-admin-nav" style="border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px;">
-      <a href="/dashboard?project=<%= activeProject.id %>-<%= activeProject.slug %>" class="nav-btn <%= typeof activePage === 'undefined' || activePage !== 'documents' ? 'active' : '' %>">
+      <a href="/dashboard/<%= activeProject.id %>-<%= activeProject.slug %>" class="nav-btn <%= typeof activePage === 'undefined' || activePage !== 'documents' ? 'active' : '' %>">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Tasks
       </a>
