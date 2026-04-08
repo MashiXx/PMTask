@@ -11,7 +11,7 @@ router.get('/folder/:folderId', doc.getDocumentsPage);
 router.post('/api/folders', isAuthenticated, doc.createFolder);
 router.put('/api/folders/:id', isAuthenticated, doc.updateFolder);
 router.patch('/api/folders/:id/move', isAuthenticated, doc.moveFolder);
-router.delete('/api/folders/:id', isAuthenticated, doc.deleteFolder);
+router.delete('/api/folders/:id', isAuthenticated, isAdmin, doc.deleteFolder);
 
 // Folder password (admin only for set, all users for unlock)
 router.put('/api/folders/:id/password', isAuthenticated, isAdmin, doc.setFolderPassword);

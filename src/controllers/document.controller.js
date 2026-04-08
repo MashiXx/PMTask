@@ -62,24 +62,18 @@ function buildFolderTree(folders, parentId = null) {
     }));
 }
 
-// Recursively collect all document filepaths in a folder tree
-async function collectDocumentPaths(folderId) {
-  const paths = [];
-  const docs = await prisma.document.findMany({
-    where: { folderId },
-    select: { filepath: true },
-  });
-  paths.push(...docs.map(d => d.filepath));
+// Recursively count all documents in a folder and its subfolders
+async function countDocumentsInFolder(folderId) {
+  let count = await prisma.document.count({ where: { folderId } });
 
   const children = await prisma.folder.findMany({
     where: { parentId: folderId },
     select: { id: true },
   });
   for (const child of children) {
-    const childPaths = await collectDocumentPaths(child.id);
-    paths.push(...childPaths);
+    count += await countDocumentsInFolder(child.id);
   }
-  return paths;
+  return count;
 }
 
 // Format file size
@@ -377,18 +371,19 @@ exports.moveFolder = async (req, res) => {
 exports.deleteFolder = async (req, res) => {
   try {
     const { id } = req.params;
-    const folder = await prisma.folder.findUnique({ where: { id: parseInt(id) } });
+    const folderId = parseInt(id);
+    const folder = await prisma.folder.findUnique({ where: { id: folderId } });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
 
-    // Collect all file paths before deleting
-    const filePaths = await collectDocumentPaths(parseInt(id));
-
-    await prisma.folder.delete({ where: { id: parseInt(id) } });
-
-    // Clean up files from disk
-    for (const fp of filePaths) {
-      try { fs.unlinkSync(fp); } catch (e) { /* file may not exist */ }
+    // Prevent deletion if folder or subfolders contain documents
+    const docCount = await countDocumentsInFolder(folderId);
+    if (docCount > 0) {
+      return res.status(400).json({
+        error: `Không thể xoá thư mục này vì có ${docCount} tài liệu bên trong. Hãy xoá hoặc di chuyển tài liệu trước.`,
+      });
     }
+
+    await prisma.folder.delete({ where: { id: folderId } });
 
     res.json({ success: true });
   } catch (err) {
