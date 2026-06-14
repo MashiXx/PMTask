@@ -25,7 +25,7 @@
 | Layer | Technology |
 |-------|-----------|
 | Backend | Node.js + Express.js 5 |
-| Database | SQLite + Prisma ORM |
+| Database | MySQL + Prisma ORM |
 | Frontend | EJS + Vanilla JavaScript + Sortable.js |
 | Auth | Passport.js (Local + Google OAuth 2.0) |
 | Security | Helmet, bcryptjs, express-rate-limit |
@@ -53,9 +53,13 @@ npm install
 
 # Configure environment
 cp .env.example .env
-# Edit .env: SESSION_SECRET, Google OAuth credentials (optional)
+# Edit .env: set DATABASE_URL to your MySQL server,
+# plus SESSION_SECRET and Google OAuth credentials (optional)
 
-# Initialize database
+# Create the database (one-time), e.g.:
+#   mysql -u root -p -e "CREATE DATABASE pmtask CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Initialize database (runs migrations)
 npx prisma migrate dev
 
 # Seed sample data

@@ -13,7 +13,7 @@
 | Tầng | Công nghệ |
 |------|-----------|
 | Backend | Node.js + Express.js 5 |
-| Database | SQLite + Prisma ORM |
+| Database | MySQL + Prisma ORM |
 | Frontend | EJS + Vanilla JavaScript + Sortable.js |
 | Auth | Passport.js (Local + Google OAuth 2.0) |
 | Bảo mật | Helmet, bcryptjs, express-rate-limit |
@@ -41,9 +41,13 @@ npm install
 
 # Cấu hình môi trường
 cp .env.example .env
-# Chỉnh sửa .env: SESSION_SECRET, Google OAuth credentials (tùy chọn)
+# Chỉnh sửa .env: đặt DATABASE_URL trỏ tới MySQL server,
+# cùng SESSION_SECRET và Google OAuth credentials (tùy chọn)
 
-# Khởi tạo database
+# Tạo database (một lần), ví dụ:
+#   mysql -u root -p -e "CREATE DATABASE pmtask CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Khởi tạo database (chạy migrations)
 npx prisma migrate dev
 
 # Seed dữ liệu mẫu

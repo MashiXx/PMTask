@@ -15,10 +15,10 @@ npx prisma studio    # Open database GUI
 
 ## Architecture
 
-PMTask is a server-rendered MVC project management app using Express.js + EJS + Prisma (SQLite).
+PMTask is a server-rendered MVC project management app using Express.js + EJS + Prisma (MySQL).
 
 ### Request Flow
-Routes (`src/routes/`) → Controllers (`src/controllers/`) → Prisma ORM → SQLite (`prisma/dev.db`)
+Routes (`src/routes/`) → Controllers (`src/controllers/`) → Prisma ORM → MySQL (configured via `DATABASE_URL`)
 
 ### Key Directories
 - `src/routes/` — Express route definitions (auth, task, project, tag, subtask, document, admin, profile)

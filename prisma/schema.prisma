@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -49,7 +49,7 @@ model Task {
   id          Int      @id @default(autoincrement())
   title       String
   slug        String   @default("")
-  description String?
+  description String?  @db.Text
   priority    String   @default("medium")
   status      String   @default("todo")
   progress    Int      @default(0)

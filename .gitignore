@@ -3,3 +3,7 @@ node_modules/
 prisma/data/
 uploads/
 .DS_Store
+
+# SQLite (legacy — project now uses MySQL)
+prisma/dev.db
+*.db
