@@ -2,6 +2,7 @@
 // Run: node prisma/migrate-slugs.js
 
 require('dotenv').config();
+require('../src/config/database'); // assemble DATABASE_URL from DB_* components
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { generateSlug } = require('../src/utils/slug');

@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('../src/config/database'); // assemble DATABASE_URL from DB_* components
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();

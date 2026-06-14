@@ -8,17 +8,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev          # Start dev server with nodemon (port 3000)
 npm start            # Start production server
 npm run seed         # Seed database with sample data (admin@pmtask.com / demo123)
-npx prisma migrate dev          # Run migrations
-npx prisma migrate dev --name <name>  # Create new migration
-npx prisma studio    # Open database GUI
+npm run migrate      # Run migrations (prisma migrate dev)
+npm run migrate -- --name <name>  # Create new migration
+npm run generate     # Regenerate Prisma client
+npm run studio       # Open database GUI
+npm run prisma -- <cmd>           # Run any Prisma CLI command
 ```
+
+> Prisma scripts go through `prisma/prisma-cli.js`, which assembles `DATABASE_URL`
+> from the `DB_*` components in `.env`. Run Prisma via these npm scripts (not raw
+> `npx prisma`) so the connection string is built correctly.
 
 ## Architecture
 
 PMTask is a server-rendered MVC project management app using Express.js + EJS + Prisma (MySQL).
 
 ### Request Flow
-Routes (`src/routes/`) → Controllers (`src/controllers/`) → Prisma ORM → MySQL (configured via `DATABASE_URL`)
+Routes (`src/routes/`) → Controllers (`src/controllers/`) → Prisma ORM → MySQL
+
+Database connection is configured via the `DB_*` components in `.env` (host, port, user, password, name). `src/config/database.js` assembles these into `DATABASE_URL` for Prisma; a full `DATABASE_URL` can be set to override them.
 
 ### Key Directories
 - `src/routes/` — Express route definitions (auth, task, project, tag, subtask, document, admin, profile)

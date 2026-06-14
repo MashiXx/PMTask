@@ -9,7 +9,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "prisma": "node prisma/prisma-cli.js",
+    "migrate": "node prisma/prisma-cli.js migrate dev",
+    "generate": "node prisma/prisma-cli.js generate",
+    "studio": "node prisma/prisma-cli.js studio"
   },
   "keywords": [],
   "author": "",
