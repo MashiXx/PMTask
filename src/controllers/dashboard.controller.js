@@ -114,6 +114,7 @@ exports.getDashboard = async (req, res) => {
       sprintProgress,
       projectTags,
       isGuest,
+      boardView: true, // render the board-only sidebar controls (group-by, filters, etc.)
     });
   } catch (err) {
     console.error(err);

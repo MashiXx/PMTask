@@ -39,22 +39,7 @@
     </nav>
   <% } %>
 
-  <% if (typeof activeProjectId !== 'undefined' && activeProjectId) { %>
-    <!-- Group By -->
-    <div class="sidebar-section-group" style="padding: 0 12px;">
-      <p class="sidebar-section-title mb-8">GROUP BY</p>
-      <div class="sidebar-groupby-toggle">
-        <button class="sidebar-groupby-btn active" data-group="status" onclick="setGroupBy('status')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Status
-        </button>
-        <button class="sidebar-groupby-btn" data-group="tag" onclick="setGroupBy('tag')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          Tag
-        </button>
-      </div>
-    </div>
-
+  <% if (typeof boardView !== 'undefined' && boardView) { %>
     <!-- Hide Completed -->
     <div style="padding: 0 12px; margin-top: 12px;">
       <label class="sidebar-toggle-label" id="hideCompletedLabel">

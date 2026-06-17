@@ -119,8 +119,11 @@ function applyCompletedFilter(hide) {
 
 // Restore saved state on load
 (function() {
-  // Restore group-by
-  const savedGroup = localStorage.getItem('pmtask-group') || 'status';
+  // Group-by control was removed from the menu — board always groups by status
+  // for now (custom task groups will replace this). Force it so anyone with a
+  // previously-saved 'tag' grouping isn't stuck without a toggle to switch back.
+  localStorage.setItem('pmtask-group', 'status');
+  const savedGroup = 'status';
   document.querySelectorAll('.sidebar-groupby-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.group === savedGroup);
   });
