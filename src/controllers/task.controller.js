@@ -144,41 +144,67 @@ exports.updateTask = async (req, res) => {
 
 exports.moveTask = async (req, res) => {
   try {
-    const { id } = req.params;
-    const taskId = parseInt(id);
-    const { status, position } = req.body;
+    const taskId = parseInt(req.params.id);
+    const { groupId, position } = req.body;
 
-    // IDOR protection
     const access = await canModifyTask(taskId, req.user);
     if (access === null) return res.status(404).json({ error: 'Task not found' });
     if (access === false) return res.status(403).json({ error: 'Access denied' });
 
-    if (!VALID_STATUSES.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+    // Normalize groupId: null / '' / 'ungrouped' => null (the Ungrouped column)
+    let normGroupId = null;
+    if (groupId != null && groupId !== '' && groupId !== 'ungrouped') {
+      normGroupId = parseInt(groupId);
+      if (Number.isNaN(normGroupId)) return res.status(400).json({ error: 'Invalid groupId' });
+      const group = await prisma.taskGroup.findUnique({ where: { id: normGroupId } });
+      if (!group || group.projectId !== access.projectId) {
+        return res.status(400).json({ error: 'Group does not belong to this project' });
+      }
     }
 
-    const task = await prisma.task.update({
+    await prisma.task.update({
       where: { id: taskId },
-      data: {
-        status,
-        position: parseInt(position),
-      },
-      include: { subtasks: true },
+      data: { groupId: normGroupId, position: parseInt(position) || 0 },
     });
-
-    // Recalculate progress based on subtasks
-    if (task.subtasks.length > 0) {
-      const doneCount = task.subtasks.filter(s => s.done).length;
-      const calcProgress = status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
-      await prisma.task.update({ where: { id: taskId }, data: { progress: calcProgress } });
-    } else if (status === 'done') {
-      await prisma.task.update({ where: { id: taskId }, data: { progress: 100 } });
-    }
 
     res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to move task' });
+  }
+};
+
+// Change only a task's status (the board no longer changes status via drag).
+exports.setTaskStatus = async (req, res) => {
+  try {
+    const taskId = parseInt(req.params.id);
+    const { status } = req.body;
+
+    const access = await canModifyTask(taskId, req.user);
+    if (access === null) return res.status(404).json({ error: 'Task not found' });
+    if (access === false) return res.status(403).json({ error: 'Access denied' });
+    if (!VALID_STATUSES.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+    const task = await prisma.task.update({
+      where: { id: taskId },
+      data: { status },
+      include: { subtasks: true },
+    });
+
+    if (task.subtasks.length > 0) {
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      const calc = status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+      await prisma.task.update({ where: { id: taskId }, data: { progress: calc } });
+      task.progress = calc;
+    } else if (status === 'done') {
+      await prisma.task.update({ where: { id: taskId }, data: { progress: 100 } });
+      task.progress = 100;
+    }
+
+    res.json({ success: true, task });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to set status' });
   }
 };
 

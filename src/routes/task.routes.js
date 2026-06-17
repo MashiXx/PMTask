@@ -9,6 +9,7 @@ router.get('/:id', task.getTask);
 router.post('/', isAuthenticated, task.createTask);
 router.put('/:id', isAuthenticated, task.updateTask);
 router.patch('/:id/move', isAuthenticated, task.moveTask);
+router.patch('/:id/status', isAuthenticated, task.setTaskStatus);
 router.delete('/:id', isAuthenticated, task.deleteTask);
 
 module.exports = router;
