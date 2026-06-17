@@ -4,22 +4,30 @@ const auth = require('../controllers/auth.controller');
 const { isGuest } = require('../middleware/auth');
 const passport = require('passport');
 
-// Rate limit for login: max 10 attempts per 15 minutes per IP
+// Rate limit for login: max 10 attempts per 15 minutes per IP.
+// On limit, redirect back with a styled flash message instead of serving a
+// bare plain-text page that breaks out of the app UI.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
-  message: 'Too many login attempts. Please try again after 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    req.flash('error', 'Too many sign-in attempts. Please wait 15 minutes and try again.');
+    res.redirect('/auth/login');
+  },
 });
 
-// Rate limit for registration: max 5 per hour per IP
+// Rate limit for registration: max 5 per hour per IP.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
-  message: 'Too many registration attempts. Please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    req.flash('error', 'Too many registration attempts. Please try again later.');
+    res.redirect('/auth/register');
+  },
 });
 
 router.get('/login', isGuest, auth.getLogin);

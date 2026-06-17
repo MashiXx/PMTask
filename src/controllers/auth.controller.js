@@ -45,10 +45,29 @@ exports.postRegister = async (req, res) => {
 };
 
 exports.postLogin = (req, res, next) => {
-  passport.authenticate('local', {
-    successRedirect: '/dashboard',
-    failureRedirect: '/auth/login',
-    failureFlash: true,
+  passport.authenticate('local', (err, user, info) => {
+    // Unexpected error (e.g. database unreachable). Show a specific message
+    // instead of letting it fall through to a generic 500 page.
+    if (err) {
+      console.error('Login error:', err);
+      req.flash('error', 'Unable to sign in right now — the server had a problem. Please try again in a moment.');
+      return res.redirect('/auth/login');
+    }
+    // Authentication failed (bad credentials, pending account, etc.).
+    // `info.message` carries the specific reason from the local strategy.
+    if (!user) {
+      req.flash('error', (info && info.message) || 'Invalid email or password');
+      return res.redirect('/auth/login');
+    }
+    // Success — establish the session.
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error('Session error during login:', loginErr);
+        req.flash('error', 'Signed in, but we could not start your session. Please try again.');
+        return res.redirect('/auth/login');
+      }
+      return res.redirect('/dashboard');
+    });
   })(req, res, next);
 };
 
