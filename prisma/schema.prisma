@@ -43,6 +43,7 @@ model Project {
   tags      Tag[]
   folders   Folder[]
   documents Document[]
+  groups    TaskGroup[]
 }
 
 model Task {
@@ -60,6 +61,9 @@ model Task {
   createdById Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  groupId     Int?
+  group       TaskGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy   User     @relation(fields: [createdById], references: [id])
@@ -100,6 +104,21 @@ model TaskTag {
   tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([taskId, tagId])
+}
+
+model TaskGroup {
+  id        Int      @id @default(autoincrement())
+  name      String
+  color     String   @default("#6C63FF")
+  position  Int      @default(0)
+  projectId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@unique([name, projectId])
 }
 
 model TaskAssignee {
