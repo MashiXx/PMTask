@@ -68,6 +68,7 @@ app.use('/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/tasks', require('./routes/task.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
+app.use('/api/groups', require('./routes/group.routes'));
 app.use('/api/subtasks', require('./routes/subtask.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/projects/:projectSlug/documents', require('./routes/document.routes'));
