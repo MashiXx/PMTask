@@ -173,7 +173,8 @@ canvasEl.addEventListener('pointerdown', (e) => {
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (pointers.size === 2) { startPinch(); gesture = null; return; }
   if (e.target.closest('.mm-toolbar') || e.target.closest('.mm-node-actions') ||
-      e.target.closest('.mm-collapse') || e.target.closest('[contenteditable="true"]')) return;
+      e.target.closest('.mm-collapse') || e.target.closest('.mm-help') ||
+      e.target.closest('[contenteditable="true"]')) return;
 
   const nodeEl = e.target.closest('.mm-node');
   canvasEl.setPointerCapture(e.pointerId);
@@ -318,26 +319,38 @@ async function mmAddChild(parentId) {
   mmEditLabel(data.node.id); // inline-edit the fresh node (type over "New idea")
 }
 
+// Inline-edit a node's label. Enter/Tab (or blur) commits; Escape cancels and reverts.
 function mmEditLabel(id) {
   const labelEl = viewportEl.querySelector(`.mm-node-label[data-node-id="${id}"]`);
   if (!labelEl) return;
+  const node = MM.byId.get(id);
   labelEl.setAttribute('contenteditable', 'true');
   labelEl.focus();
   document.getSelection().selectAllChildren(labelEl);
-  function finish() {
+  let done = false;
+  function finish(save) {
+    if (done) return; // guard: blur fires after Enter/Esc already finished
+    done = true;
     labelEl.removeAttribute('contenteditable');
-    labelEl.removeEventListener('blur', finish);
+    labelEl.removeEventListener('blur', onBlur);
+    labelEl.removeEventListener('keydown', onKey);
     const text = labelEl.textContent.trim();
-    const node = MM.byId.get(id);
-    if (text && text !== node.label) {
+    if (save && text && text !== node.label) {
       const prev = node.label;
       node.label = text;
       apiUpdateNode(id, { label: text }, () => { node.label = prev; labelEl.textContent = prev; });
     } else {
-      labelEl.textContent = node.label; // revert empty/unchanged
+      labelEl.textContent = node.label; // revert on empty / unchanged / cancel
     }
   }
-  labelEl.addEventListener('blur', finish);
+  function onBlur() { finish(true); }
+  function onKey(e) {
+    // Labels are single-line: any Enter commits (no newline insertion).
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); finish(true); labelEl.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); labelEl.blur(); }
+  }
+  labelEl.addEventListener('blur', onBlur);
+  labelEl.addEventListener('keydown', onKey);
 }
 
 async function mmDeleteNode(id) {
@@ -399,6 +412,109 @@ async function mmConvert(id) {
 function mmOpenTask(taskId) {
   if (typeof openTaskPreview === 'function') openTaskPreview(taskId);
   else window.location.href = `/dashboard/${MM.slug}`;
+}
+
+// ── Keyboard interaction ──
+function mmRootId() { const r = MM.nodes.find(n => n.parentId == null); return r ? r.id : null; }
+function mmChildrenOf(id) { return MM.nodes.filter(n => n.parentId === id).sort((a, b) => a.position - b.position); }
+function mmSiblingsOf(node) { return MM.nodes.filter(n => n.parentId === node.parentId).sort((a, b) => a.position - b.position); }
+
+// Add a sibling = add a child to this node's parent (root has none → add its own child).
+function mmAddSibling(id) {
+  const node = MM.byId.get(id);
+  if (!node) return;
+  mmAddChild(node.parentId != null ? node.parentId : id);
+}
+
+// Pan (only when needed) so the node sits inside the visible canvas with padding.
+function mmEnsureVisible(id) {
+  const p = mmPositions()[id];
+  if (!p) return;
+  const cw = canvasEl.clientWidth, ch = canvasEl.clientHeight, pad = 80;
+  const sx = MM.pan.x + p.x * MM.zoom, sy = MM.pan.y + p.y * MM.zoom;
+  const nw = NODE_W * MM.zoom, nh = NODE_H * MM.zoom;
+  let dx = 0, dy = 0;
+  if (sx < pad) dx = pad - sx; else if (sx + nw > cw - pad) dx = (cw - pad) - (sx + nw);
+  if (sy < pad) dy = pad - sy; else if (sy + nh > ch - pad) dy = (ch - pad) - (sy + nh);
+  if (dx || dy) { MM.pan.x += dx; MM.pan.y += dy; mmApplyTransform(); }
+}
+function mmSelectReveal(id) { if (id != null) { mmSelect(id); mmEnsureVisible(id); } }
+
+// Arrow-key tree navigation: ←parent, →first child (expand if collapsed), ↑/↓ siblings.
+function mmNavigate(key) {
+  const node = MM.byId.get(MM.selectedId);
+  if (!node) return;
+  if (key === 'ArrowLeft') {
+    if (node.parentId != null) mmSelectReveal(node.parentId);
+  } else if (key === 'ArrowRight') {
+    if (mmHasChildren(node.id)) {
+      if (node.collapsed) mmToggleCollapse(node.id); // expands + re-renders synchronously
+      const kids = mmChildrenOf(node.id);
+      if (kids.length) mmSelectReveal(kids[0].id);
+    }
+  } else { // ArrowUp / ArrowDown
+    const sibs = mmSiblingsOf(node);
+    const i = sibs.findIndex(n => n.id === node.id);
+    const j = key === 'ArrowUp' ? i - 1 : i + 1;
+    if (j >= 0 && j < sibs.length) mmSelectReveal(sibs[j].id);
+  }
+}
+
+const MM_NAV_KEYS = ['Enter', 'Tab', 'F2', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+document.addEventListener('keydown', (e) => {
+  // Ignore while typing in a field, editing a label inline, or any modal/dialog is open.
+  const ae = document.activeElement;
+  if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return;
+  if (document.querySelector('.modal-overlay.active') || document.querySelector('.mm-dialog-overlay')) return;
+
+  if (e.key === '?') { e.preventDefault(); mmToggleHelp(); return; }
+  if (e.key === 'Escape') { // an open cheat-sheet swallows Esc before it clears selection
+    const help = document.getElementById('mmHelp');
+    if (help && help.classList.contains('show')) { e.preventDefault(); mmToggleHelp(false); return; }
+  }
+
+  const id = MM.selectedId;
+  if (id == null) { // first keypress with nothing selected → grab the root as an entry point
+    if (MM_NAV_KEYS.includes(e.key)) { e.preventDefault(); mmSelectReveal(mmRootId()); }
+    return;
+  }
+  switch (e.key) {
+    case 'Enter': e.preventDefault(); if (e.shiftKey) mmAddSibling(id); else mmEditLabel(id); break;
+    case 'F2': e.preventDefault(); mmEditLabel(id); break;
+    case 'Tab': e.preventDefault(); mmAddChild(id); break;
+    case 'Delete': case 'Backspace': e.preventDefault(); mmDeleteNode(id); break;
+    case 'Escape': e.preventDefault(); mmSelect(null); break;
+    case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
+      e.preventDefault(); mmNavigate(e.key); break;
+  }
+});
+
+// ── Shortcuts cheat-sheet overlay (toggle with the toolbar "?" or the ? key) ──
+function mmToggleHelp(force) {
+  let el = document.getElementById('mmHelp');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mmHelp';
+    el.className = 'mm-help';
+    el.innerHTML = `
+      <div class="mm-help-head">
+        <span>Keyboard shortcuts</span>
+        <button class="mm-help-close" onclick="mmToggleHelp(false)" title="Close">&times;</button>
+      </div>
+      <dl>
+        <dt>Enter</dt><dd>Edit node · commit while editing</dd>
+        <dt>Esc</dt><dd>Cancel edit · clear selection</dd>
+        <dt>Tab</dt><dd>Add child</dd>
+        <dt>Shift + Enter</dt><dd>Add sibling</dd>
+        <dt>Delete</dt><dd>Delete node</dd>
+        <dt>&uarr; &darr;</dt><dd>Previous / next sibling</dd>
+        <dt>&larr; &rarr;</dt><dd>Parent / child</dd>
+        <dt>?</dt><dd>Toggle this help</dd>
+      </dl>`;
+    canvasEl.appendChild(el);
+  }
+  const show = force === undefined ? !el.classList.contains('show') : force;
+  el.classList.toggle('show', show);
 }
 
 // init

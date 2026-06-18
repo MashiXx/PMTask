@@ -38,6 +38,16 @@
 .mm-toolbar button { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer; }
 .mm-toolbar button:hover { background:var(--card-hover); }
 
+/* Shortcuts cheat-sheet */
+.mm-help { position:absolute; right:14px; top:58px; width:284px; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,.35); z-index:20; display:none; }
+.mm-help.show { display:block; }
+.mm-help-head { display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; font-weight:700; color:var(--text); margin-bottom:10px; }
+.mm-help-close { width:auto; height:auto; background:none; border:none; color:var(--text-muted); font-size:1.15rem; line-height:1; cursor:pointer; padding:0 2px; }
+.mm-help-close:hover { color:var(--text); }
+.mm-help dl { display:grid; grid-template-columns:auto 1fr; gap:7px 12px; margin:0; }
+.mm-help dt { font-family:var(--font-mono); font-size:0.68rem; color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:5px; padding:2px 7px; justify-self:start; white-space:nowrap; height:fit-content; }
+.mm-help dd { margin:0; font-size:0.74rem; color:var(--text-muted); align-self:center; }
+
 /* Selected node */
 .mm-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0,0,0,.3); }
 
