@@ -315,8 +315,44 @@ async function mmAddChild(parentId) {
   if (parent && parent.collapsed) { parent.collapsed = false; apiUpdateNode(parentId, { collapsed: false }); }
   MM.nodes.push({ ...data.node, task: null });
   mmRender();
+  mmDeoverlap(data.node.id); // keep the fresh node off any node it landed on
+  mmEnsureVisible(data.node.id);
   mmSelect(data.node.id);
   mmEditLabel(data.node.id); // inline-edit the fresh node (type over "New idea")
+}
+
+// A freshly-added node inherits an auto position relative to its parent; with manual
+// drags in play that slot can land on top of an existing node. Push it straight down
+// past anything it overlaps, then pin (persist x/y) so it keeps the clear slot.
+function mmDeoverlap(newId) {
+  const els = new Map([...viewportEl.querySelectorAll('.mm-node')].map(el => [parseInt(el.dataset.nodeId), el]));
+  const newEl = els.get(newId);
+  if (!newEl) return;
+  const pos = mmPositions();
+  const start = pos[newId];
+  if (!start) return;
+  const GAP = 16;
+  const nw = newEl.offsetWidth, nh = newEl.offsetHeight;
+  const boxes = [];
+  for (const [id, el] of els) {
+    if (id === newId) continue;
+    const q = pos[id];
+    if (q) boxes.push({ x: q.x, y: q.y, w: el.offsetWidth, h: el.offsetHeight });
+  }
+  const x = start.x;
+  let y = start.y;
+  const hits = (b) => x < b.x + b.w + GAP && x + nw + GAP > b.x && y < b.y + b.h + GAP && y + nh + GAP > b.y;
+  let moved = false, pass = true, guard = 0;
+  while (pass && guard++ < 500) {
+    pass = false;
+    for (const b of boxes) if (hits(b)) { y = b.y + b.h + GAP; moved = true; pass = true; }
+  }
+  if (moved) {
+    const node = MM.byId.get(newId);
+    node.x = x; node.y = y;
+    mmRender();
+    apiUpdateNode(newId, { x, y });
+  }
 }
 
 // Inline-edit a node's label. Enter/Tab (or blur) commits; Escape cancels and reverts.
@@ -345,9 +381,11 @@ function mmEditLabel(id) {
   }
   function onBlur() { finish(true); }
   function onKey(e) {
-    // Labels are single-line: any Enter commits (no newline insertion).
-    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); finish(true); labelEl.blur(); }
-    else if (e.key === 'Escape') { e.preventDefault(); finish(false); labelEl.blur(); }
+    if (e.isComposing) return; // let an IME (e.g. Vietnamese) finish composing first
+    // Labels are single-line: any Enter commits (no newline). stopPropagation so this
+    // same keypress can't bubble to the canvas handler and immediately re-open edit mode.
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); finish(true); labelEl.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); labelEl.blur(); }
   }
   labelEl.addEventListener('blur', onBlur);
   labelEl.addEventListener('keydown', onKey);
@@ -462,6 +500,7 @@ function mmNavigate(key) {
 
 const MM_NAV_KEYS = ['Enter', 'Tab', 'F2', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 document.addEventListener('keydown', (e) => {
+  if (e.defaultPrevented) return; // already handled elsewhere (e.g. inline label edit)
   // Ignore while typing in a field, editing a label inline, or any modal/dialog is open.
   const ae = document.activeElement;
   if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return;
