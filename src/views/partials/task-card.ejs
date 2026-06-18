@@ -3,6 +3,10 @@
   const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
   const pColor = priorityColors[task.priority] || '#FFB347';
   const pLabel = priorityLabels[task.priority] || 'MEDIUM';
+  const statusLabels = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
+  const statusColors = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
+  const sLabel = statusLabels[task.status] || 'To Do';
+  const sColor = statusColors[task.status] || '#6B6B8E';
   const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
   // Build tag color map from the tag data itself
   const tagColorFromData = {};
@@ -10,7 +14,7 @@
   const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
 %>
 
-<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
+<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-group-id="<%= task.groupId == null ? '' : task.groupId %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
   <div class="task-priority-line" style="background: <%= pColor %>"></div>
 
   <div class="task-header">
@@ -21,6 +25,22 @@
       <button class="task-menu-btn" onclick="event.stopPropagation(); toggleTaskMenu(<%= task.id %>)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
       </button>
+    <% } %>
+  </div>
+
+  <div class="task-status-wrap" onclick="event.stopPropagation()">
+    <button class="task-status-badge" style="color:<%= sColor %>; border-color:<%= sColor %>55; background:<%= sColor %>14;"
+            <% if (typeof currentUser !== 'undefined' && currentUser) { %>onclick="toggleStatusMenu(<%= task.id %>)"<% } else { %>disabled<% } %>>
+      <span class="task-status-dot" style="background:<%= sColor %>"></span><%= sLabel %>
+    </button>
+    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <div class="task-status-menu" id="status-menu-<%= task.id %>">
+        <% Object.keys(statusLabels).forEach(s => { %>
+          <button class="task-status-option" onclick="changeTaskStatus(<%= task.id %>, '<%= s %>')">
+            <span class="task-status-dot" style="background:<%= statusColors[s] %>"></span><%= statusLabels[s] %>
+          </button>
+        <% }) %>
+      </div>
     <% } %>
   </div>
 

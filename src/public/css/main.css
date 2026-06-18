@@ -4421,3 +4421,12 @@ select option {
 .theme-picker-card.active .theme-picker-check {
   display: flex;
 }
+
+.task-status-wrap { position: relative; margin: 4px 0 6px; }
+.task-status-badge { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:0.66rem; font-weight:600; padding:3px 8px; border-radius:6px; border:1px solid; cursor:pointer; }
+.task-status-badge[disabled] { cursor:default; }
+.task-status-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+.task-status-menu { display:none; position:absolute; z-index:20; top:100%; left:0; margin-top:4px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,.25); }
+.task-status-menu.open { display:block; }
+.task-status-option { display:flex; align-items:center; gap:6px; width:100%; padding:6px 10px; background:none; border:none; color:var(--text); font-size:0.72rem; cursor:pointer; border-radius:6px; white-space:nowrap; }
+.task-status-option:hover { background:var(--surface-hover, rgba(255,255,255,.06)); }
