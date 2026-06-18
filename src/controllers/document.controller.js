@@ -623,10 +623,13 @@ exports.downloadDocument = async (req, res) => {
       return res.status(404).json({ error: 'File not found on disk' });
     }
 
-    // Use RFC 5987 encoding for non-ASCII filenames (e.g. Vietnamese)
+    // Use RFC 5987 encoding for non-ASCII filenames (e.g. Vietnamese).
+    // HTTP header values must be ASCII/latin1, so the legacy filename="..." param
+    // gets an ASCII-safe fallback; modern browsers use the UTF-8 filename* value.
     const encodedFilename = encodeURIComponent(doc.filename).replace(/['()]/g, escape);
+    const asciiFallback = doc.filename.replace(/[^\x20-\x7E]/g, '_').replace(/["\\]/g, '_');
     res.setHeader('Content-Disposition',
-      `attachment; filename="${doc.filename}"; filename*=UTF-8''${encodedFilename}`);
+      `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFilename}`);
     res.sendFile(absolutePath);
   } catch (err) {
     console.error(err);
