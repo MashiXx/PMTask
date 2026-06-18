@@ -34,9 +34,15 @@ function mmVisibleNodes() {
 }
 
 // Resolve render positions: manual x/y wins, else auto-layout over the visible set.
-function mmPositions(visible) {
-  const list = visible || mmVisibleNodes();
-  const auto = computeMindmapLayout(list.map(n => ({ id:n.id, parentId:n.parentId, position:n.position })));
+function mmComputeAuto(list) {
+  return computeMindmapLayout(list.map(n => ({ id: n.id, parentId: n.parentId, position: n.position })));
+}
+
+// Resolve top-down: a node with manual x/y (or the live-dragged override) is absolute;
+// an auto node hangs off its parent's RESOLVED position, keeping the auto layout's
+// relative offset. So a subtree follows a dragged ancestor instead of snapping to the
+// global (root-anchored) layout. `auto` may be precomputed (cached during a drag).
+function mmResolve(list, auto, overrideId, overridePos) {
   const childrenOf = new Map(list.map(n => [n.id, []]));
   let root = null;
   for (const n of list) {
@@ -44,14 +50,12 @@ function mmPositions(visible) {
     else root = root || n;
   }
   const pos = {};
-  // Resolve top-down: a node with manual x/y is absolute; an auto node hangs off
-  // its parent's RESOLVED position, keeping the auto layout's relative offset.
-  // So a subtree follows a manually-dragged ancestor instead of snapping to the
-  // global (root-anchored) layout.
   function resolve(node, parentResolved, parentAuto) {
     const a = auto[node.id] || { x: 0, y: 0 };
     let p;
-    if (node.x != null && node.y != null) {
+    if (overrideId != null && node.id === overrideId) {
+      p = { x: overridePos.x, y: overridePos.y };
+    } else if (node.x != null && node.y != null) {
       p = { x: node.x, y: node.y };
     } else if (parentResolved && parentAuto) {
       p = { x: parentResolved.x + (a.x - parentAuto.x), y: parentResolved.y + (a.y - parentAuto.y) };
@@ -64,6 +68,19 @@ function mmPositions(visible) {
   if (root) resolve(root, null, null);
   for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0 }; // defensive
   return pos;
+}
+
+function mmPositions(visible) {
+  const list = visible || mmVisibleNodes();
+  return mmResolve(list, mmComputeAuto(list), null, null);
+}
+
+// Move existing node elements to `pos` without rebuilding the DOM (used during drag).
+function applyPositions(pos) {
+  viewportEl.querySelectorAll('.mm-node').forEach(el => {
+    const p = pos[el.dataset.nodeId];
+    if (p) { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; }
+  });
 }
 
 function mmApplyTransform() {
@@ -162,9 +179,11 @@ canvasEl.addEventListener('pointerdown', (e) => {
   canvasEl.setPointerCapture(e.pointerId);
   if (nodeEl) {
     const id = parseInt(nodeEl.dataset.nodeId);
-    const cached = mmPositions(); // compute layout ONCE for the whole drag (perf)
+    // Cache the auto layout ONCE for the whole drag (tree is stable); resolve live.
+    const list = mmVisibleNodes();
+    const auto = mmComputeAuto(list);
     gesture = {
-      type: 'drag', pointerId: e.pointerId, el: nodeEl, id, cached,
+      type: 'drag', pointerId: e.pointerId, el: nodeEl, id, list, auto,
       startX: e.clientX, startY: e.clientY,
       origLeft: parseFloat(nodeEl.style.left), origTop: parseFloat(nodeEl.style.top),
       moved: false, nx: parseFloat(nodeEl.style.left), ny: parseFloat(nodeEl.style.top),
@@ -186,9 +205,10 @@ canvasEl.addEventListener('pointermove', (e) => {
     gesture.nx = gesture.origLeft + (e.clientX - gesture.startX) / MM.zoom;
     gesture.ny = gesture.origTop + (e.clientY - gesture.startY) / MM.zoom;
     if (Math.abs(e.clientX - gesture.startX) + Math.abs(e.clientY - gesture.startY) > 3) gesture.moved = true;
-    gesture.el.style.left = gesture.nx + 'px'; gesture.el.style.top = gesture.ny + 'px';
     if (!gesture.el.classList.contains('dragging')) gesture.el.classList.add('dragging');
-    const pos = { ...gesture.cached, [gesture.id]: { x: gesture.nx, y: gesture.ny } };
+    // Reflow the dragged node AND its auto-descendants live, so children follow.
+    const pos = mmResolve(gesture.list, gesture.auto, gesture.id, { x: gesture.nx, y: gesture.ny });
+    applyPositions(pos);
     mmRenderEdges(pos);
   }
 });
@@ -205,6 +225,7 @@ function endPointer(e) {
       const node = MM.byId.get(g.id);
       const prevX = node.x, prevY = node.y;
       node.x = g.nx; node.y = g.ny;
+      mmRender(); // settle: auto-descendants keep following the dropped parent
       apiUpdateNode(g.id, { x: g.nx, y: g.ny }, () => { node.x = prevX; node.y = prevY; mmRender(); });
     } else {
       mmSelect(g.id); // a click (no movement) selects the node
