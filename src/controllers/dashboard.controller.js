@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { parseIdFromSlug } = require('../utils/slug');
+const { buildGroupColumns } = require('../utils/groupColumns');
 
 exports.getDashboard = async (req, res) => {
   try {
@@ -50,6 +51,8 @@ exports.getDashboard = async (req, res) => {
           stats: { total: 0, inProgress: 0, completed: 0, overdue: 0 },
           sprintProgress: 0,
           projectTags: [],
+          groups: [],
+          groupColumns: [{ id: 'ungrouped', name: 'Ungrouped', color: '#6B6B8E', tasks: [] }],
           isGuest: true,
         });
       }
@@ -64,6 +67,7 @@ exports.getDashboard = async (req, res) => {
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },
+        group: true,
       },
       orderBy: { position: 'asc' },
     });
@@ -99,6 +103,12 @@ exports.getDashboard = async (req, res) => {
       ? await prisma.tag.findMany({ where: { projectId: activeProjectId }, orderBy: { name: 'asc' } })
       : [];
 
+    const groups = await prisma.taskGroup.findMany({
+      where: { projectId: activeProjectId },
+      orderBy: { position: 'asc' },
+    });
+    const groupColumns = buildGroupColumns(groups, allTasks);
+
     res.render('dashboard', {
       title: 'Dashboard',
       projects,
@@ -113,6 +123,8 @@ exports.getDashboard = async (req, res) => {
       },
       sprintProgress,
       projectTags,
+      groups,
+      groupColumns,
       isGuest,
       boardView: true, // render the board-only sidebar controls (group-by, filters, etc.)
     });
