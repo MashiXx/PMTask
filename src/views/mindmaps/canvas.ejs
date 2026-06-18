@@ -1,0 +1,45 @@
+<%- include('../partials/head', { title: mindmap.name }) %>
+<link rel="stylesheet" href="/css/mindmap.css">
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+  <main class="main-content">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps" class="breadcrumb-link">Mindmaps</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-text"><%= mindmap.name %></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mm-canvas" id="mmCanvas">
+      <div class="mm-toolbar">
+        <button onclick="mmZoom(0.1)" title="Zoom in">+</button>
+        <button onclick="mmZoom(-0.1)" title="Zoom out">&minus;</button>
+        <button onclick="mmFit()" title="Reset view">&#9633;</button>
+      </div>
+      <svg class="mm-svg" id="mmSvg"></svg>
+      <div class="mm-viewport" id="mmViewport"></div>
+    </div>
+  </main>
+</div>
+
+<%- include('../partials/modals/task-preview-modal') %>
+<script>
+  window.PROJECT_TAGS = [];
+  window.IS_GUEST = false;
+</script>
+<script src="/js/modal.js"></script>
+<script src="/js/subtask.js"></script>
+<script src="/js/mindmap-layout.js"></script>
+<script>
+  window.MINDMAP = { id: <%= mindmap.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
+  window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
+</script>
+<script src="/js/mindmap.js"></script>
+<%- include('../partials/foot') %>

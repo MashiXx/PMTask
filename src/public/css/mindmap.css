@@ -1,0 +1,37 @@
+/* Mindmap list */
+.mm-list-wrap { padding: 24px; }
+.mm-list-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.mm-list-title { font-size:1.1rem; font-weight:700; color:var(--text); }
+.mm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.mm-card { display:flex; flex-direction:column; gap:8px; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:12px; text-decoration:none; transition:all .15s ease; }
+.mm-card:hover { border-color:var(--border-light); transform:translateY(-2px); }
+.mm-card-name { font-weight:600; color:var(--text); }
+.mm-card-meta { font-size:0.72rem; color:var(--text-muted); }
+.mm-card-actions { display:flex; gap:8px; margin-top:6px; }
+.mm-card-actions button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.72rem; padding:2px 0; }
+.mm-card-actions button:hover { color:var(--text); }
+.mm-empty { color:var(--text-muted); font-size:0.85rem; padding:24px 0; }
+
+/* Mindmap canvas */
+.mm-canvas { position:relative; width:100%; height:calc(100vh - 60px); overflow:hidden; background:var(--bg); cursor:grab; }
+.mm-canvas.panning { cursor:grabbing; }
+.mm-viewport { position:absolute; top:0; left:0; transform-origin:0 0; }
+.mm-svg { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
+.mm-edge { fill:none; stroke:var(--border-light); stroke-width:2; }
+.mm-node { position:absolute; min-width:120px; max-width:240px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.18); cursor:grab; user-select:none; }
+.mm-node.dragging { cursor:grabbing; box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.mm-node-head { display:flex; align-items:flex-start; gap:6px; }
+.mm-node-label { font-size:0.82rem; color:var(--text); word-break:break-word; }
+.mm-node-label[contenteditable="true"] { outline:1px solid var(--accent); border-radius:4px; }
+.mm-collapse { flex-shrink:0; width:18px; height:18px; line-height:1; padding:0; background:var(--surface); border:1px solid var(--border); border-radius:5px; color:var(--text-muted); cursor:pointer; font-size:0.7rem; }
+.mm-collapse:hover { color:var(--text); border-color:var(--border-light); }
+.mm-color { width:22px; height:20px; padding:0; border:1px solid var(--border); border-radius:5px; background:var(--surface); cursor:pointer; }
+.mm-status { display:inline-flex; align-items:center; gap:5px; margin-top:6px; font-size:0.62rem; font-weight:600; font-family:var(--font-mono); padding:2px 7px; border-radius:6px; border:1px solid; }
+.mm-status-dot { width:6px; height:6px; border-radius:50%; }
+.mm-node-actions { display:none; gap:4px; margin-top:8px; }
+.mm-node:hover .mm-node-actions, .mm-node.selected .mm-node-actions { display:flex; flex-wrap:wrap; align-items:center; }
+.mm-node-actions button { background:var(--surface); border:1px solid var(--border); color:var(--text-muted); border-radius:6px; padding:3px 6px; font-size:0.62rem; cursor:pointer; }
+.mm-node-actions button:hover { color:var(--text); border-color:var(--border-light); }
+.mm-toolbar { position:absolute; top:14px; right:14px; display:flex; gap:6px; z-index:10; }
+.mm-toolbar button { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer; }
+.mm-toolbar button:hover { background:var(--card-hover); }
