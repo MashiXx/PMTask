@@ -69,9 +69,12 @@ app.use('/api/tasks', require('./routes/task.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/api/groups', require('./routes/group.routes'));
+app.use('/api/mindmaps', require('./routes/mindmap.routes'));
+app.use('/api/mindmap-nodes', require('./routes/mindmap.routes').nodeRouter);
 app.use('/api/subtasks', require('./routes/subtask.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/projects/:projectSlug/documents', require('./routes/document.routes'));
+app.use('/projects/:projectSlug/mindmaps', require('./routes/mindmap.page.routes'));
 app.use('/profile', require('./routes/profile.routes'));
 app.use('/admin', require('./routes/admin.routes'));
 
