@@ -776,8 +776,7 @@ input, textarea, select {
 /* Vintage dark: show sun (click to go lighter) */
 [data-theme="vintage-dark"] .theme-icon-sun { display: block; }
 
-/* Filter / Notif Buttons */
-.filter-btn,
+/* Notif Button */
 .notif-btn {
   display: flex;
   align-items: center;
@@ -792,13 +791,11 @@ input, textarea, select {
   position: relative;
 }
 
-.filter-btn:hover,
 .notif-btn:hover {
   color: var(--text);
   border-color: var(--border-light);
 }
 
-.filter-btn svg,
 .notif-btn svg {
   width: 15px;
   height: 15px;
@@ -3382,7 +3379,6 @@ select option {
   }
 
   /* Topbar */
-  .filter-btn span,
   .btn-new-task span {
     display: none;
   }
@@ -4464,7 +4460,7 @@ select option {
    =================================================== */
 .filter-wrap { position: relative; display: inline-flex; }
 
-.filter-btn {
+.filters-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -4479,9 +4475,9 @@ select option {
   white-space: nowrap;
   transition: all 0.15s ease;
 }
-.filter-btn:hover { background: var(--card-hover); transform: translateY(-1px); }
-.filter-btn.has-filters { border-color: var(--accent); color: var(--accent); }
-.filter-btn svg { width: 15px; height: 15px; }
+.filters-btn:hover { background: var(--card-hover); transform: translateY(-1px); }
+.filters-btn.has-filters { border-color: var(--accent); color: var(--accent); }
+.filters-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 .filter-count {
   display: inline-flex;
@@ -4610,6 +4606,6 @@ select option {
 }
 
 @media (max-width: 640px) {
-  .filter-btn-text { display: none; }
+  .filters-btn-text { display: none; }
   .filter-popover { width: calc(100vw - 28px); right: auto; }
 }
