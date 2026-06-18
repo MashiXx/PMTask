@@ -44,6 +44,7 @@ model Project {
   folders   Folder[]
   documents Document[]
   groups    TaskGroup[]
+  mindmaps  Mindmap[]
 }
 
 model Task {
@@ -70,6 +71,7 @@ model Task {
   tags        TaskTag[]
   assignees   TaskAssignee[]
   subtasks    SubTask[]
+  mindmapNodes MindmapNode[]
 
 }
 
@@ -165,4 +167,39 @@ model Document {
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   folder     Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
   uploadedBy User     @relation("DocumentUploader", fields: [uploadedById], references: [id])
+}
+
+model Mindmap {
+  id        Int      @id @default(autoincrement())
+  name      String
+  projectId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nodes     MindmapNode[]
+}
+
+model MindmapNode {
+  id        Int      @id @default(autoincrement())
+  mindmapId Int
+  parentId  Int?
+  label     String   @db.Text
+  color     String?
+  x         Float?
+  y         Float?
+  position  Int      @default(0)
+  collapsed Boolean  @default(false)
+  taskId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mindmap   Mindmap       @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  parent    MindmapNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  MindmapNode[] @relation("NodeChildren")
+  task      Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([mindmapId])
+  @@index([parentId])
+  @@index([taskId])
 }
