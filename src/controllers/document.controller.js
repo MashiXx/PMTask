@@ -485,7 +485,8 @@ exports.uploadDocument = async (req, res) => {
       data: {
         title: safeTitle,
         filename: originalName,
-        filepath: req.file.path,
+        // Store path relative to uploadDir so it's portable across machines/deploys
+        filepath: path.relative(uploadDir, req.file.path),
         mimeType: req.file.mimetype,
         size: req.file.size,
         projectId,
@@ -582,7 +583,7 @@ exports.deleteDocument = async (req, res) => {
     await prisma.document.delete({ where: { id: parseInt(id) } });
 
     // Remove file from disk
-    try { fs.unlinkSync(doc.filepath); } catch (e) { /* file may not exist */ }
+    try { fs.unlinkSync(path.resolve(uploadDir, doc.filepath)); } catch (e) { /* file may not exist */ }
 
     res.json({ success: true });
   } catch (err) {
@@ -612,7 +613,8 @@ exports.downloadDocument = async (req, res) => {
       if (!access.allowed) return res.status(403).json({ error: 'Folder is locked' });
     }
 
-    const absolutePath = path.resolve(doc.filepath);
+    // Resolve against uploadDir: relative paths join correctly; legacy absolute paths pass through
+    const absolutePath = path.resolve(uploadDir, doc.filepath);
 
     // Path traversal protection
     if (!isPathSafe(absolutePath)) {
@@ -667,7 +669,8 @@ exports.previewDocument = async (req, res) => {
       }
     }
 
-    const absolutePath = path.resolve(doc.filepath);
+    // Resolve against uploadDir: relative paths join correctly; legacy absolute paths pass through
+    const absolutePath = path.resolve(uploadDir, doc.filepath);
 
     // Path traversal protection
     if (!isPathSafe(absolutePath)) {
