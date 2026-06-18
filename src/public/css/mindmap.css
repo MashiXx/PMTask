@@ -35,3 +35,26 @@
 .mm-toolbar { position:absolute; top:14px; right:14px; display:flex; gap:6px; z-index:10; }
 .mm-toolbar button { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer; }
 .mm-toolbar button:hover { background:var(--card-hover); }
+
+/* Selected node */
+.mm-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0,0,0,.3); }
+
+/* Toasts */
+.mm-toast-host { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
+.mm-toast { padding: 9px 16px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 0.82rem; box-shadow: 0 8px 24px rgba(0,0,0,.3); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.mm-toast.show { opacity: 1; transform: translateY(0); }
+.mm-toast-error { border-color: var(--coral); color: var(--coral); }
+
+/* Prompt / confirm dialog */
+.mm-dialog-overlay { position: fixed; inset: 0; z-index: 1001; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .15s; }
+.mm-dialog-overlay.show { opacity: 1; }
+.mm-dialog { width: 320px; max-width: calc(100vw - 32px); padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.35); }
+.mm-dialog-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.mm-dialog-input { width: 100%; padding: 9px 11px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; margin-bottom: 14px; }
+.mm-dialog-input:focus { outline: none; border-color: var(--accent); }
+.mm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.mm-dialog-actions button { padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+.mm-dialog-cancel:hover { background: var(--card-hover); }
+.mm-dialog-ok { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mm-dialog-ok.danger { background: var(--coral); border-color: var(--coral); }
+.mm-dialog-ok:hover { filter: brightness(1.1); }
