@@ -1,0 +1,14 @@
+{
+  "name": "PMTask",
+  "short_name": "PMTask",
+  "description": "Collaborative project management and task tracking.",
+  "icons": [
+    { "src": "/images/favicon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/images/favicon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/images/favicon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ],
+  "theme_color": "#6C63FF",
+  "background_color": "#16213e",
+  "display": "standalone",
+  "start_url": "/dashboard"
+}
