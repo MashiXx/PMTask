@@ -21,6 +21,7 @@ function toggleCompletedTasks() {
   const hide = checkbox ? checkbox.checked : false;
   localStorage.setItem('pmtask-hide-completed', String(hide));
   applyCompletedFilter(hide);
+  if (typeof updateFilterCount === 'function') updateFilterCount();
 }
 
 function applyCompletedFilter(hide) {
@@ -56,4 +57,5 @@ function applyCompletedFilter(hide) {
   const checkbox = document.getElementById('hideCompletedCheck');
   if (checkbox) checkbox.checked = hideCompleted;
   if (hideCompleted) applyCompletedFilter(true);
+  if (typeof updateFilterCount === 'function') updateFilterCount();
 })();
