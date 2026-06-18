@@ -1,27 +1,17 @@
 <%
-  const statusOrder = ['todo', 'inprogress', 'review', 'done'];
-  const statusLabels = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
-  const statusColors = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
-  const statusIcons = {
-    todo: '<circle cx="12" cy="12" r="9" stroke-dasharray="0" fill="none"/>',
-    inprogress: '<circle cx="12" cy="12" r="9" fill="none"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor" opacity="0.3"/>',
-    review: '<circle cx="12" cy="12" r="9" fill="none"/><path d="M12 3a9 9 0 0 1 9 9a9 9 0 0 1-9 9" fill="currentColor" opacity="0.3"/>',
-    done: '<circle cx="12" cy="12" r="9" fill="none"/><polyline points="8 12 11 15 16 9"/>'
-  };
   const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
   const priorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
 %>
 
 <div class="list-view hidden" id="listView">
-  <% statusOrder.forEach(status => { %>
-    <% const groupTasks = tasks[status] || []; %>
-    <% const sColor = statusColors[status]; %>
-    <div class="list-group" data-status="<%= status %>">
+  <% groupColumns.forEach(col => { %>
+    <% const gColor = col.color || '#6B6B8E'; %>
+    <div class="list-group" data-group-id="<%= col.id %>">
       <div class="list-group-header" onclick="this.parentElement.classList.toggle('collapsed')">
         <div class="list-group-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="<%= sColor %>" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:<%= sColor %>"><%- statusIcons[status] %></svg>
-          <span class="list-group-label"><%= statusLabels[status] %></span>
-          <span class="list-group-count" style="background:color-mix(in srgb, <%= sColor %> 15%, transparent); color:<%= sColor %>"><%= groupTasks.length %></span>
+          <span class="list-group-dot" style="background:<%= gColor %>; width:9px; height:9px; border-radius:50%; display:inline-block;"></span>
+          <span class="list-group-label"><%= col.name %></span>
+          <span class="list-group-count" style="background:color-mix(in srgb, <%= gColor %> 15%, transparent); color:<%= gColor %>"><%= col.tasks.length %></span>
         </div>
         <svg class="list-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
@@ -35,11 +25,11 @@
           <div class="list-col list-col-tags">Tags</div>
         </div>
 
-        <% if (groupTasks.length === 0) { %>
+        <% if (col.tasks.length === 0) { %>
           <div class="list-empty-row">No tasks</div>
         <% } %>
 
-        <% groupTasks.forEach(task => { %>
+        <% col.tasks.forEach(task => { %>
           <% const pColor = priorityColors[task.priority] || '#FFB347'; %>
           <% const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347'; %>
           <div class="list-row" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
