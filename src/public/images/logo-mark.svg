@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="PMTask">
+  <defs>
+    <linearGradient id="pmLogo" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6C63FF"/>
+      <stop offset="1" stop-color="#00D9FF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="18" fill="none" stroke="url(#pmLogo)" stroke-width="5"
+          stroke-linecap="round" stroke-dasharray="83 30" transform="rotate(6 24 24)"/>
+  <path d="M15 24.5 L21.5 31 L35 15.5" fill="none" stroke="url(#pmLogo)" stroke-width="5.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

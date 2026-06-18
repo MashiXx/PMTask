@@ -349,20 +349,10 @@ input, textarea, select {
 }
 
 .sidebar-logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-}
-
-.sidebar-logo-icon svg {
-  width: 18px;
-  height: 18px;
-  color: #fff;
+  display: block;
 }
 
 .sidebar-logo-text {
