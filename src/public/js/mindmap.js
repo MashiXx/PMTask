@@ -37,11 +37,32 @@ function mmVisibleNodes() {
 function mmPositions(visible) {
   const list = visible || mmVisibleNodes();
   const auto = computeMindmapLayout(list.map(n => ({ id:n.id, parentId:n.parentId, position:n.position })));
-  const pos = {};
+  const childrenOf = new Map(list.map(n => [n.id, []]));
+  let root = null;
   for (const n of list) {
-    const a = auto[n.id] || { x:0, y:0 };
-    pos[n.id] = { x: n.x != null ? n.x : a.x, y: n.y != null ? n.y : a.y };
+    if (n.parentId != null && childrenOf.has(n.parentId)) childrenOf.get(n.parentId).push(n);
+    else root = root || n;
   }
+  const pos = {};
+  // Resolve top-down: a node with manual x/y is absolute; an auto node hangs off
+  // its parent's RESOLVED position, keeping the auto layout's relative offset.
+  // So a subtree follows a manually-dragged ancestor instead of snapping to the
+  // global (root-anchored) layout.
+  function resolve(node, parentResolved, parentAuto) {
+    const a = auto[node.id] || { x: 0, y: 0 };
+    let p;
+    if (node.x != null && node.y != null) {
+      p = { x: node.x, y: node.y };
+    } else if (parentResolved && parentAuto) {
+      p = { x: parentResolved.x + (a.x - parentAuto.x), y: parentResolved.y + (a.y - parentAuto.y) };
+    } else {
+      p = { x: a.x, y: a.y };
+    }
+    pos[node.id] = p;
+    for (const c of (childrenOf.get(node.id) || [])) resolve(c, p, a);
+  }
+  if (root) resolve(root, null, null);
+  for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0 }; // defensive
   return pos;
 }
 
