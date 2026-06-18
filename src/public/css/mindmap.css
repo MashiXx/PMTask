@@ -18,7 +18,9 @@
 .mm-viewport { position:absolute; top:0; left:0; transform-origin:0 0; }
 .mm-svg { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
 .mm-edge { fill:none; stroke:var(--border-light); stroke-width:2; }
-.mm-node { position:absolute; min-width:120px; max-width:240px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.18); cursor:grab; user-select:none; }
+.mm-node { position:absolute; z-index:1; min-width:120px; max-width:240px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.18); cursor:grab; user-select:none; }
+/* Raise the active node so its expanded actions sit above neighbours and stay clickable */
+.mm-node:hover, .mm-node.selected, .mm-node.dragging { z-index:30; }
 .mm-node.dragging { cursor:grabbing; box-shadow:0 8px 24px rgba(0,0,0,.3); }
 .mm-node-head { display:flex; align-items:flex-start; gap:6px; }
 .mm-node-label { font-size:0.82rem; color:var(--text); word-break:break-word; }
