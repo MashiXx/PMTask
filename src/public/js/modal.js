@@ -279,20 +279,10 @@ function updateCardInDOM(taskId, changes) {
       if (line) line.style.background = pColor;
     }
 
+    // Status is a badge on the card now, not a column — update it in place.
     if (changes.status && card.dataset.status !== changes.status) {
-      const oldStatus = card.dataset.status;
-      const newStatus = changes.status;
-      card.dataset.status = newStatus;
-
-      const newList = document.querySelector(`.tasks-list[data-status="${newStatus}"]`);
-      if (newList) {
-        card.remove();
-        const addBtn = newList.querySelector('.add-task-btn');
-        newList.insertBefore(card, addBtn);
-      }
-
-      updateColumnCount(oldStatus);
-      updateColumnCount(newStatus);
+      card.dataset.status = changes.status;
+      updateCardStatusBadge(card, changes.status);
     }
   }
 
@@ -303,6 +293,18 @@ function updateCardInDOM(taskId, changes) {
 const listPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
 const statusLabelsMap = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
 const statusColorsMap = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
+
+// Update the per-card status badge in place (status no longer drives columns)
+function updateCardStatusBadge(card, status) {
+  const badge = card.querySelector('.task-status-badge');
+  if (!badge) return;
+  const sColor = statusColorsMap[status] || '#6B6B8E';
+  const sLabel = statusLabelsMap[status] || 'To Do';
+  badge.style.color = sColor;
+  badge.style.borderColor = sColor + '55';
+  badge.style.background = sColor + '14';
+  badge.innerHTML = `<span class="task-status-dot" style="background:${sColor}"></span>${sLabel}`;
+}
 
 function updateListRowsInDOM(taskId, changes) {
   const rows = document.querySelectorAll(`.list-row[data-task-id="${taskId}"]`);
@@ -323,50 +325,13 @@ function updateListRowsInDOM(taskId, changes) {
       }
     }
 
-    if (changes.status) {
-      const statusBadge = row.querySelector('.list-status-badge');
-      if (statusBadge) {
-        const sColor = statusColorsMap[changes.status] || '#6B6B8E';
-        statusBadge.textContent = statusLabelsMap[changes.status] || changes.status;
-        statusBadge.style.color = sColor;
-        statusBadge.style.background = `color-mix(in srgb, ${sColor} 12%, transparent)`;
-      }
-    }
   });
 
-  // Move row in status-grouped list view if status changed
+  // List rows are grouped by custom group now, so status changes update the
+  // row's data-status but never move it between sections.
   if (changes.status) {
     const statusRow = document.querySelector(`#listView .list-row[data-task-id="${taskId}"]`);
-    if (statusRow && statusRow.dataset.status !== changes.status) {
-      const oldStatus = statusRow.dataset.status;
-      statusRow.dataset.status = changes.status;
-
-      const newGroup = document.querySelector(`#listView .list-group[data-status="${changes.status}"] .list-group-body`);
-      if (newGroup) {
-        statusRow.remove();
-        newGroup.appendChild(statusRow);
-        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${oldStatus}"]`));
-        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${changes.status}"]`));
-      }
-    }
-  }
-}
-
-function updateListGroupCount(group) {
-  if (!group) return;
-  const count = group.querySelectorAll('.list-row').length;
-  const badge = group.querySelector('.list-group-count');
-  if (badge) badge.textContent = count;
-  // Update empty row
-  const body = group.querySelector('.list-group-body');
-  const emptyRow = body.querySelector('.list-empty-row');
-  if (count === 0 && !emptyRow) {
-    const div = document.createElement('div');
-    div.className = 'list-empty-row';
-    div.textContent = 'No tasks';
-    body.appendChild(div);
-  } else if (count > 0 && emptyRow) {
-    emptyRow.remove();
+    if (statusRow) statusRow.dataset.status = changes.status;
   }
 }
 
@@ -468,18 +433,10 @@ async function refreshCardFromAPI(taskId) {
       dueEl.remove();
     }
 
-    // Status column move
+    // Status badge (status is a badge on the card, not a column)
     if (card.dataset.status !== task.status) {
-      const oldStatus = card.dataset.status;
       card.dataset.status = task.status;
-      const newList = document.querySelector(`.tasks-list[data-status="${task.status}"]`);
-      if (newList) {
-        card.remove();
-        const addBtn = newList.querySelector('.add-task-btn');
-        newList.insertBefore(card, addBtn);
-      }
-      updateColumnCount(oldStatus);
-      updateColumnCount(task.status);
+      updateCardStatusBadge(card, task.status);
     }
   } catch (err) {
     console.error('Failed to refresh card:', err);
@@ -529,15 +486,6 @@ async function refreshListRowsFromAPI(taskId) {
       const dueCol = row.querySelector('.list-col-due');
       if (dueCol) dueCol.textContent = task.dueDate || '—';
 
-      // Status badge (tag view rows)
-      const statusBadge = row.querySelector('.list-status-badge');
-      if (statusBadge) {
-        const sColor = statusColorsMap[task.status] || '#6B6B8E';
-        statusBadge.textContent = statusLabelsMap[task.status] || task.status;
-        statusBadge.style.color = sColor;
-        statusBadge.style.background = `color-mix(in srgb, ${sColor} 12%, transparent)`;
-      }
-
       // Tags (dots in status view)
       const tagsCol = row.querySelector('.list-col-tags');
       if (tagsCol) {
@@ -550,99 +498,12 @@ async function refreshListRowsFromAPI(taskId) {
       row.dataset.tags = (task.tags || []).map(tt => tt.tag.name).join(',');
     });
 
-    // Move row in status list view if status changed
+    // List rows are grouped by custom group now — status changes don't move rows.
     const statusRow = document.querySelector(`#listView .list-row[data-task-id="${taskId}"]`);
-    if (statusRow && statusRow.dataset.status !== task.status) {
-      const oldStatus = statusRow.dataset.status;
-      statusRow.dataset.status = task.status;
-
-      const newGroup = document.querySelector(`#listView .list-group[data-status="${task.status}"] .list-group-body`);
-      if (newGroup) {
-        statusRow.remove();
-        newGroup.appendChild(statusRow);
-        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${oldStatus}"]`));
-        updateListGroupCount(document.querySelector(`#listView .list-group[data-status="${task.status}"]`));
-      }
-    }
-
-    // Handle tag view: remove and re-add rows if tags changed
-    refreshTagViewRows(taskId, task);
+    if (statusRow) statusRow.dataset.status = task.status;
   } catch (err) {
     console.error('Failed to refresh list rows:', err);
   }
-}
-
-function refreshTagViewRows(taskId, task) {
-  const tagView = document.getElementById('listViewTag');
-  if (!tagView) return;
-
-  // Remove existing rows for this task in tag view
-  const existingRows = tagView.querySelectorAll(`.list-row[data-task-id="${taskId}"]`);
-  const affectedGroups = new Set();
-  existingRows.forEach(row => {
-    const group = row.closest('.list-group');
-    if (group) affectedGroups.add(group);
-    row.remove();
-  });
-
-  // Re-create rows in appropriate tag groups
-  const taskTags = (task.tags || []).map(tt => tt.tag.name);
-  const pColor = priorityColors[task.priority] || '#FFB347';
-  const sColor = statusColorsMap[task.status] || '#6B6B8E';
-  const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
-
-  const targetTagNames = taskTags.length > 0 ? taskTags : ['No Tag'];
-
-  targetTagNames.forEach(tagName => {
-    const group = tagView.querySelector(`.list-group[data-tag="${tagName}"]`);
-    if (!group) return;
-    const body = group.querySelector('.list-group-body');
-    if (!body) return;
-
-    const row = document.createElement('div');
-    row.className = 'list-row';
-    row.dataset.taskId = taskId;
-    row.dataset.status = task.status;
-    row.dataset.tags = taskTags.join(',');
-    row.setAttribute('onclick', `openTaskPreview(${taskId})`);
-
-    row.innerHTML = `
-      <div class="list-col list-col-title">
-        <div class="list-priority-dot" style="background:${pColor};"></div>
-        <div class="list-task-name">${task.title}</div>
-      </div>
-      <div class="list-col list-col-status">
-        <div class="list-status-badge" style="color:${sColor}; background:color-mix(in srgb, ${sColor} 12%, transparent);">${statusLabelsMap[task.status] || task.status}</div>
-      </div>
-      <div class="list-col list-col-priority">
-        <div style="color:${pColor}; font-weight:600;">${listPriorityLabels[task.priority] || 'MED'}</div>
-      </div>
-      <div class="list-col list-col-progress">
-        <div class="list-progress-track">
-          <div class="list-progress-fill" style="width:${task.progress}%; background:${progColor};"></div>
-        </div>
-        <div style="color:${progColor}; font-weight:600; min-width:30px; text-align:right; padding-right:5px;">${task.progress}%</div>
-      </div>
-      <div class="list-col list-col-due">
-        ${task.dueDate || '—'}
-      </div>`;
-
-    body.appendChild(row);
-    affectedGroups.add(group);
-  });
-
-  // Update counts for all affected groups
-  affectedGroups.forEach(group => updateListGroupCount(group));
-}
-
-function updateColumnCount(status) {
-  const list = document.querySelector(`.tasks-list[data-status="${status}"]`);
-  if (!list) return;
-  const count = list.querySelectorAll('.task-card').length;
-  const col = list.closest('.kanban-column');
-  if (!col) return;
-  const badge = col.querySelector('.column-count');
-  if (badge) badge.textContent = count;
 }
 
 // Auto-save on blur for text fields
