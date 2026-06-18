@@ -1,0 +1,17 @@
+<div class="modal-overlay" id="groupManagerModal">
+  <div class="modal modal-sm">
+    <h2 class="modal-title">Manage Groups</h2>
+
+    <div class="group-add-row flex-center gap-8 mb-8">
+      <input type="text" id="newGroupName" class="flex-1" placeholder="New group name" autocomplete="off">
+      <input type="color" id="newGroupColor" value="#6C63FF" title="Group color" class="group-color-input">
+      <button class="btn-submit" onclick="addNewGroup()" style="padding:8px 14px;">Add</button>
+    </div>
+
+    <div id="groupList" class="group-manager-list"></div>
+
+    <div class="modal-actions mt-20">
+      <button type="button" class="btn-cancel" onclick="closeGroupManager()">Close</button>
+    </div>
+  </div>
+</div>

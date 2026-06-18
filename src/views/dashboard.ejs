@@ -19,6 +19,7 @@
 <%- include('partials/modals/project-modal') %>
 <%- include('partials/modals/task-preview-modal') %>
 <%- include('partials/modals/tag-modal') %>
+<%- include('partials/modals/group-modal') %>
 
 <script>
 window.PROJECT_TAGS = <%- JSON.stringify(projectTags || []).replace(/<\//g, '<\\/') %>;
@@ -31,6 +32,8 @@ window.IS_GUEST = <%= typeof isGuest !== 'undefined' && isGuest ? 'true' : 'fals
 <script src="/js/search.js"></script>
 <script src="/js/tag-filter.js"></script>
 <script src="/js/tag-manage.js"></script>
+<script src="/js/group-manage.js"></script>
+<script src="/js/task-status.js"></script>
 <script src="/js/subtask.js"></script>
 <script src="/js/view-toggle.js"></script>
 
