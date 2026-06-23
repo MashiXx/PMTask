@@ -83,6 +83,34 @@
     });
   }
 
+  // ── Paste-to-attach (Ctrl/Cmd+V) ──
+  // A single global handler routes pasted images to whichever editable
+  // attachments area is currently visible (detail page or open modal).
+  const mounts = [];
+  let pasteInstalled = false;
+
+  function installPasteHandler() {
+    if (pasteInstalled) return;
+    pasteInstalled = true;
+    document.addEventListener('paste', function (e) {
+      const cd = e.clipboardData;
+      if (!cd || !cd.items) return;
+      const files = [];
+      for (let i = 0; i < cd.items.length; i++) {
+        const it = cd.items[i];
+        if (it.kind === 'file' && it.type.indexOf('image/') === 0) {
+          const f = it.getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (!files.length) return; // no image in clipboard → let default paste happen
+      const target = mounts.find(function (m) { return m.canEdit && m.isVisible(); });
+      if (!target) return;
+      e.preventDefault();
+      target.handle(files);
+    });
+  }
+
   // Mount/refresh an attachments UI on a container.
   // opts: { container, fileInput, dropZone?, taskId, canEdit, attachments }
   // Returns a small controller with getAttachments().
@@ -205,6 +233,22 @@
         dropZone.classList.remove('attach-drag');
         handleFiles(e.dataTransfer.files);
       };
+    }
+
+    // Register this mount for Ctrl+V paste routing (dedupe by container)
+    for (let i = mounts.length - 1; i >= 0; i--) {
+      if (mounts[i].container === container) mounts.splice(i, 1);
+    }
+    if (canEdit && taskId) {
+      mounts.push({
+        container: container,
+        canEdit: canEdit,
+        handle: handleFiles,
+        isVisible: function () {
+          return document.body.contains(container) && container.offsetParent !== null;
+        },
+      });
+      installPasteHandler();
     }
 
     render();
