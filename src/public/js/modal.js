@@ -198,6 +198,18 @@ async function openTaskPreview(taskId) {
       renderPreviewSubtasks(task.subtasks || [], isGuest);
     }
 
+    // Render attachments (upload/delete disabled for guests)
+    if (window.TaskAttachments) {
+      window.TaskAttachments.mount({
+        container: 'previewAttachmentsList',
+        fileInput: 'previewAttachmentInput',
+        dropZone: isGuest ? null : 'previewAttachmentDrop',
+        taskId: task.id,
+        canEdit: !isGuest,
+        attachments: task.attachments || [],
+      });
+    }
+
     document.getElementById('previewDetailsLink').href = '/tasks/' + encodeURIComponent(task.id + '-' + (task.slug || ''));
 
     // Guest mode: make fields read-only, hide edit/delete actions

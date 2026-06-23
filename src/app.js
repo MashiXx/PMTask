@@ -66,6 +66,7 @@ app.use((req, res, next) => {
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/tasks', require('./routes/task.routes'));
+app.use('/api/attachments', require('./routes/attachment.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/api/groups', require('./routes/group.routes'));

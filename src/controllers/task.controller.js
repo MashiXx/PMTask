@@ -245,6 +245,10 @@ exports.getTaskPage = async (req, res) => {
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },
+        attachments: {
+          include: { uploadedBy: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
     if (!task) {
@@ -311,6 +315,10 @@ exports.getTask = async (req, res) => {
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },
+        attachments: {
+          include: { uploadedBy: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
     if (!task) return res.status(404).json({ error: 'Task not found' });

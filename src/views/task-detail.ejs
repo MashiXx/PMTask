@@ -159,6 +159,24 @@
               </div>
             <% } %>
           </div>
+
+          <!-- Attachments -->
+          <div class="task-detail-section">
+            <div class="subtask-header">
+              <h3 class="task-detail-label">ATTACHMENTS</h3>
+            </div>
+            <% if (canEdit) { %>
+              <div id="taskAttachmentDrop" class="attach-dropzone">
+                <input type="file" id="taskAttachmentInput" class="hidden" multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
+                <label for="taskAttachmentInput" class="attach-dropzone-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Drop files here or <span class="attach-browse">browse</span>
+                </label>
+              </div>
+            <% } %>
+            <div id="taskAttachmentsList" class="attach-list mt-8"></div>
+          </div>
         </div>
 
         <div class="task-detail-sidebar">
@@ -235,14 +253,29 @@
     id: <%= task.id %>,
     projectId: <%= task.projectId %>,
     description: <%- JSON.stringify(task.description || '').replace(/<\//g, '<\\/').replace(/<!--/g, '<\\!--') %>,
-    canEdit: <%= canEdit %>
+    canEdit: <%= canEdit %>,
+    attachments: <%- JSON.stringify(task.attachments || []).replace(/<\//g, '<\\/') %>
   };
 </script>
 <%- include('partials/foot') %>
 
 <script src="/js/modal.js"></script>
 <script src="/js/subtask.js"></script>
+<script src="/js/task-attachments.js"></script>
 <script src="/js/task-detail.js"></script>
+<script>
+  // Mount attachments UI for the task detail page
+  if (window.TaskAttachments && window.TASK_DATA) {
+    window.TaskAttachments.mount({
+      container: 'taskAttachmentsList',
+      fileInput: 'taskAttachmentInput',
+      dropZone: 'taskAttachmentDrop',
+      taskId: window.TASK_DATA.id,
+      canEdit: window.TASK_DATA.canEdit,
+      attachments: window.TASK_DATA.attachments,
+    });
+  }
+</script>
 <script>
   // Override delete redirect to go back to project
   const origConfirmDelete = confirmDelete;

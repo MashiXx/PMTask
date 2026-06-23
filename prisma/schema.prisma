@@ -25,6 +25,7 @@ model User {
   assignedTasks TaskAssignee[]
   folders   Folder[]   @relation("FolderCreator")
   documents Document[] @relation("DocumentUploader")
+  attachments TaskAttachment[] @relation("AttachmentUploader")
 }
 
 model Project {
@@ -72,7 +73,24 @@ model Task {
   assignees   TaskAssignee[]
   subtasks    SubTask[]
   mindmapNodes MindmapNode[]
+  attachments TaskAttachment[]
 
+}
+
+model TaskAttachment {
+  id           Int      @id @default(autoincrement())
+  filename     String
+  filepath     String
+  mimeType     String
+  size         Int
+  taskId       Int
+  uploadedById Int
+  createdAt    DateTime @default(now())
+
+  task       Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation("AttachmentUploader", fields: [uploadedById], references: [id])
+
+  @@index([taskId])
 }
 
 model SubTask {

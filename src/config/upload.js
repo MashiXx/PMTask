@@ -33,6 +33,41 @@ const ALLOWED_MIMES = [
   'application/gzip', 'application/x-tar',
 ];
 
+// Shared whitelist filter — reused by project (Document) and task attachment uploads
+function fileFilter(req, file, cb) {
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  // Check extension whitelist
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return cb(new Error('File type not allowed: ' + ext));
+  }
+
+  // Check MIME type whitelist
+  if (!ALLOWED_MIMES.includes(file.mimetype)) {
+    return cb(new Error('File MIME type not allowed: ' + file.mimetype));
+  }
+
+  // Sanitize filename - reject null bytes and path traversal
+  if (file.originalname.includes('\0') || file.originalname.includes('..') || /[/\\]/.test(file.originalname)) {
+    return cb(new Error('Invalid filename'));
+  }
+
+  cb(null, true);
+}
+
+// Shared crypto-random filename generator (preserves lowercased extension)
+function randomFilename(req, file, cb) {
+  const unique = Date.now() + '-' + crypto.randomBytes(16).toString('hex');
+  const ext = path.extname(file.originalname).toLowerCase();
+  cb(null, unique + ext);
+}
+
+// Shared per-file/per-request limits
+const UPLOAD_LIMITS = {
+  fileSize: 10 * 1024 * 1024, // 10 MB per file
+  files: 5, // max 5 files per request
+};
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     const projectId = req.params.projectId || req.body.projectId;
@@ -44,41 +79,19 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(projectDir)) fs.mkdirSync(projectDir, { recursive: true });
     cb(null, projectDir);
   },
-  filename(req, file, cb) {
-    // Use crypto random bytes instead of Math.random for unpredictable filenames
-    const unique = Date.now() + '-' + crypto.randomBytes(16).toString('hex');
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, unique + ext);
-  },
+  filename: randomFilename,
 });
 
 const upload = multer({
   storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB per file
-    files: 5, // max 5 files per request
-  },
-  fileFilter(req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-
-    // Check extension whitelist
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      return cb(new Error('File type not allowed: ' + ext));
-    }
-
-    // Check MIME type whitelist
-    if (!ALLOWED_MIMES.includes(file.mimetype)) {
-      return cb(new Error('File MIME type not allowed: ' + file.mimetype));
-    }
-
-    // Sanitize filename - reject null bytes and path traversal
-    if (file.originalname.includes('\0') || file.originalname.includes('..') || /[/\\]/.test(file.originalname)) {
-      return cb(new Error('Invalid filename'));
-    }
-
-    cb(null, true);
-  },
+  limits: UPLOAD_LIMITS,
+  fileFilter,
 });
 
 module.exports = upload;
 module.exports.uploadDir = uploadDir;
+module.exports.ALLOWED_EXTENSIONS = ALLOWED_EXTENSIONS;
+module.exports.ALLOWED_MIMES = ALLOWED_MIMES;
+module.exports.fileFilter = fileFilter;
+module.exports.randomFilename = randomFilename;
+module.exports.UPLOAD_LIMITS = UPLOAD_LIMITS;

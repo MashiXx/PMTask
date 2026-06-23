@@ -26,6 +26,7 @@ window.PROJECT_TAGS = <%- JSON.stringify(projectTags || []).replace(/<\//g, '<\\
 window.IS_GUEST = <%= typeof isGuest !== 'undefined' && isGuest ? 'true' : 'false' %>;
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="/js/task-attachments.js"></script>
 <script src="/js/modal.js"></script>
 <script src="/js/project.js"></script>
 <script src="/js/kanban.js"></script>
