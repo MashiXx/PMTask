@@ -24,6 +24,7 @@
 <script>
 window.PROJECT_TAGS = <%- JSON.stringify(projectTags || []).replace(/<\//g, '<\\/') %>;
 window.IS_GUEST = <%= typeof isGuest !== 'undefined' && isGuest ? 'true' : 'false' %>;
+<% if (typeof activeProject !== 'undefined' && activeProject) { %>window.ACTIVE_PROJECT_SLUG = '<%= activeProject.id %>-<%= activeProject.slug %>';<% } %>
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="/js/task-attachments.js"></script>

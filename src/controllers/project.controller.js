@@ -41,6 +41,42 @@ exports.getProjects = async (req, res) => {
   }
 };
 
+// GET /api/projects/list — lightweight JSON list for the project switcher popup
+exports.listProjects = async (req, res) => {
+  try {
+    // Same visibility rules as getProjects: admin sees own, guests see public, devs see all
+    let projectFilter = {};
+    if (req.user && req.user.role === 'admin') {
+      projectFilter = { userId: req.user.id };
+    } else if (!req.user) {
+      projectFilter = { OR: [{ publicTasks: true }, { publicDocuments: true }] };
+    }
+
+    const projects = await prisma.project.findMany({
+      where: projectFilter,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        color: true,
+        _count: { select: { tasks: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    res.json(projects.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      color: p.color,
+      taskCount: p._count.tasks,
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to list projects' });
+  }
+};
+
 exports.createProject = async (req, res) => {
   try {
     const { name, color } = req.body;

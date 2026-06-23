@@ -146,3 +146,14 @@ async function confirmDeleteProject() {
     console.error('Failed to delete project:', err);
   }
 }
+
+// Auto-open the create-project modal when arriving via the switcher's "New project" (?new=1)
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('new') === '1' && typeof openProjectModal === 'function'
+      && document.getElementById('projectModal')) {
+    openProjectModal();
+    // Clean the URL so a refresh doesn't reopen the modal
+    history.replaceState({}, '', '/projects');
+  }
+})();
