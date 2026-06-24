@@ -25,22 +25,27 @@
     <div class="dashboard-body">
       <div class="profile-column">
         <div class="profile-header">
-          <div class="profile-avatar-large"><%- include('partials/avatar', { avatarUser: currentUser }) %></div>
+          <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="avatar-upload-form">
+            <input type="file" id="avatarFile" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" onchange="this.form.submit()">
+            <label for="avatarFile" class="profile-avatar-large profile-avatar-edit" title="Upload a new photo">
+              <%- include('partials/avatar', { avatarUser: currentUser }) %>
+              <span class="avatar-cam">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </span>
+            </label>
+          </form>
           <div class="profile-header-info">
             <h2 class="profile-name"><%= currentUser.name %></h2>
             <p class="profile-email"><%= currentUser.email %></p>
             <div class="avatar-actions">
-              <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="avatar-upload-form">
-                <input type="file" id="avatarFile" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" onchange="this.form.submit()">
-                <label for="avatarFile" class="btn-avatar-upload">Change photo</label>
-              </form>
+              <label for="avatarFile" class="btn-avatar-upload">Upload photo</label>
               <% if (currentUser.avatar && !/^https?:\/\//i.test(currentUser.avatar)) { %>
                 <form action="/profile/avatar/delete" method="POST">
                   <button type="submit" class="btn-avatar-remove">Remove</button>
                 </form>
               <% } %>
             </div>
-            <p class="avatar-hint">PNG, JPG, WEBP or GIF · up to 5 MB</p>
+            <p class="avatar-hint">Click your photo or the button · PNG, JPG, WEBP, GIF up to 5 MB</p>
           </div>
           <% if (currentUser.googleId) { %>
             <span class="profile-badge">Google Account</span>

@@ -4873,6 +4873,26 @@ select option {
   overflow: hidden;
 }
 
+/* Clickable profile avatar (label) with hover camera overlay */
+.profile-avatar-edit {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.avatar-cam {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.profile-avatar-edit:hover .avatar-cam { opacity: 1; }
+
 /* Profile avatar controls */
 .avatar-actions {
   display: flex;
