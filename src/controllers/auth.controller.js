@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 
 exports.getLogin = (req, res) => {
   res.render('auth/login', { title: 'Login' });

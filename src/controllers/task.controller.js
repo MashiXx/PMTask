@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 const fs = require('fs');
 const path = require('path');
 const { generateSlug, parseIdFromSlug } = require('../utils/slug');
@@ -273,23 +272,28 @@ exports.getTaskPage = async (req, res) => {
     }
 
     const isGuest = !req.user;
+    // Derive edit permission from the already-loaded task (avoids re-querying
+    // the task + assignees that canModifyTask would otherwise fetch).
     let canEdit = false;
     if (req.user) {
-      const access = await canModifyTask(task.id, req.user);
-      canEdit = access !== null && access !== false;
+      canEdit = req.user.role === 'admin'
+        || task.createdById === req.user.id
+        || task.assignees.some((a) => a.userId === req.user.id);
     }
 
+    // These two are independent — run them concurrently instead of sequentially.
     const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
-    const projects = await prisma.project.findMany({
-      where: projectFilter,
-      include: { _count: { select: { tasks: true } } },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    const projectTags = await prisma.tag.findMany({
-      where: { projectId: task.projectId },
-      orderBy: { name: 'asc' },
-    });
+    const [projects, projectTags] = await Promise.all([
+      prisma.project.findMany({
+        where: projectFilter,
+        include: { _count: { select: { tasks: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.tag.findMany({
+        where: { projectId: task.projectId },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
 
     // Build OG description from task details
     const ogDesc = task.description

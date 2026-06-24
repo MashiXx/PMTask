@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 const { parseIdFromSlug } = require('../utils/slug');
 const { buildGroupColumns } = require('../utils/groupColumns');
 

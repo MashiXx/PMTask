@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
 const { generateSlug, parseIdFromSlug } = require('../utils/slug');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 
 const VALID_STATUS = ['todo', 'inprogress', 'review', 'done'];
 

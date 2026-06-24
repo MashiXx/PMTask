@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 const path = require('path');
 const fs = require('fs');
 const { uploadDir } = require('../config/upload');

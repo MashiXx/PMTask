@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/prisma');
 
 // Check if user has access to modify a task (admin, creator, or assignee)
 async function canModifyTask(taskId, user) {
