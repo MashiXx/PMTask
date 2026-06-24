@@ -176,6 +176,12 @@
             <% } %>
             <div id="taskAttachmentsList" class="attach-list mt-8"></div>
           </div>
+
+          <!-- Comments -->
+          <div class="task-detail-section">
+            <p class="label-meta">Comments</p>
+            <div id="detailComments" class="comment-list"></div>
+          </div>
         </div>
 
         <div class="task-detail-sidebar">
@@ -253,6 +259,8 @@
     projectId: <%= task.projectId %>,
     description: <%- JSON.stringify(task.description || '').replace(/<\//g, '<\\/').replace(/<!--/g, '<\\!--') %>,
     canEdit: <%= canEdit %>,
+    currentUserId: <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.id : 'null' %>,
+    isAdmin: <%= typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>,
     attachments: <%- JSON.stringify(task.attachments || []).replace(/<\//g, '<\\/') %>
   };
 </script>
@@ -261,6 +269,7 @@
 <script src="/js/modal.js"></script>
 <script src="/js/subtask.js"></script>
 <script src="/js/task-attachments.js"></script>
+<script src="/js/comment.js"></script>
 <script src="/js/task-detail.js"></script>
 <script>
   // Mount attachments UI for the task detail page
@@ -272,6 +281,15 @@
       taskId: window.TASK_DATA.id,
       canEdit: window.TASK_DATA.canEdit,
       attachments: window.TASK_DATA.attachments,
+    });
+  }
+  if (window.TaskComments && window.TASK_DATA) {
+    window.TaskComments.mount({
+      container: 'detailComments',
+      taskId: window.TASK_DATA.id,
+      canEdit: window.TASK_DATA.canEdit,
+      currentUserId: window.TASK_DATA.currentUserId,
+      isAdmin: window.TASK_DATA.isAdmin,
     });
   }
 </script>
