@@ -1,6 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const fs = require('fs');
+const path = require('path');
 const { generateSlug, parseIdFromSlug } = require('../utils/slug');
+const { uploadDir } = require('../config/upload');
 
 const VALID_STATUSES = ['todo', 'inprogress', 'review', 'done'];
 const VALID_PRIORITIES = ['low', 'medium', 'high'];
@@ -221,6 +224,13 @@ exports.deleteTask = async (req, res) => {
     await prisma.taskTag.deleteMany({ where: { taskId } });
     await prisma.taskAssignee.deleteMany({ where: { taskId } });
     await prisma.task.delete({ where: { id: taskId } });
+
+    // Remove attachment files from disk (DB rows cascade-deleted above).
+    // All of a task's attachments live under uploads/tasks/<taskId>/.
+    try {
+      fs.rmSync(path.join(uploadDir, 'tasks', String(taskId)), { recursive: true, force: true });
+    } catch (e) { /* nothing to clean */ }
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);

@@ -13,6 +13,8 @@ npm run migrate -- --name <name>  # Create new migration
 npm run generate     # Regenerate Prisma client
 npm run studio       # Open database GUI
 npm run prisma -- <cmd>           # Run any Prisma CLI command
+npm run prune-uploads             # Audit uploads vs DB: report orphan files & dangling DB rows
+npm run prune-uploads -- --delete # Also delete orphaned files (run where the files live)
 ```
 
 > Prisma scripts go through `prisma/prisma-cli.js`, which assembles `DATABASE_URL`

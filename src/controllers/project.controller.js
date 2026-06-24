@@ -1,6 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const fs = require('fs');
+const path = require('path');
 const { generateSlug } = require('../utils/slug');
+const { uploadDir } = require('../config/upload');
 
 exports.getProjects = async (req, res) => {
   try {
@@ -143,7 +146,25 @@ exports.deleteProject = async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    await prisma.project.delete({ where: { id: parseInt(id) } });
+    const pid = parseInt(id);
+
+    // Collect task ids before the cascade delete so we can clean their
+    // attachment folders (uploads/tasks/<taskId>/) afterwards.
+    const tasks = await prisma.task.findMany({ where: { projectId: pid }, select: { id: true } });
+
+    await prisma.project.delete({ where: { id: pid } });
+
+    // Remove document files for this project (uploads/<projectId>/) ...
+    try {
+      fs.rmSync(path.join(uploadDir, String(pid)), { recursive: true, force: true });
+    } catch (e) { /* nothing to clean */ }
+    // ... and attachment files for each of its tasks (uploads/tasks/<taskId>/).
+    for (const t of tasks) {
+      try {
+        fs.rmSync(path.join(uploadDir, 'tasks', String(t.id)), { recursive: true, force: true });
+      } catch (e) { /* nothing to clean */ }
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);
