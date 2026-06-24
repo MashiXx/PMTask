@@ -37,15 +37,14 @@
           <div class="profile-header-info">
             <h2 class="profile-name"><%= currentUser.name %></h2>
             <p class="profile-email"><%= currentUser.email %></p>
-            <div class="avatar-actions">
-              <label for="avatarFile" class="btn-avatar-upload">Upload photo</label>
-              <% if (currentUser.avatar && !/^https?:\/\//i.test(currentUser.avatar)) { %>
+            <% if (currentUser.avatar && !/^https?:\/\//i.test(currentUser.avatar)) { %>
+              <div class="avatar-actions">
                 <form action="/profile/avatar/delete" method="POST">
-                  <button type="submit" class="btn-avatar-remove">Remove</button>
+                  <button type="submit" class="btn-avatar-remove">Remove photo</button>
                 </form>
-              <% } %>
-            </div>
-            <p class="avatar-hint">Click your photo or the button · PNG, JPG, WEBP, GIF up to 5 MB</p>
+              </div>
+            <% } %>
+            <p class="avatar-hint">Click your photo to change · PNG, JPG, WEBP, GIF up to 5 MB</p>
           </div>
           <% if (currentUser.googleId) { %>
             <span class="profile-badge">Google Account</span>
