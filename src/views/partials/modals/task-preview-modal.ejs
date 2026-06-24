@@ -1,113 +1,123 @@
 <div class="modal-overlay" id="taskPreviewModal">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg task-preview">
     <input type="hidden" id="previewTaskId" value="">
 
-    <!-- Editable Title -->
-    <div class="mb-12">
-      <input type="text" id="previewTitle" class="preview-editable-title" placeholder="Task title">
-    </div>
-
-    <!-- Status + Priority row -->
-    <div class="flex gap-8 mb-16">
-      <select id="previewStatusSelect" class="preview-inline-select">
-        <option value="todo">To Do</option>
-        <option value="inprogress">In Progress</option>
-        <option value="review">In Review</option>
-        <option value="done">Completed</option>
-      </select>
-      <select id="previewPrioritySelect" class="preview-inline-select">
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
-    </div>
-
-    <!-- Description: rendered markdown with scroll, click to edit -->
-    <div class="mb-16">
-      <div id="previewDescRendered" class="preview-desc-rendered" title="Click to edit"></div>
-      <textarea id="previewDescription" class="preview-editable-desc hidden" placeholder="Add a description..." rows="6"></textarea>
-    </div>
-
-    <div id="previewTagsWrap" class="mb-16">
-      <div class="preview-tags-header">
-        <p class="label-meta" style="margin:0">Tags</p>
-        <button type="button" class="preview-tag-toggle-btn preview-auth-btn" onclick="event.stopPropagation(); togglePreviewTagEditor()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <!-- Header: click-to-edit title + icon actions pinned top-right -->
+    <div class="task-preview-header">
+      <div class="task-preview-title-wrap">
+        <div id="previewTitleRendered" class="preview-title-display" title="Click to edit"></div>
+        <input type="text" id="previewTitle" class="preview-editable-title hidden" placeholder="Task title">
+      </div>
+      <div class="task-preview-actions">
+        <button type="button" class="preview-icon-btn danger preview-auth-btn" title="Delete" aria-label="Delete" onclick="previewDelete()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <button type="button" class="preview-icon-btn accent preview-auth-btn" title="Save" aria-label="Save" onclick="previewSave()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+        <a id="previewDetailsLink" href="#" class="preview-icon-btn no-decoration" title="Expand" aria-label="Expand">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </a>
+        <button type="button" class="preview-icon-btn" title="Close" aria-label="Close" onclick="closeTaskPreview()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div id="previewTags" class="task-tags"></div>
-      <div id="previewTagEditor" class="preview-tag-editor hidden" onclick="event.stopPropagation()">
-        <div id="previewTagOptions" class="preview-tag-options"></div>
-      </div>
     </div>
 
-    <div class="preview-meta-grid mb-16">
-      <div id="previewDueDateWrap" class="preview-meta-item hidden">
-        <p class="label-meta">Due Date</p>
-        <span id="previewDueDate" class="task-badge badge-due"></span>
-      </div>
-      <div class="preview-meta-item">
-        <p class="label-meta">Progress</p>
-        <div class="progress-inline">
-          <div class="task-progress-track" style="flex:1;">
-            <div class="task-progress-fill" id="previewProgressBar"></div>
+    <div class="task-preview-body">
+      <!-- Main column: description, checklist, attachments -->
+      <div class="preview-main">
+        <div class="preview-block">
+          <p class="label-meta">Description</p>
+          <div id="previewDescRendered" class="preview-desc-rendered" title="Click to edit"></div>
+          <textarea id="previewDescription" class="preview-editable-desc hidden" placeholder="Add a description..." rows="6"></textarea>
+        </div>
+
+        <!-- Subtasks -->
+        <div class="preview-block">
+          <div class="subtask-header">
+            <p class="label-meta">Subtasks <span id="previewSubtaskCount" class="subtask-count-badge"></span></p>
           </div>
-          <span id="previewProgressText" class="progress-value"></span>
+          <div id="previewSubtaskList" class="subtask-list"></div>
+          <div id="previewSubtaskAdd" class="subtask-add hidden">
+            <input type="text" id="previewSubtaskInput" class="subtask-input" placeholder="Add a subtask..." onkeydown="if(event.key==='Enter'){addPreviewSubtask(); event.preventDefault();}">
+            <button class="subtask-add-btn" onclick="addPreviewSubtask()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attachments -->
+        <div class="preview-block">
+          <p class="label-meta">Attachments</p>
+          <div id="previewAttachmentDrop" class="attach-dropzone preview-auth-btn mt-6">
+            <input type="file" id="previewAttachmentInput" class="hidden" multiple
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
+            <label for="previewAttachmentInput" class="attach-dropzone-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Drop files here or <span class="attach-browse">browse</span>
+            </label>
+          </div>
+          <p class="attach-paste-hint preview-auth-btn">Tip: paste an image with Ctrl+V to attach it.</p>
+          <div id="previewAttachmentsList" class="attach-list mt-6"></div>
         </div>
       </div>
-      <div id="previewAssigneesWrap" class="preview-meta-item preview-meta-item-wide hidden">
-        <p class="label-meta">Assignees</p>
-        <div id="previewAssignees" class="flex gap-6"></div>
-      </div>
+
+      <!-- Sidebar: task facts & controls (Trello-style) -->
+      <aside class="preview-sidebar">
+        <div class="preview-side-section">
+          <p class="label-meta">Status</p>
+          <select id="previewStatusSelect" class="preview-inline-select">
+            <option value="todo">To Do</option>
+            <option value="inprogress">In Progress</option>
+            <option value="review">In Review</option>
+            <option value="done">Completed</option>
+          </select>
+        </div>
+
+        <div class="preview-side-section">
+          <p class="label-meta">Priority</p>
+          <select id="previewPrioritySelect" class="preview-inline-select">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div id="previewAssigneesWrap" class="preview-side-section hidden">
+          <p class="label-meta">Assignees</p>
+          <div id="previewAssignees" class="preview-assignees-list"></div>
+        </div>
+
+        <div id="previewDueDateWrap" class="preview-side-section hidden">
+          <p class="label-meta">Due Date</p>
+          <span id="previewDueDate" class="task-badge badge-due"></span>
+        </div>
+
+        <div class="preview-side-section">
+          <p class="label-meta">Progress</p>
+          <div class="progress-inline">
+            <div class="task-progress-track" style="flex:1;">
+              <div class="task-progress-fill" id="previewProgressBar"></div>
+            </div>
+            <span id="previewProgressText" class="progress-value"></span>
+          </div>
+        </div>
+
+        <div id="previewTagsWrap" class="preview-side-section">
+          <div class="preview-tags-header">
+            <p class="label-meta" style="margin:0">Tags</p>
+            <button type="button" class="preview-tag-toggle-btn preview-auth-btn" onclick="event.stopPropagation(); togglePreviewTagEditor()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+          <div id="previewTags" class="task-tags"></div>
+          <div id="previewTagEditor" class="preview-tag-editor hidden" onclick="event.stopPropagation()">
+            <div id="previewTagOptions" class="preview-tag-options"></div>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <!-- Subtasks -->
-    <div class="mb-20">
-      <div class="subtask-header">
-        <p class="label-meta">Subtasks <span id="previewSubtaskCount" class="subtask-count-badge"></span></p>
-      </div>
-      <div id="previewSubtaskList" class="subtask-list"></div>
-      <div id="previewSubtaskAdd" class="subtask-add hidden">
-        <input type="text" id="previewSubtaskInput" class="subtask-input" placeholder="Add a subtask..." onkeydown="if(event.key==='Enter'){addPreviewSubtask(); event.preventDefault();}">
-        <button class="subtask-add-btn" onclick="addPreviewSubtask()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Attachments -->
-    <div class="mb-20">
-      <div class="subtask-header">
-        <p class="label-meta" style="margin:0">Attachments</p>
-      </div>
-      <div id="previewAttachmentDrop" class="attach-dropzone preview-auth-btn mt-6">
-        <input type="file" id="previewAttachmentInput" class="hidden" multiple
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
-        <label for="previewAttachmentInput" class="attach-dropzone-label">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Drop files here or <span class="attach-browse">browse</span>
-        </label>
-      </div>
-      <p class="attach-paste-hint preview-auth-btn">Tip: paste an image with Ctrl+V to attach it.</p>
-      <div id="previewAttachmentsList" class="attach-list mt-6"></div>
-    </div>
-
-    <div class="modal-actions">
-      <button type="button" class="btn-cancel" onclick="closeTaskPreview()">Close</button>
-      <div class="flex gap-8">
-        <button type="button" class="btn-delete preview-auth-btn" onclick="previewDelete()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Delete
-        </button>
-        <button type="button" class="btn-cancel preview-auth-btn" onclick="previewEdit()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit
-        </button>
-        <a id="previewDetailsLink" href="#" class="btn-submit no-decoration text-center">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-          Expand
-        </a>
-      </div>
-    </div>
   </div>
 </div>

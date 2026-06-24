@@ -151,7 +151,8 @@ async function openTaskPreview(taskId) {
     document.getElementById('previewStatusSelect').value = task.status;
     document.getElementById('previewPrioritySelect').value = task.priority;
 
-    // Render markdown description
+    // Render click-to-edit title + markdown description
+    renderPreviewTitle(task.title || '', isGuest);
     renderPreviewDescription(task.description || '', isGuest);
 
     const tagsEl = document.getElementById('previewTags');
@@ -530,9 +531,44 @@ async function refreshListRowsFromAPI(taskId) {
   }
 }
 
-// Auto-save on blur for text fields
+// Preview title: shown as a label, click to edit (mirrors the description)
+function renderPreviewTitle(title, isGuest) {
+  const display = document.getElementById('previewTitleRendered');
+  const input = document.getElementById('previewTitle');
+  if (!display || !input) return;
+
+  display.classList.remove('hidden');
+  input.classList.add('hidden');
+
+  const t = (title || '').trim();
+  display.textContent = t || (isGuest ? 'Untitled' : 'Click to add a title...');
+
+  if (!isGuest) {
+    display.classList.remove('preview-readonly');
+    display.onclick = function () {
+      display.classList.add('hidden');
+      input.classList.remove('hidden');
+      input.focus();
+      input.select();
+    };
+  } else {
+    display.classList.add('preview-readonly');
+    display.onclick = null;
+  }
+}
+
+// Auto-save on blur for text fields, then return the title to its label view
 var _previewTitle = document.getElementById('previewTitle');
-if (_previewTitle) _previewTitle.addEventListener('blur', savePreviewField);
+if (_previewTitle) {
+  _previewTitle.addEventListener('blur', function () {
+    savePreviewField().then(function () {
+      renderPreviewTitle(document.getElementById('previewTitle').value, window.IS_GUEST);
+    });
+  });
+  _previewTitle.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); _previewTitle.blur(); }
+  });
+}
 // Auto-save on change for selects
 var _previewStatus = document.getElementById('previewStatusSelect');
 if (_previewStatus) _previewStatus.addEventListener('change', savePreviewField);
@@ -587,7 +623,11 @@ if (_previewDesc) {
 
 function closeTaskPreview() {
   document.getElementById('taskPreviewModal').classList.remove('active');
-  // Reset description view state
+  // Reset title + description view state back to their label views
+  const titleDisplay = document.getElementById('previewTitleRendered');
+  const titleInput = document.getElementById('previewTitle');
+  if (titleDisplay) titleDisplay.classList.remove('hidden');
+  if (titleInput) titleInput.classList.add('hidden');
   const rendered = document.getElementById('previewDescRendered');
   const textarea = document.getElementById('previewDescription');
   if (rendered) rendered.classList.remove('hidden');
@@ -612,6 +652,13 @@ function previewEdit() {
   const id = previewTaskId;
   closeTaskPreview();
   if (id) openEditModal(id);
+}
+
+// Save any in-progress inline edits, then close the modal
+function previewSave() {
+  savePreviewField().then(function () {
+    closeTaskPreview();
+  });
 }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
