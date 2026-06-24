@@ -86,6 +86,7 @@ exports.createComment = async (req, res) => {
     let parentId = null;
     if (req.body.parentId != null && req.body.parentId !== '') {
       parentId = parseInt(req.body.parentId);
+      if (Number.isNaN(parentId)) return res.status(400).json({ error: 'Invalid parent comment' });
       const parent = await prisma.taskComment.findUnique({ where: { id: parentId } });
       if (!parent || parent.taskId !== taskId) {
         return res.status(400).json({ error: 'Invalid parent comment' });

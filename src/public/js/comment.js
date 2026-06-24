@@ -32,7 +32,7 @@
         : '/users/' + u.id + '/avatar' + (u.updatedAt ? '?v=' + new Date(u.updatedAt).getTime() : '');
       return '<img src="' + escapeHtml(src) + '" alt="">';
     }
-    return u && u.name ? u.name.charAt(0).toUpperCase() : '?';
+    return u && u.name ? escapeHtml(u.name.charAt(0).toUpperCase()) : '?';
   }
 
   function api(method, url, body) {
@@ -167,7 +167,9 @@
       const content = ta.value.trim();
       if (!content) return;
       save.disabled = true;
-      api('PUT', '/api/comments/' + id, { content: content }).then(function () { load(state); });
+      api('PUT', '/api/comments/' + id, { content: content })
+        .then(function () { load(state); })
+        .catch(function (e) { save.disabled = false; console.error('Failed to save comment', e); });
     });
     cancel.addEventListener('click', function () { load(state); });
     bar.appendChild(save); bar.appendChild(cancel);
@@ -185,7 +187,7 @@
       if (!btn || !state.root.contains(btn)) return;
       const itemWrap = btn.closest('.comment-item');
       if (!itemWrap) return;
-      const id = parseInt(itemWrap.dataset.commentId);
+      const id = parseInt(itemWrap.dataset.commentId, 10);
       const act = btn.dataset.act;
 
       if (act === 'reply') {
@@ -199,7 +201,9 @@
         startEdit(state, itemWrap, id);
       } else if (act === 'delete') {
         if (!confirm('Delete this comment?')) return;
-        api('DELETE', '/api/comments/' + id).then(function () { load(state); });
+        api('DELETE', '/api/comments/' + id)
+          .then(function () { load(state); })
+          .catch(function (e) { console.error('Failed to delete comment', e); });
       }
     });
   }
