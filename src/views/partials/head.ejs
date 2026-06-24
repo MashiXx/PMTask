@@ -39,9 +39,12 @@
   <script>
     // Apply theme immediately to prevent flash
     (function() {
+      var valid = ['light', 'dark', 'system'];
       var saved = document.documentElement.getAttribute('data-theme');
       if (!saved || saved === 'system') {
         var ls = localStorage.getItem('pmtask-theme');
+        // Ignore retired themes (e.g. vintage) left in storage.
+        if (ls && valid.indexOf(ls) === -1) { localStorage.removeItem('pmtask-theme'); ls = null; }
         if (ls) document.documentElement.setAttribute('data-theme', ls);
       }
     })();
