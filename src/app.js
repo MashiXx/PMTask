@@ -73,6 +73,7 @@ app.use('/api/groups', require('./routes/group.routes'));
 app.use('/api/mindmaps', require('./routes/mindmap.routes'));
 app.use('/api/mindmap-nodes', require('./routes/mindmap.routes').nodeRouter);
 app.use('/api/subtasks', require('./routes/subtask.routes'));
+app.use('/api/comments', require('./routes/comment.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/projects/:projectSlug/documents', require('./routes/document.routes'));
 app.use('/projects/:projectSlug/mindmaps', require('./routes/mindmap.page.routes'));
