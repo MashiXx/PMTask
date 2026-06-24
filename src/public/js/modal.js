@@ -124,6 +124,17 @@ if (typeof window.PROJECT_TAGS !== 'undefined') {
   window.PROJECT_TAGS.forEach(t => { tagColorMap[t.name] = t.color; });
 }
 
+// Inner content for an avatar circle: <img> when the user has an avatar, else initials.
+function avatarInner(user) {
+  if (user && user.avatar) {
+    const src = /^https?:\/\//i.test(user.avatar)
+      ? user.avatar
+      : '/users/' + user.id + '/avatar' + (user.updatedAt ? '?v=' + new Date(user.updatedAt).getTime() : '');
+    return `<img class="avatar-img" src="${src}" alt="">`;
+  }
+  return (user && user.name) ? user.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '?';
+}
+
 async function openTaskPreview(taskId) {
   closeAllMenus();
   const isGuest = window.IS_GUEST;
@@ -182,9 +193,8 @@ async function openTaskPreview(taskId) {
     if (task.assignees && task.assignees.length > 0) {
       assigneesEl.innerHTML = task.assignees.map((a, i) => {
         const c = avatarColors[i % avatarColors.length];
-        const initials = a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
         return `<div class="assignee-chip" style="padding:4px 10px; border-radius:6px;">
-          <div class="avatar" style="background:${c}22; border-color:${c}55; color:${c}; width:20px; height:20px; font-size:0.55rem;">${initials}</div>
+          <div class="avatar" style="background:${c}22; border-color:${c}55; color:${c}; width:20px; height:20px; font-size:0.55rem;">${avatarInner(a.user)}</div>
           <span class="assignee-chip-name" style="font-size:0.75rem;">${a.user.name}</span>
         </div>`;
       }).join('');

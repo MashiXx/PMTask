@@ -55,5 +55,11 @@ Core models: User, Project, Task, SubTask, Tag, Folder, Document. Many-to-many v
 
 ### File Uploads
 - Multer with 10MB limit, 5 files per request, whitelist-based extension + MIME validation.
-- Upload path: `src/public/uploads/<projectId>/`. Filenames randomized with crypto.
-- Folder password protection supported (optional, admin-set).
+- Upload paths (under `uploads/`, served via controllers, not statically):
+  - Project documents: `uploads/<projectId>/`
+  - Task attachments: `uploads/tasks/<taskId>/` (served by `/api/attachments/...`)
+  - User avatars: `uploads/avatars/` (image-only, 5MB; served by `GET /users/:id/avatar`)
+- Filenames randomized with crypto. Folder password protection supported (optional, admin-set).
+- `User.avatar` holds either a local relative path (uploaded) or an http URL (Google). The
+  `partials/avatar.ejs` partial renders the `<img>` (or initials fallback) anywhere an avatar shows.
+- Deleting a task/project removes its files from disk; `npm run prune-uploads` audits orphans.

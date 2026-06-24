@@ -25,12 +25,22 @@
     <div class="dashboard-body">
       <div class="profile-column">
         <div class="profile-header">
-          <div class="profile-avatar-large">
-            <%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
-          </div>
+          <div class="profile-avatar-large"><%- include('partials/avatar', { avatarUser: currentUser }) %></div>
           <div class="profile-header-info">
             <h2 class="profile-name"><%= currentUser.name %></h2>
             <p class="profile-email"><%= currentUser.email %></p>
+            <div class="avatar-actions">
+              <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="avatar-upload-form">
+                <input type="file" id="avatarFile" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" onchange="this.form.submit()">
+                <label for="avatarFile" class="btn-avatar-upload">Change photo</label>
+              </form>
+              <% if (currentUser.avatar && !/^https?:\/\//i.test(currentUser.avatar)) { %>
+                <form action="/profile/avatar/delete" method="POST">
+                  <button type="submit" class="btn-avatar-remove">Remove</button>
+                </form>
+              <% } %>
+            </div>
+            <p class="avatar-hint">PNG, JPG, WEBP or GIF · up to 5 MB</p>
           </div>
           <% if (currentUser.googleId) { %>
             <span class="profile-badge">Google Account</span>

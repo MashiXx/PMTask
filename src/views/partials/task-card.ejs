@@ -73,9 +73,7 @@
     <div class="task-assignees">
       <% task.assignees.forEach((a, i) => { %>
         <% const aColor = avatarColors[i % avatarColors.length]; %>
-        <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>;" title="<%= a.user.name %>">
-          <%= a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
-        </div>
+        <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>;" title="<%= a.user.name %>"><%- include('avatar', { avatarUser: a.user }) %></div>
       <% }) %>
     </div>
   </div>

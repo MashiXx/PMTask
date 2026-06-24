@@ -1,6 +1,15 @@
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { uploadDir } = require('../config/upload');
+const { isPathSafe } = require('../utils/file-serve');
+
+// A local (uploaded) avatar is a relative path; a Google avatar is an http(s) URL.
+function isLocalAvatar(avatar) {
+  return !!avatar && !/^https?:\/\//i.test(avatar);
+}
 
 exports.getProfile = async (req, res) => {
   try {
@@ -93,6 +102,86 @@ exports.changePassword = async (req, res) => {
     console.error(err);
     req.flash('error', 'Failed to change password');
     res.redirect('/profile');
+  }
+};
+
+// POST /profile/avatar — upload a new profile picture
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      req.flash('error', 'No image uploaded');
+      return res.redirect('/profile');
+    }
+    if (!isPathSafe(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      req.flash('error', 'Invalid file');
+      return res.redirect('/profile');
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    // Remove the previous uploaded avatar file (skip Google URLs)
+    if (user && isLocalAvatar(user.avatar)) {
+      try { fs.unlinkSync(path.resolve(uploadDir, user.avatar)); } catch (e) {}
+    }
+
+    const rel = path.relative(uploadDir, req.file.path);
+    await prisma.user.update({ where: { id: req.user.id }, data: { avatar: rel } });
+
+    req.flash('success', 'Avatar updated');
+    res.redirect('/profile');
+  } catch (err) {
+    console.error(err);
+    if (req.file && req.file.path) { try { fs.unlinkSync(req.file.path); } catch (e) {} }
+    req.flash('error', 'Failed to upload avatar');
+    res.redirect('/profile');
+  }
+};
+
+// POST /profile/avatar/delete — revert to initials
+exports.deleteAvatar = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user && isLocalAvatar(user.avatar)) {
+      try { fs.unlinkSync(path.resolve(uploadDir, user.avatar)); } catch (e) {}
+    }
+    await prisma.user.update({ where: { id: req.user.id }, data: { avatar: null } });
+    req.flash('success', 'Avatar removed');
+    res.redirect('/profile');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Failed to remove avatar');
+    res.redirect('/profile');
+  }
+};
+
+const AVATAR_CONTENT_TYPES = {
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif',
+};
+
+// GET /users/:id/avatar — serve a user's uploaded avatar (open: avatars are non-sensitive)
+exports.serveAvatar = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).end();
+
+    const user = await prisma.user.findUnique({ where: { id }, select: { avatar: true } });
+    if (!user || !user.avatar) return res.status(404).end();
+
+    // External (Google) avatar → redirect to the source URL
+    if (/^https?:\/\//i.test(user.avatar)) return res.redirect(user.avatar);
+
+    const abs = path.resolve(uploadDir, user.avatar);
+    if (!isPathSafe(abs) || !fs.existsSync(abs)) return res.status(404).end();
+
+    const ext = path.extname(abs).toLowerCase();
+    res.setHeader('Content-Type', AVATAR_CONTENT_TYPES[ext] || 'application/octet-stream');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.sendFile(abs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).end();
   }
 };
 

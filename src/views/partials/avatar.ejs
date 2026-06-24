@@ -1,0 +1,19 @@
+<%
+  // Renders the inner content of an avatar circle: an <img> when the user has an
+  // avatar, otherwise their uppercased initials. The CALLER provides the wrapper
+  // (e.g. <div class="avatar">). Pass: avatarUser (a user object).
+  var _u = typeof avatarUser !== 'undefined' ? avatarUser : null;
+  var _src = null;
+  if (_u && _u.avatar) {
+    if (/^https?:\/\//i.test(_u.avatar)) {
+      _src = _u.avatar;
+    } else {
+      // Local upload served by /users/:id/avatar; cache-bust on updatedAt
+      var _v = _u.updatedAt ? ('?v=' + new Date(_u.updatedAt).getTime()) : '';
+      _src = '/users/' + _u.id + '/avatar' + _v;
+    }
+  }
+  var _initials = (_u && _u.name)
+    ? _u.name.split(' ').map(function (w) { return w[0]; }).join('').substring(0, 2).toUpperCase()
+    : '?';
+%><% if (_src) { %><img class="avatar-img" src="<%= _src %>" alt="<%= _u.name %>"><% } else { %><%= _initials %><% } %>

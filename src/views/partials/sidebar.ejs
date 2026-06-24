@@ -70,7 +70,7 @@
 
   <% if (currentUser) { %>
     <div class="sidebar-user">
-      <a href="/profile" class="sidebar-avatar no-decoration" title="Profile"><%= currentUser.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %></a>
+      <a href="/profile" class="sidebar-avatar no-decoration" title="Profile"><%- include('avatar', { avatarUser: currentUser }) %></a>
       <div class="sidebar-user-info">
         <a href="/profile" class="no-decoration"><p class="sidebar-user-name"><%= currentUser.name %></p></a>
         <p class="sidebar-user-role"><%= currentUser.role === 'admin' ? 'Admin' : 'Developer' %></p>

@@ -109,9 +109,7 @@
                 <% task.assignees.forEach((a, i) => { %>
                   <% const aColor = avatarColors[i % avatarColors.length]; %>
                   <div class="assignee-chip">
-                    <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>; width:24px; height:24px; font-size:0.6rem;">
-                      <%= a.user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() %>
-                    </div>
+                    <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>; width:24px; height:24px; font-size:0.6rem;"><%- include('partials/avatar', { avatarUser: a.user }) %></div>
                     <span class="assignee-chip-name"><%= a.user.name %></span>
                   </div>
                 <% }) %>

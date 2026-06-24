@@ -84,6 +84,10 @@ const { isAuthenticated } = require('./middleware/auth');
 const taskController = require('./controllers/task.controller');
 app.get('/tasks/:slug', taskController.getTaskPage);
 
+// User avatar (open — avatars are non-sensitive display images)
+const profileController = require('./controllers/profile.controller');
+app.get('/users/:id/avatar', profileController.serveAvatar);
+
 // Root -> dashboard (guests welcome)
 app.get('/', (req, res) => {
   res.redirect('/dashboard');
