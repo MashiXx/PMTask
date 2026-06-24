@@ -24,6 +24,8 @@
 <script>
 window.PROJECT_TAGS = <%- JSON.stringify(projectTags || []).replace(/<\//g, '<\\/') %>;
 window.IS_GUEST = <%= typeof isGuest !== 'undefined' && isGuest ? 'true' : 'false' %>;
+window.CURRENT_USER_ID = <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.id : 'null' %>;
+window.IS_ADMIN = <%= typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>;
 <% if (typeof activeProject !== 'undefined' && activeProject) { %>window.ACTIVE_PROJECT_SLUG = '<%= activeProject.id %>-<%= activeProject.slug %>';<% } %>
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -37,6 +39,7 @@ window.IS_GUEST = <%= typeof isGuest !== 'undefined' && isGuest ? 'true' : 'fals
 <script src="/js/group-manage.js"></script>
 <script src="/js/task-status.js"></script>
 <script src="/js/subtask.js"></script>
+<script src="/js/comment.js"></script>
 <script src="/js/view-toggle.js"></script>
 
 <%- include('partials/foot') %>

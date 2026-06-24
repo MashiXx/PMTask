@@ -221,6 +221,16 @@ async function openTaskPreview(taskId) {
       });
     }
 
+    if (window.TaskComments) {
+      window.TaskComments.mount({
+        container: 'previewComments',
+        taskId: task.id,
+        canEdit: !isGuest,
+        currentUserId: window.CURRENT_USER_ID,
+        isAdmin: window.IS_ADMIN,
+      });
+    }
+
     document.getElementById('previewDetailsLink').href = '/tasks/' + encodeURIComponent(task.id + '-' + (task.slug || ''));
 
     // Guest mode: make fields read-only, hide edit/delete actions

@@ -34,10 +34,13 @@
 <script>
   window.PROJECT_TAGS = [];
   window.IS_GUEST = false;
+  window.CURRENT_USER_ID = <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.id : 'null' %>;
+  window.IS_ADMIN = <%= typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>;
 </script>
 <script src="/js/task-attachments.js"></script>
 <script src="/js/modal.js"></script>
 <script src="/js/subtask.js"></script>
+<script src="/js/comment.js"></script>
 <script src="/js/mm-ui.js"></script>
 <script src="/js/mindmap-layout.js"></script>
 <script>
