@@ -291,11 +291,13 @@ function updateCardInDOM(taskId, changes) {
     if (titleEl && changes.title) titleEl.textContent = changes.title;
 
     if (changes.priority) {
+      const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
       const pColor = priorityColors[changes.priority] || '#FFB347';
-      const badge = card.querySelector('.task-priority-badge');
+      const badge = card.querySelector('.badge-priority');
       if (badge) {
-        badge.textContent = priorityLabels[changes.priority] || 'MEDIUM';
         badge.style.color = pColor;
+        badge.style.background = pColor + '1f';
+        badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> ${cardPriorityLabels[changes.priority] || 'MED'}`;
       }
       const line = card.querySelector('.task-priority-line');
       if (line) line.style.background = pColor;
@@ -367,94 +369,92 @@ async function refreshCardFromAPI(taskId) {
     const task = await res.json();
     if (!task || task.error) return;
 
+    const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
     const pColor = priorityColors[task.priority] || '#FFB347';
-    const pLabel = priorityLabels[task.priority] || 'MEDIUM';
+    const pLabel = cardPriorityLabels[task.priority] || 'MED';
     const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
 
-    // Priority line + badge
+    // Priority accent line
     const line = card.querySelector('.task-priority-line');
     if (line) line.style.background = pColor;
-    const badge = card.querySelector('.task-priority-badge');
-    if (badge) { badge.textContent = pLabel; badge.style.color = pColor; }
 
     // Title
     const titleEl = card.querySelector('.task-title');
     if (titleEl) titleEl.textContent = task.title;
 
-    // Tags
-    const tagsEl = card.querySelector('.task-tags');
-    if (tagsEl) {
-      tagsEl.innerHTML = (task.tags || []).map(tt => {
-        const c = tt.tag.color || '#6B6B8E';
-        const label = tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1);
-        return `<span class="tag-badge" style="background:color-mix(in srgb, ${c} 12%, transparent); border:1px solid color-mix(in srgb, ${c} 35%, transparent); color:${c};">${label}</span>`;
-      }).join('');
-      card.dataset.tags = (task.tags || []).map(tt => tt.tag.name).join(',');
+    // Keep data-tags in sync for filtering/search (card shows no tag chips)
+    card.dataset.tags = (task.tags || []).map(tt => tt.tag.name).join(',');
+
+    // Ensure the meta row (badges + assignees) exists
+    let meta = card.querySelector('.task-meta');
+    if (!meta) {
+      meta = document.createElement('div');
+      meta.className = 'task-meta';
+      meta.innerHTML = '<div class="task-badges"></div>';
+      (titleEl || card).after(meta);
+    }
+    let badges = meta.querySelector('.task-badges');
+    if (!badges) {
+      badges = document.createElement('div');
+      badges.className = 'task-badges';
+      meta.prepend(badges);
     }
 
-    // Subtask indicator
-    let subtaskEl = card.querySelector('.task-subtask-indicator');
-    if (task.subtasks && task.subtasks.length > 0) {
-      const doneCount = task.subtasks.filter(s => s.done).length;
-      const subPercent = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
-      const subtaskHTML = `
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span class="task-subtask-text">${doneCount}/${task.subtasks.length}</span>
-        <div class="task-subtask-track"><div class="task-subtask-fill" style="width:${subPercent}%;"></div></div>`;
-      if (subtaskEl) {
-        subtaskEl.innerHTML = subtaskHTML;
-      } else {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'task-subtask-indicator';
-        wrapper.innerHTML = subtaskHTML;
-        const titleAfter = card.querySelector('.task-title');
-        if (titleAfter) titleAfter.after(wrapper);
-      }
-    } else if (subtaskEl) {
-      subtaskEl.remove();
+    // Priority badge — always first in the badges row
+    let prio = badges.querySelector('.badge-priority');
+    if (!prio) {
+      prio = document.createElement('span');
+      prio.className = 'task-badge badge-priority';
+      badges.prepend(prio);
     }
+    prio.style.color = pColor;
+    prio.style.background = pColor + '1f';
+    prio.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> ${pLabel}`;
 
-    // Progress bar
-    let progressEl = card.querySelector('.task-progress');
-    if (task.progress > 0) {
-      const progressHTML = `
-        <div class="task-progress-header">
-          <span class="task-progress-label">Progress</span>
-          <span class="task-progress-value" style="color:${progressColor}">${task.progress}%</span>
-        </div>
-        <div class="task-progress-track">
-          <div class="task-progress-fill" style="width:${task.progress}%; background:${progressColor}; ${task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : ''}"></div>
-        </div>`;
-      if (progressEl) {
-        progressEl.innerHTML = progressHTML;
-      } else {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'task-progress';
-        wrapper.innerHTML = progressHTML;
-        const footer = card.querySelector('.task-footer');
-        if (footer) footer.before(wrapper);
-      }
-    } else if (progressEl) {
-      progressEl.remove();
-    }
-
-    // Due date
-    const footer = card.querySelector('.task-footer');
-    let dueEl = card.querySelector('.task-due');
+    // Due date badge
+    let dueEl = badges.querySelector('.badge-due');
     if (task.dueDate) {
-      const dueHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${task.dueDate}`;
-      if (dueEl) {
-        dueEl.innerHTML = dueHTML;
-      } else {
-        const span = document.createElement('span');
-        span.className = 'task-due';
-        span.innerHTML = dueHTML;
-        // Prefer the footer's left group (priority + due) so it sits beside priority
-        const footerLeft = card.querySelector('.task-footer-left') || footer;
-        if (footerLeft) footerLeft.appendChild(span);
+      const dueHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${task.dueDate}`;
+      if (!dueEl) {
+        dueEl = document.createElement('span');
+        dueEl.className = 'task-badge badge-due';
+        prio.after(dueEl);
       }
+      dueEl.innerHTML = dueHTML;
     } else if (dueEl) {
       dueEl.remove();
+    }
+
+    // Checklist (subtasks) badge — last in the badges row, green when complete
+    let checklist = badges.querySelector('.badge-checklist');
+    if (task.subtasks && task.subtasks.length > 0) {
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      const total = task.subtasks.length;
+      const complete = doneCount === total || task.status === 'done';
+      if (!checklist) {
+        checklist = document.createElement('span');
+        badges.appendChild(checklist);
+      }
+      checklist.className = 'task-badge badge-checklist' + (complete ? ' is-complete' : '');
+      checklist.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> ${doneCount}/${total}`;
+    } else if (checklist) {
+      checklist.remove();
+    }
+
+    // Progress strip — slim bar below the meta row
+    let progressEl = card.querySelector('.task-progress-mini');
+    if (task.progress > 0) {
+      const progressHTML = `
+        <div class="task-progress-mini-track"><div class="task-progress-mini-fill" style="width:${task.progress}%; background:${progressColor}; ${task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : ''}"></div></div>
+        <span class="task-progress-mini-pct" style="color:${progressColor}">${task.progress}%</span>`;
+      if (!progressEl) {
+        progressEl = document.createElement('div');
+        progressEl.className = 'task-progress-mini';
+        meta.after(progressEl);
+      }
+      progressEl.innerHTML = progressHTML;
+    } else if (progressEl) {
+      progressEl.remove();
     }
 
     // Status badge (status is a badge on the card, not a column)

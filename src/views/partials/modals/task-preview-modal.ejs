@@ -41,25 +41,24 @@
       </div>
     </div>
 
-    <div class="flex gap-16 mb-16">
-      <div id="previewDueDateWrap" class="hidden">
+    <div class="preview-meta-grid mb-16">
+      <div id="previewDueDateWrap" class="preview-meta-item hidden">
         <p class="label-meta">Due Date</p>
-        <p id="previewDueDate" class="progress-value"></p>
+        <span id="previewDueDate" class="task-badge badge-due"></span>
       </div>
-      <div>
+      <div class="preview-meta-item">
         <p class="label-meta">Progress</p>
         <div class="progress-inline">
-          <div class="task-progress-track" style="width:100px;">
+          <div class="task-progress-track" style="flex:1;">
             <div class="task-progress-fill" id="previewProgressBar"></div>
           </div>
           <span id="previewProgressText" class="progress-value"></span>
         </div>
       </div>
-    </div>
-
-    <div id="previewAssigneesWrap" class="mb-16 hidden">
-      <p class="label-meta">Assignees</p>
-      <div id="previewAssignees" class="flex gap-6"></div>
+      <div id="previewAssigneesWrap" class="preview-meta-item preview-meta-item-wide hidden">
+        <p class="label-meta">Assignees</p>
+        <div id="previewAssignees" class="flex gap-6"></div>
+      </div>
     </div>
 
     <!-- Subtasks -->
