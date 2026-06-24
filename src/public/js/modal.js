@@ -397,8 +397,8 @@ async function refreshCardFromAPI(taskId) {
         const wrapper = document.createElement('div');
         wrapper.className = 'task-subtask-indicator';
         wrapper.innerHTML = subtaskHTML;
-        const tagsAfter = card.querySelector('.task-tags');
-        if (tagsAfter) tagsAfter.after(wrapper);
+        const titleAfter = card.querySelector('.task-title');
+        if (titleAfter) titleAfter.after(wrapper);
       }
     } else if (subtaskEl) {
       subtaskEl.remove();
@@ -435,11 +435,13 @@ async function refreshCardFromAPI(taskId) {
       const dueHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${task.dueDate}`;
       if (dueEl) {
         dueEl.innerHTML = dueHTML;
-      } else if (footer) {
+      } else {
         const span = document.createElement('span');
         span.className = 'task-due';
         span.innerHTML = dueHTML;
-        footer.appendChild(span);
+        // Prefer the footer's left group (priority + due) so it sits beside priority
+        const footerLeft = card.querySelector('.task-footer-left') || footer;
+        if (footerLeft) footerLeft.appendChild(span);
       }
     } else if (dueEl) {
       dueEl.remove();

@@ -17,16 +17,13 @@
 <div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-group-id="<%= task.groupId == null ? '' : task.groupId %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
   <div class="task-priority-line" style="background: <%= pColor %>"></div>
 
-  <div class="task-header">
-    <span class="task-priority-badge" style="color: <%= pColor %>">
-      <%= pLabel %>
-    </span>
-    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-      <button class="task-menu-btn" onclick="event.stopPropagation(); toggleTaskMenu(<%= task.id %>)">
+  <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+    <div class="task-header">
+      <button class="task-menu-btn" style="margin-left:auto;" onclick="event.stopPropagation(); toggleTaskMenu(<%= task.id %>)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
       </button>
-    <% } %>
-  </div>
+    </div>
+  <% } %>
 
   <div class="task-status-wrap" onclick="event.stopPropagation()">
     <button class="task-status-badge" style="color:<%= sColor %>; border-color:<%= sColor %>55; background:<%= sColor %>14;"
@@ -59,13 +56,6 @@
 
   <p class="task-title task-drag-handle"><%= task.title %></p>
 
-  <div class="task-tags">
-    <% task.tags.forEach(tt => { %>
-      <% const tColor = tagColorFromData[tt.tag.name] || '#6B6B8E'; %>
-      <span class="tag-badge" style="background:color-mix(in srgb, <%= tColor %> 12%, transparent); border:1px solid color-mix(in srgb, <%= tColor %> 35%, transparent); color:<%= tColor %>;"><%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %></span>
-    <% }) %>
-  </div>
-
   <% if (task.subtasks && task.subtasks.length > 0) { %>
     <% const doneCount = task.subtasks.filter(s => s.done).length; %>
     <% const subPercent = task.status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100); %>
@@ -89,6 +79,15 @@
   <% } %>
 
   <div class="task-footer">
+    <div class="task-footer-left">
+      <span class="task-priority-badge" style="color: <%= pColor %>"><%= pLabel %></span>
+      <% if (task.dueDate) { %>
+        <span class="task-due">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <%= task.dueDate %>
+        </span>
+      <% } %>
+    </div>
     <div class="task-assignees">
       <% task.assignees.forEach((a, i) => { %>
         <% const aColor = avatarColors[i % avatarColors.length]; %>
@@ -97,11 +96,5 @@
         </div>
       <% }) %>
     </div>
-    <% if (task.dueDate) { %>
-      <span class="task-due">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <%= task.dueDate %>
-      </span>
-    <% } %>
   </div>
 </div>

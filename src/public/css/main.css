@@ -1469,6 +1469,13 @@ input, textarea, select {
   padding-left: 10px;
 }
 
+.task-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .task-assignees {
   display: flex;
   align-items: center;
