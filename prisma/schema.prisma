@@ -26,6 +26,7 @@ model User {
   folders   Folder[]   @relation("FolderCreator")
   documents Document[] @relation("DocumentUploader")
   attachments TaskAttachment[] @relation("AttachmentUploader")
+  comments  TaskComment[] @relation("CommentAuthor")
 }
 
 model Project {
@@ -74,6 +75,7 @@ model Task {
   subtasks    SubTask[]
   mindmapNodes MindmapNode[]
   attachments TaskAttachment[]
+  comments    TaskComment[]
 
 }
 
@@ -220,4 +222,22 @@ model MindmapNode {
   @@index([mindmapId])
   @@index([parentId])
   @@index([taskId])
+}
+
+model TaskComment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  taskId    Int
+  authorId  Int
+  parentId  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task    Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author  User          @relation("CommentAuthor", fields: [authorId], references: [id])
+  parent  TaskComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies TaskComment[] @relation("CommentReplies")
+
+  @@index([taskId])
+  @@index([parentId])
 }
