@@ -57,7 +57,7 @@ app.use(flash());
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
   // Normalize retired themes (vintage / vintage-dark) to system.
-  const VALID_THEMES = ['light', 'dark', 'system'];
+  const VALID_THEMES = ['light', 'dark', 'system', 'azure'];
   const savedTheme = req.user ? req.user.theme : 'system';
   res.locals.userTheme = VALID_THEMES.includes(savedTheme) ? savedTheme : 'system';
   res.locals.success = req.flash('success');

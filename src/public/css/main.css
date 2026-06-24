@@ -49,6 +49,27 @@
   --overlay-bg:   rgba(80, 80, 110, 0.35);
 }
 
+/* --- Azure Theme — bright cornflower-blue daylight --- */
+[data-theme="azure"] {
+  --bg:           #EDF1FA;
+  --surface:      #E2E9F6;
+  --card:         #FFFFFF;
+  --card-hover:   #F3F7FE;
+  --border:       #DCE4F3;
+  --border-light: #C6D2EA;
+  --accent:       #3E6AE6;
+  --cyan:         #1F8FCB;
+  --coral:        #E14B53;
+  --amber:        #D98A26;
+  --mint:         #27A567;
+  --text:         #1B2A4E;
+  --text-muted:   #56627D;
+  --text-dim:     #94A0B8;
+  --shadow-color: rgba(40, 70, 140, 0.10);
+  --shadow-heavy: rgba(40, 70, 140, 0.20);
+  --overlay-bg:   rgba(35, 55, 110, 0.35);
+}
+
 /* System preference: light when OS prefers light */
 @media (prefers-color-scheme: light) {
   [data-theme="system"] {
@@ -685,6 +706,8 @@ input, textarea, select {
 [data-theme="dark"] .theme-icon-sun { display: block; }
 /* Light: show moon icon (click to go dark) */
 [data-theme="light"] .theme-icon-moon { display: block; }
+/* Azure (a light theme): show moon icon (click to go dark) */
+[data-theme="azure"] .theme-icon-moon { display: block; }
 /* System: show monitor icon */
 [data-theme="system"] .theme-icon-system { display: block; }
 /* System + OS dark: show sun */

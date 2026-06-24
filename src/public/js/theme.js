@@ -1,9 +1,9 @@
-// Theme cycle: system -> light -> dark -> system
+// Theme cycle: system -> light -> dark -> azure -> system
 function cycleTheme() {
   const html = document.documentElement;
   const current = html.getAttribute('data-theme') || 'system';
 
-  const cycle = ['system', 'light', 'dark'];
+  const cycle = ['system', 'light', 'dark', 'azure'];
   let idx = cycle.indexOf(current);
   let next;
 
