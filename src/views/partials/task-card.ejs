@@ -25,22 +25,6 @@
     </div>
   <% } %>
 
-  <div class="task-status-wrap" onclick="event.stopPropagation()">
-    <button class="task-status-badge" style="color:<%= sColor %>; border-color:<%= sColor %>55; background:<%= sColor %>14;"
-            <% if (typeof currentUser !== 'undefined' && currentUser) { %>onclick="toggleStatusMenu(<%= task.id %>)"<% } else { %>disabled<% } %>>
-      <span class="task-status-dot" style="background:<%= sColor %>"></span><%= sLabel %>
-    </button>
-    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-      <div class="task-status-menu" id="status-menu-<%= task.id %>">
-        <% Object.keys(statusLabels).forEach(s => { %>
-          <button class="task-status-option" onclick="changeTaskStatus(<%= task.id %>, '<%= s %>')">
-            <span class="task-status-dot" style="background:<%= statusColors[s] %>"></span><%= statusLabels[s] %>
-          </button>
-        <% }) %>
-      </div>
-    <% } %>
-  </div>
-
   <% if (typeof currentUser !== 'undefined' && currentUser) { %>
     <div class="task-menu" id="menu-<%= task.id %>" onclick="event.stopPropagation()">
       <button class="task-menu-item" onclick="event.stopPropagation(); openEditModal(<%= task.id %>)">
