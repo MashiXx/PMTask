@@ -148,7 +148,6 @@ async function openTaskPreview(taskId) {
     document.getElementById('previewTaskId').value = task.id;
     document.getElementById('previewTitle').value = task.title;
     document.getElementById('previewDescription').value = task.description || '';
-    document.getElementById('previewStatusSelect').value = task.status;
     document.getElementById('previewPrioritySelect').value = task.priority;
 
     const codeEl = document.getElementById('previewTaskCode');
@@ -239,19 +238,16 @@ async function openTaskPreview(taskId) {
     // Guest mode: make fields read-only, hide edit/delete actions
     const previewTitle = document.getElementById('previewTitle');
     const previewDesc = document.getElementById('previewDescription');
-    const previewStatus = document.getElementById('previewStatusSelect');
     const previewPriority = document.getElementById('previewPrioritySelect');
     if (isGuest) {
       previewTitle.readOnly = true;
       previewDesc.readOnly = true;
-      previewStatus.disabled = true;
       previewPriority.disabled = true;
       previewTitle.classList.add('preview-readonly');
       document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.add('hidden'));
     } else {
       previewTitle.readOnly = false;
       previewDesc.readOnly = false;
-      previewStatus.disabled = false;
       previewPriority.disabled = false;
       previewTitle.classList.remove('preview-readonly');
       document.querySelectorAll('#taskPreviewModal .preview-auth-btn').forEach(el => el.classList.remove('hidden'));
@@ -310,13 +306,11 @@ async function savePreviewField() {
   const title = document.getElementById('previewTitle').value.trim();
   if (!title) return;
 
-  const status = document.getElementById('previewStatusSelect').value;
   const priority = document.getElementById('previewPrioritySelect').value;
 
   const data = {
     title,
     description: document.getElementById('previewDescription').value,
-    status,
     priority,
   };
 
@@ -327,8 +321,7 @@ async function savePreviewField() {
       body: JSON.stringify(data),
     });
     previewDirty = true;
-    previewTaskStatus = status;
-    updateCardInDOM(previewTaskId, { title, status, priority });
+    updateCardInDOM(previewTaskId, { title, priority });
     // Re-render subtask progress with updated status
     if (typeof refreshPreviewSubtasks === 'function') refreshPreviewSubtasks();
   } catch (err) {
@@ -622,8 +615,6 @@ if (_previewTitle) {
   });
 }
 // Auto-save on change for selects
-var _previewStatus = document.getElementById('previewStatusSelect');
-if (_previewStatus) _previewStatus.addEventListener('change', savePreviewField);
 var _previewPriority = document.getElementById('previewPrioritySelect');
 if (_previewPriority) {
   _previewPriority.addEventListener('change', savePreviewField);

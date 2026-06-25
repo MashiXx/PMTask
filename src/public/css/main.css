@@ -3568,7 +3568,10 @@ select option {
 .modal.task-preview .preview-body {
   display: flex;
   align-items: stretch;
-  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
 }
 
 .modal.task-preview .preview-main {
@@ -3576,6 +3579,7 @@ select option {
   min-width: 0;
   padding: 22px 26px 28px;
   background: var(--card);
+  overflow-y: auto;
 }
 
 .modal.task-preview .preview-sidebar {
@@ -3589,6 +3593,7 @@ select option {
   border: 0;
   border-left: 1px solid var(--border);
   border-radius: 0;
+  overflow-y: auto;
 }
 
 /* Sections relocated into the sidebar: let the flex gap own the spacing */
