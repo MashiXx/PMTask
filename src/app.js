@@ -59,7 +59,14 @@ function readLangCookie(req) {
   const header = req.headers && req.headers.cookie;
   if (!header) return null;
   const found = header.split(';').map((s) => s.trim()).find((s) => s.startsWith('pmtask-lang='));
-  return found ? decodeURIComponent(found.slice('pmtask-lang='.length)) : null;
+  if (!found) return null;
+  // Guard against a malformed (manually tampered) cookie: decodeURIComponent throws
+  // on bad percent-encoding, and this runs in per-request middleware — never let it 500.
+  try {
+    return decodeURIComponent(found.slice('pmtask-lang='.length));
+  } catch (e) {
+    return null;
+  }
 }
 
 // Global template variables
