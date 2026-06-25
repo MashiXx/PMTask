@@ -129,7 +129,7 @@ exports.getDashboard = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load dashboard');
+    req.flash('error', req.t('flash.loadDashboardFailed'));
     res.redirect('/auth/login');
   }
 };

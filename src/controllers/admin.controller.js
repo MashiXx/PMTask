@@ -19,7 +19,7 @@ exports.getUsers = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load users');
+    req.flash('error', req.t('flash.loadUsersFailed'));
     res.redirect('/dashboard');
   }
 };
@@ -28,13 +28,13 @@ exports.createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password) {
-      req.flash('error', 'Name, email, and password are required');
+      req.flash('error', req.t('flash.nameEmailPasswordRequired'));
       return res.redirect('/admin/users');
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      req.flash('error', 'Email already registered');
+      req.flash('error', req.t('flash.emailAlreadyRegistered'));
       return res.redirect('/admin/users');
     }
 
@@ -48,11 +48,11 @@ exports.createUser = async (req, res) => {
       },
     });
 
-    req.flash('success', 'User created');
+    req.flash('success', req.t('flash.userCreated'));
     res.redirect('/admin/users');
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to create user');
+    req.flash('error', req.t('flash.createUserFailed'));
     res.redirect('/admin/users');
   }
 };

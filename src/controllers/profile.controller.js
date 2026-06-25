@@ -28,7 +28,7 @@ exports.getProfile = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load profile');
+    req.flash('error', req.t('flash.loadProfileFailed'));
     res.redirect('/dashboard');
   }
 };
@@ -37,7 +37,7 @@ exports.updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
     if (!name || !email) {
-      req.flash('error', 'Name and email are required');
+      req.flash('error', req.t('flash.nameEmailRequired'));
       return res.redirect('/profile');
     }
 
@@ -45,7 +45,7 @@ exports.updateProfile = async (req, res) => {
       where: { email, NOT: { id: req.user.id } },
     });
     if (existing) {
-      req.flash('error', 'Email already in use by another account');
+      req.flash('error', req.t('flash.emailInUse'));
       return res.redirect('/profile');
     }
 
@@ -54,11 +54,11 @@ exports.updateProfile = async (req, res) => {
       data: { name, email },
     });
 
-    req.flash('success', 'Profile updated');
+    req.flash('success', req.t('flash.profileUpdated'));
     res.redirect('/profile');
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to update profile');
+    req.flash('error', req.t('flash.updateProfileFailed'));
     res.redirect('/profile');
   }
 };
@@ -68,11 +68,11 @@ exports.changePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     if (!newPassword || newPassword.length < 6) {
-      req.flash('error', 'New password must be at least 6 characters');
+      req.flash('error', req.t('flash.newPasswordTooShort'));
       return res.redirect('/profile');
     }
     if (newPassword !== confirmPassword) {
-      req.flash('error', 'New passwords do not match');
+      req.flash('error', req.t('flash.newPasswordsMismatch'));
       return res.redirect('/profile');
     }
 
@@ -80,12 +80,12 @@ exports.changePassword = async (req, res) => {
 
     if (user.password) {
       if (!currentPassword) {
-        req.flash('error', 'Current password is required');
+        req.flash('error', req.t('flash.currentPasswordRequired'));
         return res.redirect('/profile');
       }
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        req.flash('error', 'Current password is incorrect');
+        req.flash('error', req.t('flash.currentPasswordIncorrect'));
         return res.redirect('/profile');
       }
     }
@@ -96,11 +96,11 @@ exports.changePassword = async (req, res) => {
       data: { password: hashedPassword },
     });
 
-    req.flash('success', 'Password changed successfully');
+    req.flash('success', req.t('flash.passwordChanged'));
     res.redirect('/profile');
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to change password');
+    req.flash('error', req.t('flash.changePasswordFailed'));
     res.redirect('/profile');
   }
 };
@@ -109,12 +109,12 @@ exports.changePassword = async (req, res) => {
 exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
-      req.flash('error', 'No image uploaded');
+      req.flash('error', req.t('flash.noImageUploaded'));
       return res.redirect('/profile');
     }
     if (!isPathSafe(req.file.path)) {
       try { fs.unlinkSync(req.file.path); } catch (e) {}
-      req.flash('error', 'Invalid file');
+      req.flash('error', req.t('flash.invalidFile'));
       return res.redirect('/profile');
     }
 
@@ -127,12 +127,12 @@ exports.uploadAvatar = async (req, res) => {
     const rel = path.relative(uploadDir, req.file.path);
     await prisma.user.update({ where: { id: req.user.id }, data: { avatar: rel } });
 
-    req.flash('success', 'Avatar updated');
+    req.flash('success', req.t('flash.avatarUpdated'));
     res.redirect('/profile');
   } catch (err) {
     console.error(err);
     if (req.file && req.file.path) { try { fs.unlinkSync(req.file.path); } catch (e) {} }
-    req.flash('error', 'Failed to upload avatar');
+    req.flash('error', req.t('flash.uploadAvatarFailed'));
     res.redirect('/profile');
   }
 };
@@ -145,11 +145,11 @@ exports.deleteAvatar = async (req, res) => {
       try { fs.unlinkSync(path.resolve(uploadDir, user.avatar)); } catch (e) {}
     }
     await prisma.user.update({ where: { id: req.user.id }, data: { avatar: null } });
-    req.flash('success', 'Avatar removed');
+    req.flash('success', req.t('flash.avatarRemoved'));
     res.redirect('/profile');
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to remove avatar');
+    req.flash('error', req.t('flash.removeAvatarFailed'));
     res.redirect('/profile');
   }
 };

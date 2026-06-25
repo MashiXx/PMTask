@@ -114,7 +114,7 @@ exports.getDocumentsPage = async (req, res) => {
     const { parseIdFromSlug } = require('../utils/slug');
     const projectId = parseIdFromSlug(projectSlug);
     if (!projectId) {
-      req.flash('error', 'Project not found');
+      req.flash('error', req.t('flash.projectNotFound'));
       return res.redirect('/projects');
     }
 
@@ -129,7 +129,7 @@ exports.getDocumentsPage = async (req, res) => {
       }
     }
     if (!project) {
-      req.flash('error', 'Project not found');
+      req.flash('error', req.t('flash.projectNotFound'));
       return res.redirect('/projects');
     }
 
@@ -214,7 +214,7 @@ exports.getDocumentsPage = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load documents');
+    req.flash('error', req.t('flash.loadDocumentsFailed'));
     res.redirect('/projects');
   }
 };

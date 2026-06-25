@@ -249,7 +249,7 @@ exports.getTaskPage = async (req, res) => {
     // Parse ID from slug (e.g. "42-my-task-title" -> 42)
     const taskId = parseIdFromSlug(slug);
     if (!taskId) {
-      req.flash('error', 'Task not found');
+      req.flash('error', req.t('flash.taskNotFound'));
       return res.redirect('/dashboard');
     }
 
@@ -268,7 +268,7 @@ exports.getTaskPage = async (req, res) => {
       },
     });
     if (!task) {
-      req.flash('error', 'Task not found');
+      req.flash('error', req.t('flash.taskNotFound'));
       return res.redirect('/dashboard');
     }
 
@@ -321,7 +321,7 @@ exports.getTaskPage = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load task');
+    req.flash('error', req.t('flash.loadTaskFailed'));
     res.redirect('/dashboard');
   }
 };

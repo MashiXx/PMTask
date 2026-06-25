@@ -13,7 +13,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    req.flash('error', 'Too many sign-in attempts. Please wait 15 minutes and try again.');
+    req.flash('error', req.t('flash.tooManyLoginAttempts'));
     res.redirect('/auth/login');
   },
 });
@@ -25,7 +25,7 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    req.flash('error', 'Too many registration attempts. Please try again later.');
+    req.flash('error', req.t('flash.tooManyRegisterAttempts'));
     res.redirect('/auth/register');
   },
 });
@@ -40,7 +40,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/auth/login', failureFlash: true }),
   (req, res) => {
-    req.flash('success', 'Logged in with Google');
+    req.flash('success', req.t('flash.loggedInWithGoogle'));
     res.redirect('/dashboard');
   }
 );

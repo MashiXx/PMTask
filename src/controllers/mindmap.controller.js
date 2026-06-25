@@ -220,9 +220,9 @@ exports.convertNode = async (req, res) => {
 exports.getMindmapsListPage = async (req, res) => {
   try {
     const projectId = parseIdFromSlug(req.params.projectSlug);
-    if (!projectId) { req.flash('error', 'Project not found'); return res.redirect('/projects'); }
+    if (!projectId) { req.flash('error', req.t('flash.projectNotFound')); return res.redirect('/projects'); }
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) { req.flash('error', 'Project not found'); return res.redirect('/projects'); }
+    if (!project) { req.flash('error', req.t('flash.projectNotFound')); return res.redirect('/projects'); }
     const canonical = `${project.id}-${project.slug}`;
     if (req.params.projectSlug !== canonical) return res.redirect(301, `/projects/${canonical}/mindmaps`);
     if (!userCanAccessProject(project, req.user)) return res.redirect('/projects');
@@ -235,7 +235,7 @@ exports.getMindmapsListPage = async (req, res) => {
       activePage: 'mindmaps', mindmaps, isGuest: false,
     });
   } catch (err) {
-    console.error(err); req.flash('error', 'Failed to load mindmaps'); res.redirect('/projects');
+    console.error(err); req.flash('error', req.t('flash.loadMindmapsFailed')); res.redirect('/projects');
   }
 };
 
@@ -243,14 +243,14 @@ exports.getMindmapCanvasPage = async (req, res) => {
   try {
     const projectId = parseIdFromSlug(req.params.projectSlug);
     const mindmapId = parseInt(req.params.mindmapId);
-    if (!projectId || !mindmapId) { req.flash('error', 'Not found'); return res.redirect('/projects'); }
+    if (!projectId || !mindmapId) { req.flash('error', req.t('flash.notFound')); return res.redirect('/projects'); }
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) { req.flash('error', 'Project not found'); return res.redirect('/projects'); }
+    if (!project) { req.flash('error', req.t('flash.projectNotFound')); return res.redirect('/projects'); }
     const canonical = `${project.id}-${project.slug}`;
     if (req.params.projectSlug !== canonical) return res.redirect(301, `/projects/${canonical}/mindmaps/${mindmapId}`);
     if (!userCanAccessProject(project, req.user)) return res.redirect('/projects');
     const mindmap = await prisma.mindmap.findUnique({ where: { id: mindmapId } });
-    if (!mindmap || mindmap.projectId !== projectId) { req.flash('error', 'Mindmap not found'); return res.redirect(`/projects/${canonical}/mindmaps`); }
+    if (!mindmap || mindmap.projectId !== projectId) { req.flash('error', req.t('flash.mindmapNotFound')); return res.redirect(`/projects/${canonical}/mindmaps`); }
     const nodes = await prisma.mindmapNode.findMany({
       where: { mindmapId }, orderBy: { position: 'asc' },
       include: { task: { select: { id: true, status: true, title: true } } },
@@ -260,6 +260,6 @@ exports.getMindmapCanvasPage = async (req, res) => {
       activePage: 'mindmaps', mindmap, nodes, isGuest: false,
     });
   } catch (err) {
-    console.error(err); req.flash('error', 'Failed to load mindmap'); res.redirect('/projects');
+    console.error(err); req.flash('error', req.t('flash.loadMindmapFailed')); res.redirect('/projects');
   }
 };
