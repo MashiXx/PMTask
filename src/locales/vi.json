@@ -2,5 +2,8 @@
   "common.save": "Lưu",
   "common.cancel": "Huỷ",
   "common.greeting": "Hello {name}",
-  "js.confirmDelete": "Bạn có chắc muốn xoá {name}?"
+  "js.confirmDelete": "Bạn có chắc muốn xoá {name}?",
+  "profile.language": "Ngôn ngữ",
+  "profile.languageHint": "Chọn ngôn ngữ hiển thị"
 }
+

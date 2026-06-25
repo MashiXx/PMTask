@@ -3,5 +3,8 @@
   "common.cancel": "Cancel",
   "common.enOnly": "English only",
   "common.greeting": "Hello {name}",
-  "js.confirmDelete": "Are you sure you want to delete {name}?"
+  "js.confirmDelete": "Are you sure you want to delete {name}?",
+  "profile.language": "Language",
+  "profile.languageHint": "Choose the interface language"
 }
+

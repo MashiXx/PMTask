@@ -109,6 +109,25 @@
           </div>
         </div>
 
+        <div class="profile-section language-picker-section">
+          <h3 class="profile-section-title"><%= t('profile.language') %></h3>
+          <p style="color: var(--text-muted); font-size: 0.8125rem; margin-bottom: 8px;"><%= t('profile.languageHint') %></p>
+          <div class="theme-picker-grid">
+            <div class="theme-picker-card <%= lang === 'en' ? 'active' : '' %>" data-lang="en" onclick="setLanguage('en')">
+              <div class="theme-picker-info">
+                <span class="theme-picker-name">English</span>
+                <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              </div>
+            </div>
+            <div class="theme-picker-card <%= lang === 'vi' ? 'active' : '' %>" data-lang="vi" onclick="setLanguage('vi')">
+              <div class="theme-picker-info">
+                <span class="theme-picker-name">Tiếng Việt</span>
+                <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="profile-section">
           <h3 class="profile-section-title">Change Password</h3>
           <form action="/profile/password" method="POST">
