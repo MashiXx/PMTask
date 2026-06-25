@@ -1,17 +1,17 @@
 <div class="modal-overlay" id="projectModal">
   <div class="modal">
-    <h2 class="modal-title" id="projectModalTitle">New Project</h2>
+    <h2 class="modal-title" id="projectModalTitle"><%= t('project.newProject') %></h2>
 
     <form id="projectForm">
       <input type="hidden" id="projectId" value="">
 
       <div class="form-group">
-        <label>PROJECT NAME</label>
-        <input type="text" id="projectName" placeholder="Enter project name" required>
+        <label><%= t('project.labelName') %></label>
+        <input type="text" id="projectName" placeholder="<%= t('project.placeholderName') %>" required>
       </div>
 
       <div class="form-group">
-        <label>COLOR</label>
+        <label><%= t('project.labelColor') %></label>
         <div class="color-swatch-wrap">
           <% ['#2D6FE0','#2B9CD8','#1E9E60','#EF4444','#F59E0B','#E8E8FF'].forEach((c, i) => { %>
             <label class="color-swatch-label">
@@ -28,25 +28,25 @@
 
       <% if (currentUser && currentUser.role === 'admin') { %>
       <div class="form-group" id="projectPublicSettings" style="display:none;">
-        <label>PUBLIC ACCESS</label>
+        <label><%= t('project.labelPublicAccess') %></label>
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
           <label class="toggle-label">
             <input type="checkbox" id="projectPublicTasks" class="toggle-input">
             <span class="toggle-switch"></span>
-            <span class="toggle-text">Public Tasks <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; anyone can view tasks</span></span>
+            <span class="toggle-text"><%= t('project.publicTasks') %> <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; <%= t('project.publicTasksHint') %></span></span>
           </label>
           <label class="toggle-label">
             <input type="checkbox" id="projectPublicDocuments" class="toggle-input">
             <span class="toggle-switch"></span>
-            <span class="toggle-text">Public Documents <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; anyone can view documents</span></span>
+            <span class="toggle-text"><%= t('project.publicDocs') %> <span style="color:var(--text-dim); font-size:0.7rem;">&mdash; <%= t('project.publicDocsHint') %></span></span>
           </label>
         </div>
       </div>
       <% } %>
 
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeProjectModal()">Cancel</button>
-        <button type="submit" class="btn-submit" id="projectSubmitBtn">Create Project</button>
+        <button type="button" class="btn-cancel" onclick="closeProjectModal()"><%= t('common.cancel') %></button>
+        <button type="submit" class="btn-submit" id="projectSubmitBtn"><%= t('project.createProject') %></button>
       </div>
     </form>
   </div>
@@ -54,22 +54,22 @@
 
 <div class="modal-overlay" id="deleteProjectModal">
   <div class="modal text-center">
-    <h2 class="modal-title">Delete Project</h2>
+    <h2 class="modal-title"><%= t('project.deleteProject') %></h2>
     <p class="modal-confirm-text mb-8">
-      Delete <strong id="deleteProjectName" style="color:var(--text)"></strong>?
+      <%= t('common.delete') %> <strong id="deleteProjectName" style="color:var(--text)"></strong>?
     </p>
     <p class="modal-warning-text mb-16">
-      All tasks in this project will also be deleted. This action cannot be undone.
+      <%= t('project.deleteWarning') %>
     </p>
     <div class="form-group text-left mb-20">
-      <label>TYPE THE PROJECT NAME TO CONFIRM</label>
-      <input type="text" id="deleteProjectConfirmInput" placeholder="Type project name here" autocomplete="off">
+      <label><%= t('project.labelConfirmName') %></label>
+      <input type="text" id="deleteProjectConfirmInput" placeholder="<%= t('project.placeholderConfirmName') %>" autocomplete="off">
     </div>
     <input type="hidden" id="deleteProjectId" value="">
     <input type="hidden" id="deleteProjectExpectedName" value="">
     <div class="modal-actions justify-center">
-      <button class="btn-cancel" onclick="closeDeleteProjectModal()">Cancel</button>
-      <button class="btn-delete btn-disabled" id="deleteProjectBtn" onclick="confirmDeleteProject()" disabled>Delete</button>
+      <button class="btn-cancel" onclick="closeDeleteProjectModal()"><%= t('common.cancel') %></button>
+      <button class="btn-delete btn-disabled" id="deleteProjectBtn" onclick="confirmDeleteProject()" disabled><%= t('common.delete') %></button>
     </div>
   </div>
 </div>

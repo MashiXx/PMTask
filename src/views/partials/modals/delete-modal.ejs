@@ -1,13 +1,13 @@
 <div class="modal-overlay" id="deleteModal">
   <div class="modal modal-sm text-center">
-    <h2 class="modal-title">Delete Task</h2>
+    <h2 class="modal-title"><%= t('modal.deleteTask.title') %></h2>
     <p class="modal-confirm-text mb-24">
-      Are you sure? This action cannot be undone.
+      <%= t('modal.deleteTask.confirm') %>
     </p>
     <input type="hidden" id="deleteTaskId" value="">
     <div class="modal-actions justify-center">
-      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn-delete" onclick="confirmDelete()">Delete</button>
+      <button class="btn-cancel" onclick="closeDeleteModal()"><%= t('common.cancel') %></button>
+      <button class="btn-delete" onclick="confirmDelete()"><%= t('common.delete') %></button>
     </div>
   </div>
 </div>
