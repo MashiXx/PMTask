@@ -6,20 +6,20 @@
     <div class="preview-cover">
       <div class="preview-cover-actions">
         <div class="preview-cover-menu-wrap preview-auth-btn">
-          <button type="button" class="preview-cover-btn" title="Thao tác" aria-label="Thao tác" aria-haspopup="true" onclick="event.stopPropagation(); togglePreviewCoverMenu()">
+          <button type="button" class="preview-cover-btn" title="<%= t('task.preview.actions') %>" aria-label="<%= t('task.preview.actions') %>" aria-haspopup="true" onclick="event.stopPropagation(); togglePreviewCoverMenu()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
           </button>
           <div class="preview-cover-menu" id="previewCoverMenu" onclick="event.stopPropagation()">
             <button type="button" class="preview-cover-menu-item danger" onclick="previewDelete()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Xóa thẻ
+              <%= t('task.preview.deleteCard') %>
             </button>
           </div>
         </div>
-        <a id="previewDetailsLink" href="#" class="preview-cover-btn no-decoration" title="Mở rộng" aria-label="Mở rộng">
+        <a id="previewDetailsLink" href="#" class="preview-cover-btn no-decoration" title="<%= t('task.preview.expand') %>" aria-label="<%= t('task.preview.expand') %>">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         </a>
-        <button type="button" class="preview-cover-btn" title="Đóng" aria-label="Đóng" onclick="closeTaskPreview()">
+        <button type="button" class="preview-cover-btn" title="<%= t('common.close') %>" aria-label="<%= t('common.close') %>" onclick="closeTaskPreview()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -29,9 +29,9 @@
       <!-- MAIN COLUMN -->
       <div class="preview-main">
         <div class="task-preview-title-wrap">
-          <div id="previewTitleRendered" class="preview-title-display" title="Chỉnh sửa"></div>
-          <input type="text" id="previewTitle" class="preview-editable-title hidden" placeholder="Tiêu đề công việc">
-          <button type="button" id="previewDoneToggle" class="title-done-check preview-auth-btn" onclick="togglePreviewDone()" title="Đánh dấu hoàn thành" aria-label="Đánh dấu hoàn thành">
+          <div id="previewTitleRendered" class="preview-title-display" title="<%= t('common.edit') %>"></div>
+          <input type="text" id="previewTitle" class="preview-editable-title hidden" placeholder="<%= t('task.preview.titlePlaceholder') %>">
+          <button type="button" id="previewDoneToggle" class="title-done-check preview-auth-btn" onclick="togglePreviewDone()" title="<%= t('task.markDone') %>" aria-label="<%= t('task.markDone') %>">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </button>
         </div>
@@ -39,34 +39,34 @@
         <!-- Meta: members / priority / due date -->
         <div class="preview-meta-row">
           <div class="preview-meta-item" id="previewAssigneesWrap">
-            <span class="preview-meta-label">Thành viên</span>
+            <span class="preview-meta-label"><%= t('task.members') %></span>
             <div class="preview-meta-control">
               <div id="previewAssignees" class="preview-avatars"></div>
-              <button type="button" class="preview-add-mini preview-auth-btn" title="Sửa thành viên" onclick="openEditModal(previewTaskId)">
+              <button type="button" class="preview-add-mini preview-auth-btn" title="<%= t('task.preview.editMembers') %>" onclick="openEditModal(previewTaskId)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
             </div>
           </div>
 
           <div class="preview-meta-item">
-            <span class="preview-meta-label">Mức ưu tiên</span>
+            <span class="preview-meta-label"><%= t('task.priority') %></span>
             <div class="preview-meta-control">
               <div class="preview-pill-select-wrap">
                 <span class="preview-priority-pill" id="previewPriorityPill" data-priority="medium">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                  <span id="previewPriorityText">Trung bình</span>
+                  <span id="previewPriorityText"><%= t('task.priorityMedium') %></span>
                 </span>
-                <select id="previewPrioritySelect" class="preview-overlay-select" aria-label="Mức ưu tiên">
-                  <option value="low">Thấp</option>
-                  <option value="medium">Trung bình</option>
-                  <option value="high">Cao</option>
+                <select id="previewPrioritySelect" class="preview-overlay-select" aria-label="<%= t('task.priority') %>">
+                  <option value="low"><%= t('task.priorityLow') %></option>
+                  <option value="medium"><%= t('task.priorityMedium') %></option>
+                  <option value="high"><%= t('task.priorityHigh') %></option>
                 </select>
               </div>
             </div>
           </div>
 
           <div class="preview-meta-item" id="previewDueDateWrap">
-            <span class="preview-meta-label">Hạn chót</span>
+            <span class="preview-meta-label"><%= t('task.dueDate') %></span>
             <div class="preview-meta-control">
               <span class="preview-date-chip">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -76,7 +76,7 @@
           </div>
         </div>
 
-        <!-- Tag editor (revealed by the "Nhãn" sidebar action) -->
+        <!-- Tag editor (revealed by the tag sidebar action) -->
         <div id="previewTagEditor" class="preview-tag-editor hidden" onclick="event.stopPropagation()">
           <div id="previewTagOptions" class="preview-tag-options"></div>
         </div>
@@ -85,17 +85,17 @@
         <div class="preview-section">
           <p class="preview-section-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            Mô tả
+            <%= t('task.description') %>
           </p>
-          <div id="previewDescRendered" class="preview-desc-rendered" title="Chỉnh sửa"></div>
-          <textarea id="previewDescription" class="preview-editable-desc hidden" placeholder="Thêm mô tả..." rows="6"></textarea>
+          <div id="previewDescRendered" class="preview-desc-rendered" title="<%= t('common.edit') %>"></div>
+          <textarea id="previewDescription" class="preview-editable-desc hidden" placeholder="<%= t('task.preview.descPlaceholder') %>" rows="6"></textarea>
         </div>
 
         <!-- Attachments -->
         <div class="preview-section">
           <p class="preview-section-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-            Tệp đính kèm
+            <%= t('task.attachments') %>
           </p>
           <div class="preview-attach-box">
             <div id="previewAttachmentsList" class="attach-list"></div>
@@ -104,11 +104,11 @@
                 accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
               <label for="previewAttachmentInput" class="attach-dropzone-label">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Kéo thả tệp vào đây hoặc <span class="attach-browse">duyệt</span>
+                <%= t('task.dropFilesHere') %> <span class="attach-browse"><%= t('task.browse') %></span>
               </label>
             </div>
           </div>
-          <p class="attach-paste-hint preview-auth-btn">Mẹo: dán ảnh bằng Ctrl+V để đính kèm.</p>
+          <p class="attach-paste-hint preview-auth-btn"><%= t('task.pasteTip') %></p>
         </div>
       </div>
 
@@ -119,14 +119,14 @@
           <div class="preview-section-head">
             <p class="preview-section-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              Việc cần làm
+              <%= t('task.checklist') %>
               <span id="previewSubtaskCount" class="subtask-count-badge"></span>
             </p>
             <span id="previewProgressText" class="preview-checklist-pct"></span>
           </div>
           <div id="previewSubtaskList" class="subtask-list"></div>
           <div id="previewSubtaskAdd" class="subtask-add hidden">
-            <input type="text" id="previewSubtaskInput" class="subtask-input" placeholder="Thêm việc cần làm..." onkeydown="if(event.key==='Enter'){addPreviewSubtask(); event.preventDefault();}">
+            <input type="text" id="previewSubtaskInput" class="subtask-input" placeholder="<%= t('task.subtaskPlaceholder') %>" onkeydown="if(event.key==='Enter'){addPreviewSubtask(); event.preventDefault();}">
             <button class="subtask-add-btn" onclick="addPreviewSubtask()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
@@ -137,13 +137,13 @@
         <div class="preview-section">
           <p class="preview-section-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Bình luận
+            <%= t('task.comments') %>
           </p>
           <div id="previewComments" class="comment-list"></div>
         </div>
 
         <div class="preview-side-footer">
-          <p>Tạo bởi <strong id="previewCreator">—</strong></p>
+          <p><%= t('task.createdBy') %> <strong id="previewCreator">—</strong></p>
           <p id="previewCreatedAt" class="preview-side-foot-time"></p>
         </div>
       </aside>

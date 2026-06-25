@@ -1,55 +1,55 @@
 <div class="modal-overlay" id="taskModal">
   <div class="modal">
-    <h2 class="modal-title" id="taskModalTitle">New Task</h2>
+    <h2 class="modal-title" id="taskModalTitle"><%= t('task.modal.newTask') %></h2>
 
     <form id="taskForm">
       <input type="hidden" id="taskId" value="">
       <input type="hidden" id="taskProjectId" value="<%= typeof activeProjectId !== 'undefined' ? activeProjectId : '' %>">
 
       <div class="form-group">
-        <label>TITLE</label>
-        <input type="text" id="taskTitle" placeholder="Task title" required>
+        <label><%= t('task.modal.titleLabel') %></label>
+        <input type="text" id="taskTitle" placeholder="<%= t('task.modal.titlePlaceholder') %>" required>
       </div>
 
       <div class="form-group">
-        <label>DESCRIPTION</label>
-        <textarea id="taskDescription" placeholder="Optional description" rows="2" style="resize:vertical"></textarea>
+        <label><%= t('task.modal.descLabel') %></label>
+        <textarea id="taskDescription" placeholder="<%= t('task.modal.descPlaceholder') %>" rows="2" style="resize:vertical"></textarea>
       </div>
 
       <div style="display: flex; gap: 12px;">
         <div class="form-group" style="flex:1">
-          <label>PRIORITY</label>
+          <label><%= t('task.modal.priorityLabel') %></label>
           <select id="taskPriority">
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
+            <option value="low"><%= t('task.priorityLow') %></option>
+            <option value="medium" selected><%= t('task.priorityMedium') %></option>
+            <option value="high"><%= t('task.priorityHigh') %></option>
           </select>
         </div>
         <div class="form-group" style="flex:1">
-          <label>STATUS</label>
+          <label><%= t('task.modal.statusLabel') %></label>
           <select id="taskStatus">
-            <option value="todo">To Do</option>
-            <option value="inprogress">In Progress</option>
-            <option value="review">In Review</option>
-            <option value="done">Completed</option>
+            <option value="todo"><%= t('task.statusTodo') %></option>
+            <option value="inprogress"><%= t('task.statusInProgress') %></option>
+            <option value="review"><%= t('task.statusInReview') %></option>
+            <option value="done"><%= t('task.statusDone') %></option>
           </select>
         </div>
       </div>
 
       <div style="display: flex; gap: 12px;">
         <div class="form-group" style="flex:1">
-          <label>DUE DATE</label>
+          <label><%= t('task.modal.dueDateLabel') %></label>
           <input type="date" id="taskDueDate">
         </div>
         <div class="form-group" style="flex:1">
-          <label>PROGRESS (%)</label>
+          <label><%= t('task.modal.progressLabel') %></label>
           <input type="number" id="taskProgress" min="0" max="100" value="0">
         </div>
       </div>
 
       <% if (typeof projectTags !== 'undefined' && projectTags.length > 0) { %>
         <div class="form-group">
-          <label>TAGS</label>
+          <label><%= t('task.modal.tagsLabel') %></label>
           <div class="tags-container">
             <% projectTags.forEach(tag => { %>
               <input type="checkbox" class="tag-checkbox" name="tags" value="<%= tag.name %>" id="tag-<%= tag.name %>">
@@ -60,8 +60,8 @@
       <% } %>
 
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
-        <button type="submit" class="btn-submit" id="taskSubmitBtn">Create Task</button>
+        <button type="button" class="btn-cancel" onclick="closeTaskModal()"><%= t('common.cancel') %></button>
+        <button type="submit" class="btn-submit" id="taskSubmitBtn"><%= t('task.modal.createTask') %></button>
       </div>
     </form>
   </div>
