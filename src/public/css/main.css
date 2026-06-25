@@ -3547,6 +3547,48 @@ select option {
 
 .preview-cover-btn:hover { background: rgba(255, 255, 255, 0.32); }
 
+/* Cover "..." dropdown menu */
+.preview-cover-menu-wrap { position: relative; display: inline-flex; }
+
+.preview-cover-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 168px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 10px 30px var(--shadow-heavy);
+  display: none;
+  z-index: 30;
+  animation: slideDown 0.15s ease;
+}
+
+.preview-cover-menu.open { display: block; }
+
+.preview-cover-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.preview-cover-menu-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.preview-cover-menu-item:hover { background: var(--card-hover); }
+.preview-cover-menu-item.danger { color: var(--coral); }
+.preview-cover-menu-item.danger:hover { background: color-mix(in srgb, var(--coral) 10%, transparent); }
+
 /* Body: main + sidebar (scoped so the documents-modal .preview-body can't win the cascade) */
 .modal.task-preview .preview-body {
   display: flex;

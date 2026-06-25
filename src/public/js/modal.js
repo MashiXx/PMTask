@@ -113,6 +113,19 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Preview cover "..." menu (delete card)
+function togglePreviewCoverMenu() {
+  const menu = document.getElementById('previewCoverMenu');
+  if (menu) menu.classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('previewCoverMenu');
+  if (menu && menu.classList.contains('open') && !e.target.closest('.preview-cover-menu-wrap')) {
+    menu.classList.remove('open');
+  }
+});
+
 // Task Preview Popup
 let previewTaskId = null;
 let previewTaskStatus = null;
@@ -668,6 +681,8 @@ if (_previewDesc) {
 
 function closeTaskPreview() {
   document.getElementById('taskPreviewModal').classList.remove('active');
+  const coverMenu = document.getElementById('previewCoverMenu');
+  if (coverMenu) coverMenu.classList.remove('open');
   // Reset title + description view state back to their label views
   const titleDisplay = document.getElementById('previewTitleRendered');
   const titleInput = document.getElementById('previewTitle');

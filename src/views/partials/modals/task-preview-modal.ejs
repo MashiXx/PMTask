@@ -5,6 +5,17 @@
     <!-- Cover: window controls -->
     <div class="preview-cover">
       <div class="preview-cover-actions">
+        <div class="preview-cover-menu-wrap preview-auth-btn">
+          <button type="button" class="preview-cover-btn" title="Thao tác" aria-label="Thao tác" aria-haspopup="true" onclick="event.stopPropagation(); togglePreviewCoverMenu()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+          </button>
+          <div class="preview-cover-menu" id="previewCoverMenu" onclick="event.stopPropagation()">
+            <button type="button" class="preview-cover-menu-item danger" onclick="previewDelete()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Xóa thẻ
+            </button>
+          </div>
+        </div>
         <a id="previewDetailsLink" href="#" class="preview-cover-btn no-decoration" title="Mở rộng" aria-label="Mở rộng">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         </a>
@@ -124,14 +135,6 @@
             Bình luận
           </p>
           <div id="previewComments" class="comment-list"></div>
-        </div>
-
-        <div class="preview-side-group preview-auth-btn">
-          <p class="preview-side-heading">Thao tác</p>
-          <button type="button" class="preview-side-action danger" onclick="previewDelete()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Xóa thẻ
-          </button>
         </div>
 
         <div class="preview-side-footer">
