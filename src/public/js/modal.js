@@ -377,7 +377,6 @@ async function togglePreviewDone() {
 }
 
 const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
-const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
 
 async function savePreviewField() {
   if (!previewTaskId) return;
@@ -447,7 +446,7 @@ function updateCardStatusBadge(card, status) {
   const badge = card.querySelector('.task-status-badge');
   if (!badge) return;
   const sColor = statusColorsMap[status] || '#6B6B8E';
-  const sLabel = statusLabelsMap[status] || 'To Do';
+  const sLabel = statusLabelsMap[status] || t('js.status.todo');
   badge.style.color = sColor;
   badge.style.borderColor = sColor + '55';
   badge.style.background = sColor + '14';

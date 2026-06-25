@@ -100,12 +100,12 @@
           try { resolve(JSON.parse(xhr.responseText).attachment); }
           catch (e) { resolve(null); }
         } else {
-          let msg = 'Upload failed';
+          let msg = t('js.attach.uploadFailed');
           try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
           reject(new Error(msg));
         }
       });
-      xhr.addEventListener('error', function () { reject(new Error('Upload failed for ' + file.name)); });
+      xhr.addEventListener('error', function () { reject(new Error(t('js.attach.uploadFailedFor', { name: file.name }))); });
       const fd = new FormData();
       fd.append('file', file);
       xhr.open('POST', '/api/attachments/tasks/' + taskId);
@@ -203,14 +203,14 @@
         const res = await fetch('/api/attachments/' + id, { method: 'DELETE' });
         if (!res.ok) {
           const data = await res.json().catch(function () { return {}; });
-          alert(data.error || 'Failed to delete attachment');
+          alert(data.error || t('js.attach.deleteFailed'));
           return;
         }
         items = items.filter(function (a) { return a.id !== id; });
         render();
       } catch (err) {
         console.error(err);
-        alert('Failed to delete attachment');
+        alert(t('js.attach.deleteFailed'));
       }
     }
 
@@ -229,7 +229,7 @@
           });
           if (created) items.unshift(created);
         } catch (err) {
-          alert(err.message || 'Upload failed');
+          alert(err.message || t('js.attach.uploadFailed'));
         }
         done++;
       }
