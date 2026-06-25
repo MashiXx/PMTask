@@ -184,7 +184,7 @@ exports.serveAvatar = async (req, res) => {
   }
 };
 
-const VALID_THEMES = ['light', 'dark', 'system', 'azure'];
+const VALID_THEMES = ['light', 'dark'];
 
 exports.updateTheme = async (req, res) => {
   try {

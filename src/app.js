@@ -56,10 +56,9 @@ app.use(flash());
 // Global template variables
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
-  // Normalize retired themes (vintage / vintage-dark) to system.
-  const VALID_THEMES = ['light', 'dark', 'system', 'azure'];
-  const savedTheme = req.user ? req.user.theme : 'system';
-  res.locals.userTheme = VALID_THEMES.includes(savedTheme) ? savedTheme : 'system';
+  // Only two themes remain; map any retired value (system / azure / vintage) onto them.
+  const savedTheme = req.user ? req.user.theme : 'light';
+  res.locals.userTheme = savedTheme === 'dark' ? 'dark' : 'light';
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();

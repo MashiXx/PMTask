@@ -5,58 +5,8 @@
 /* --- Google Fonts Import --- */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* --- Light Theme (default) — PMTask Board redesign --- */
+/* --- Light Theme (default) — cool blue daylight --- */
 :root {
-  --bg:           #F4F6FA;
-  --surface:      #FBFCFE;
-  --surface-2:    #EEF1F6;
-  --card:         #FFFFFF;
-  --card-hover:   #F4F7FC;
-  --border:       #ECEEF3;
-  --border-light: #E1E5EE;
-  --accent:       #2D6FE0;
-  --accent-strong:#1A56C4;
-  --accent-soft:  #E7F0FF;
-  --cyan:         #2B9CD8;
-  --coral:        #EF4444;
-  --amber:        #F59E0B;
-  --mint:         #1E7C4D;
-  --text:         #162039;
-  --text-muted:   #5A6477;
-  --text-dim:     #9AA3B5;
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --shadow-color: rgba(16, 24, 40, 0.06);
-  --shadow-heavy: rgba(16, 24, 40, 0.16);
-  --overlay-bg:   rgba(20, 30, 55, 0.35);
-}
-
-/* --- Light Theme (explicit) --- */
-[data-theme="light"] {
-  --bg:           #F4F6FA;
-  --surface:      #FBFCFE;
-  --surface-2:    #EEF1F6;
-  --card:         #FFFFFF;
-  --card-hover:   #F4F7FC;
-  --border:       #ECEEF3;
-  --border-light: #E1E5EE;
-  --accent:       #2D6FE0;
-  --accent-strong:#1A56C4;
-  --accent-soft:  #E7F0FF;
-  --cyan:         #2B9CD8;
-  --coral:        #EF4444;
-  --amber:        #F59E0B;
-  --mint:         #1E7C4D;
-  --text:         #162039;
-  --text-muted:   #5A6477;
-  --text-dim:     #9AA3B5;
-  --shadow-color: rgba(16, 24, 40, 0.06);
-  --shadow-heavy: rgba(16, 24, 40, 0.16);
-  --overlay-bg:   rgba(20, 30, 55, 0.35);
-}
-
-/* --- Azure Theme — cooler blue-tinted daylight --- */
-[data-theme="azure"] {
   --bg:           #EDF1FA;
   --surface:      #F4F7FD;
   --surface-2:    #E4EAF5;
@@ -68,8 +18,34 @@
   --accent-strong:#1A56C4;
   --accent-soft:  #E1ECFF;
   --cyan:         #1F8FCB;
-  --coral:        #E14B53;
-  --amber:        #D98A26;
+  --coral:        #EF4444;
+  --amber:        #F59E0B;
+  --mint:         #1E7C4D;
+  --text:         #16284E;
+  --text-muted:   #50607D;
+  --text-dim:     #93A0B8;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --shadow-color: rgba(40, 70, 140, 0.08);
+  --shadow-heavy: rgba(40, 70, 140, 0.18);
+  --overlay-bg:   rgba(25, 45, 100, 0.35);
+}
+
+/* --- Light Theme (explicit) --- */
+[data-theme="light"] {
+  --bg:           #EDF1FA;
+  --surface:      #F4F7FD;
+  --surface-2:    #E4EAF5;
+  --card:         #FFFFFF;
+  --card-hover:   #F1F6FE;
+  --border:       #DCE4F3;
+  --border-light: #CBD6EC;
+  --accent:       #2D6FE0;
+  --accent-strong:#1A56C4;
+  --accent-soft:  #E1ECFF;
+  --cyan:         #1F8FCB;
+  --coral:        #EF4444;
+  --amber:        #F59E0B;
   --mint:         #1E7C4D;
   --text:         #16284E;
   --text-muted:   #50607D;
@@ -101,32 +77,6 @@
   --shadow-color: rgba(0, 0, 0, 0.32);
   --shadow-heavy: rgba(0, 0, 0, 0.55);
   --overlay-bg:   rgba(8, 12, 22, 0.7);
-}
-
-/* System preference: follow OS dark mode (default :root is light) */
-@media (prefers-color-scheme: dark) {
-  [data-theme="system"] {
-    --bg:           #0F1422;
-    --surface:      #161D2E;
-    --surface-2:    #1B2336;
-    --card:         #1E2740;
-    --card-hover:   #25304D;
-    --border:       #2A3450;
-    --border-light: #3A4668;
-    --accent:       #4C8DFF;
-    --accent-strong:#7DACFF;
-    --accent-soft:  rgba(76, 141, 255, 0.16);
-    --cyan:         #38BDF8;
-    --coral:        #F87171;
-    --amber:        #FBBF24;
-    --mint:         #34D399;
-    --text:         #E4E9F2;
-    --text-muted:   #95A1B8;
-    --text-dim:     #606C86;
-    --shadow-color: rgba(0, 0, 0, 0.32);
-    --shadow-heavy: rgba(0, 0, 0, 0.55);
-    --overlay-bg:   rgba(8, 12, 22, 0.7);
-  }
 }
 
 /* ===================================================
@@ -612,19 +562,31 @@ input, textarea, select {
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Parent crumb (e.g. "Projects") — muted/light */
+.breadcrumb-muted {
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.breadcrumb-muted:hover {
   color: var(--text-muted);
 }
 
-.breadcrumb span {
+/* Current page (e.g. "Nhật Bản") — dark + bold */
+.breadcrumb-current {
   color: var(--text);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .breadcrumb-sep {
   color: var(--text-dim);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 /* Sprint Badge */
@@ -746,22 +708,10 @@ input, textarea, select {
 .theme-icon { display: none; }
 /* Dark: show sun icon (click to go light) */
 [data-theme="dark"] .theme-icon-sun { display: block; }
-/* Light: show moon icon (click to go dark) */
+/* Light (default): show moon icon (click to go dark) */
+:root .theme-icon-moon,
 [data-theme="light"] .theme-icon-moon { display: block; }
-/* Azure (a light theme): show moon icon (click to go dark) */
-[data-theme="azure"] .theme-icon-moon { display: block; }
-/* System: show monitor icon */
-[data-theme="system"] .theme-icon-system { display: block; }
-/* System + OS dark: show sun */
-@media (prefers-color-scheme: dark) {
-  [data-theme="system"] .theme-icon-system { display: none; }
-  [data-theme="system"] .theme-icon-sun { display: block; }
-}
-/* System + OS light: show moon */
-@media (prefers-color-scheme: light) {
-  [data-theme="system"] .theme-icon-system { display: none; }
-  [data-theme="system"] .theme-icon-moon { display: block; }
-}
+[data-theme="dark"] .theme-icon-moon { display: none; }
 
 /* Notif Button */
 .notif-btn {
@@ -856,39 +806,93 @@ input, textarea, select {
   box-shadow: 0 1px 2px var(--shadow-color);
 }
 
-.stat-mini {
+/* Leading count: big number + uppercase label */
+.stat-count {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 7px;
 }
 
-.stat-mini-value {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  font-weight: 700;
+.stat-count-value {
+  font-size: 1.25rem;
+  font-weight: 800;
   color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
-.stat-mini-label {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-muted);
+.stat-count-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.06em;
+}
+
+/* Status chip: soft-tinted icon square + count label */
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-chip-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.stat-chip-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.stat-chip-progress {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.stat-chip-done {
+  background: color-mix(in srgb, var(--mint) 16%, transparent);
+  color: var(--mint);
+}
+
+.stat-chip-overdue {
+  background: color-mix(in srgb, var(--coral) 14%, transparent);
+  color: var(--coral);
+}
+
+.stat-chip-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .stat-mini-progress {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-left: auto;
-  min-width: 120px;
+  min-width: 220px;
+}
+
+/* Taller pill track only inside the stats bar (sprint.ejs keeps its slim one) */
+.stat-mini-progress .sprint-track {
+  height: 8px;
+  border-radius: 99px;
+}
+
+.stat-mini-progress .sprint-fill {
+  border-radius: 99px;
 }
 
 .stat-mini-percent {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   color: var(--text);
   white-space: nowrap;
 }
@@ -931,6 +935,35 @@ input, textarea, select {
   flex-direction: column;
   max-height: calc(100vh - 260px);
   overflow: hidden;
+}
+
+/* "Add group" dashed placeholder column */
+.add-group-col {
+  width: 300px;
+  min-width: 300px;
+  flex: 0 0 300px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 16px;
+  border: 1.5px dashed var(--border-light);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-group-col:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.add-group-col svg {
+  flex-shrink: 0;
 }
 
 .column-header {
@@ -3779,8 +3812,8 @@ select option {
     padding: 8px 12px;
   }
 
-  .stat-mini-value {
-    font-size: 0.95rem;
+  .stat-count-value {
+    font-size: 1.05rem;
   }
 
   .topbar {

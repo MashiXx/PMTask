@@ -1,20 +1,7 @@
-// Theme cycle: system -> light -> dark -> azure -> system
+// Theme toggle: light <-> dark
 function cycleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme') || 'system';
-
-  const cycle = ['system', 'light', 'dark', 'azure'];
-  let idx = cycle.indexOf(current);
-  let next;
-
-  if (current === 'system') {
-    const osLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    next = osLight ? 'dark' : 'light';
-  } else {
-    next = cycle[(idx + 1) % cycle.length];
-  }
-
-  applyTheme(next);
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
 }
 
 // Apply a specific theme by name
