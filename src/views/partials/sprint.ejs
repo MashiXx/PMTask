@@ -1,17 +1,17 @@
 <div class="sprint-bar">
   <div class="sprint-bar-inner">
     <div class="sprint-bar-header">
-      <span class="sprint-bar-title">Sprint Progress</span>
-      <span class="sprint-percent"><span class="sprint-percent-value"><%= sprintProgress %>%</span> <span class="sprint-percent-label">completed</span></span>
+      <span class="sprint-bar-title"><%= t('sprint.title') %></span>
+      <span class="sprint-percent"><span class="sprint-percent-value"><%= sprintProgress %>%</span> <span class="sprint-percent-label"><%= t('sprint.completed') %></span></span>
     </div>
     <div class="sprint-track">
       <div class="sprint-fill" style="width: <%= sprintProgress %>%"></div>
     </div>
     <div class="sprint-meta">
-      <span class="sprint-meta-item"><span style="color:var(--mint)"><%= stats.completed %></span> Done</span>
-      <span class="sprint-meta-item"><span style="color:var(--cyan)"><%= stats.inProgress %></span> In Progress</span>
+      <span class="sprint-meta-item"><span style="color:var(--mint)"><%= stats.completed %></span> <%= t('sprint.done') %></span>
+      <span class="sprint-meta-item"><span style="color:var(--cyan)"><%= stats.inProgress %></span> <%= t('sprint.inProgress') %></span>
       <% if (stats.overdue > 0) { %>
-        <span class="sprint-meta-item"><span style="color:var(--coral)"><%= stats.overdue %></span> Overdue</span>
+        <span class="sprint-meta-item"><span style="color:var(--coral)"><%= stats.overdue %></span> <%= t('sprint.overdue') %></span>
       <% } %>
     </div>
   </div>
