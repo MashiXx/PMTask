@@ -14,31 +14,31 @@ exports.postRegister = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
     if (!name || !email || !password) {
-      req.flash('error', 'All fields are required');
+      req.flash('error', req.t('flash.allFieldsRequired'));
       return res.redirect('/auth/register');
     }
     if (password.length < 6) {
-      req.flash('error', 'Password must be at least 6 characters');
+      req.flash('error', req.t('flash.passwordTooShort'));
       return res.redirect('/auth/register');
     }
     if (password !== confirmPassword) {
-      req.flash('error', 'Passwords do not match');
+      req.flash('error', req.t('flash.passwordsMismatch'));
       return res.redirect('/auth/register');
     }
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      req.flash('error', 'Email already registered');
+      req.flash('error', req.t('flash.emailAlreadyRegistered'));
       return res.redirect('/auth/register');
     }
     const hashedPassword = await bcrypt.hash(password, 12);
     await prisma.user.create({
       data: { name, email, password: hashedPassword, role: 'developer', status: 'pending' },
     });
-    req.flash('success', 'Registration successful! Please wait for admin approval.');
+    req.flash('success', req.t('flash.registrationPending'));
     res.redirect('/auth/login');
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Something went wrong');
+    req.flash('error', req.t('flash.somethingWentWrong'));
     res.redirect('/auth/register');
   }
 };
@@ -49,20 +49,20 @@ exports.postLogin = (req, res, next) => {
     // instead of letting it fall through to a generic 500 page.
     if (err) {
       console.error('Login error:', err);
-      req.flash('error', 'Unable to sign in right now — the server had a problem. Please try again in a moment.');
+      req.flash('error', req.t('flash.loginServerError'));
       return res.redirect('/auth/login');
     }
     // Authentication failed (bad credentials, pending account, etc.).
     // `info.message` carries the specific reason from the local strategy.
     if (!user) {
-      req.flash('error', (info && info.message) || 'Invalid email or password');
+      req.flash('error', req.t((info && info.message) || 'flash.invalidCredentials'));
       return res.redirect('/auth/login');
     }
     // Success — establish the session.
     req.logIn(user, (loginErr) => {
       if (loginErr) {
         console.error('Session error during login:', loginErr);
-        req.flash('error', 'Signed in, but we could not start your session. Please try again.');
+        req.flash('error', req.t('flash.sessionStartFailed'));
         return res.redirect('/auth/login');
       }
       return res.redirect('/dashboard');
@@ -73,7 +73,7 @@ exports.postLogin = (req, res, next) => {
 exports.logout = (req, res) => {
   req.logout((err) => {
     if (err) console.error(err);
-    req.flash('success', 'Logged out successfully');
+    req.flash('success', req.t('flash.loggedOut'));
     res.redirect('/auth/login');
   });
 };

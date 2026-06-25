@@ -38,7 +38,7 @@ exports.getProjects = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load projects');
+    req.flash('error', req.t('flash.loadProjectsFailed'));
     res.redirect('/dashboard');
   }
 };

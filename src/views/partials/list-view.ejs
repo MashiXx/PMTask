@@ -18,15 +18,15 @@
 
       <div class="list-group-body">
         <div class="list-group-table-header">
-          <div class="list-col list-col-title">Task</div>
-          <div class="list-col list-col-priority">Priority</div>
-          <div class="list-col list-col-progress">Progress</div>
-          <div class="list-col list-col-due">Due</div>
-          <div class="list-col list-col-tags">Tags</div>
+          <div class="list-col list-col-title"><%= t('listview.colTask') %></div>
+          <div class="list-col list-col-priority"><%= t('listview.colPriority') %></div>
+          <div class="list-col list-col-progress"><%= t('listview.colProgress') %></div>
+          <div class="list-col list-col-due"><%= t('listview.colDue') %></div>
+          <div class="list-col list-col-tags"><%= t('listview.colTags') %></div>
         </div>
 
         <% if (col.tasks.length === 0) { %>
-          <div class="list-empty-row">No tasks</div>
+          <div class="list-empty-row"><%= t('listview.noTasks') %></div>
         <% } %>
 
         <% col.tasks.forEach(task => { %>

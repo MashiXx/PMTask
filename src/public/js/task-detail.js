@@ -40,9 +40,9 @@ async function toggleDetailDone() {
       });
       el.innerHTML = '<div class="markdown-body">' + html + '</div>';
     } else if (TASK.canEdit) {
-      el.innerHTML = '<span class="desc-placeholder">Click to add description...</span>';
+      el.innerHTML = '<span class="desc-placeholder">' + t('js.detail.addDescription') + '</span>';
     } else {
-      el.innerHTML = '<span style="color: var(--text-dim);">No description</span>';
+      el.innerHTML = '<span style="color: var(--text-dim);">' + t('js.detail.noDescription') + '</span>';
     }
   }
 
@@ -63,7 +63,7 @@ async function toggleDetailDone() {
         element: document.getElementById('descriptionEditor'),
         spellChecker: false,
         autofocus: true,
-        placeholder: 'Write your description using Markdown...',
+        placeholder: t('js.detail.mdPlaceholder'),
         status: false,
         minHeight: '200px',
         toolbar: [
@@ -200,7 +200,7 @@ async function toggleDetailDone() {
     const pill = document.getElementById('detailPriorityPill');
     const txt = document.getElementById('detailPriorityText');
     if (!pill) return;
-    const labels = { low: 'Thấp', medium: 'Trung bình', high: 'Cao' };
+    const labels = { low: t('js.priority.low'), medium: t('js.priority.medium'), high: t('js.priority.high') };
     pill.dataset.priority = prioritySelect.value;
     if (txt) txt.textContent = labels[prioritySelect.value] || prioritySelect.value;
   }

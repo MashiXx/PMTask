@@ -10,14 +10,14 @@ passport.use(new LocalStrategy(
     try {
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user || !user.password) {
-        return done(null, false, { message: 'Invalid email or password' });
+        return done(null, false, { message: 'flash.invalidCredentials' });
       }
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return done(null, false, { message: 'Invalid email or password' });
+        return done(null, false, { message: 'flash.invalidCredentials' });
       }
       if (user.status === 'pending') {
-        return done(null, false, { message: 'Your account is pending approval. Please wait for admin to activate it.' });
+        return done(null, false, { message: 'flash.accountPendingLocal' });
       }
       return done(null, user);
     } catch (err) {
@@ -59,11 +59,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                 status: 'pending',
               },
             });
-            return done(null, false, { message: 'Account created. Please wait for admin approval.' });
+            return done(null, false, { message: 'flash.accountCreatedPending' });
           }
         }
         if (user.status === 'pending') {
-          return done(null, false, { message: 'Your account is pending approval.' });
+          return done(null, false, { message: 'flash.accountPendingGoogle' });
         }
         return done(null, user);
       } catch (err) {

@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: 'Documents' }) %>
+<%- include('partials/head', { title: t('documents.title') }) %>
 
 <div class="app-layout">
   <%- include('partials/sidebar') %>
@@ -10,7 +10,7 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/documents" class="breadcrumb-link">Documents</a>
+          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/documents" class="breadcrumb-link"><%= t('documents.title') %></a>
           <% breadcrumbs.forEach((crumb, i) => { %>
             <span class="breadcrumb-sep">/</span>
             <% if (i < breadcrumbs.length - 1) { %>
@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="topbar-right">
-        <button class="theme-toggle-btn" onclick="cycleTheme()" title="Toggle theme">
+        <button class="theme-toggle-btn" onclick="cycleTheme()" title="<%= t('common.toggleTheme') %>">
           <svg class="theme-icon theme-icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="theme-icon theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="theme-icon theme-icon-system" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -30,11 +30,11 @@
         <% if (!isGuest) { %>
         <button class="btn-new-task" onclick="openFolderModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          New Folder
+          <%= t('documents.newFolder') %>
         </button>
         <button class="btn-new-task" onclick="openUploadModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload
+          <%= t('common.upload') %>
         </button>
         <% } %>
       </div>
@@ -45,12 +45,12 @@
         <!-- Folder tree sidebar -->
         <div class="doc-tree">
           <div class="doc-tree-header">
-            <span class="doc-tree-title">Folders</span>
+            <span class="doc-tree-title"><%= t('documents.folders') %></span>
           </div>
           <div class="doc-tree-list">
             <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/documents" class="doc-tree-item <%= !currentFolder ? 'active' : '' %>">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <span>Root</span>
+              <span><%= t('documents.root') %></span>
             </a>
             <% function renderTree(nodes, depth) { %>
               <% nodes.forEach(node => { %>
@@ -80,13 +80,13 @@
               <div class="doc-locked-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               </div>
-              <p class="doc-locked-title">This folder is protected</p>
-              <p class="doc-locked-subtitle">Enter the password to access this folder</p>
+              <p class="doc-locked-title"><%= t('documents.folderLocked') %></p>
+              <p class="doc-locked-subtitle"><%= t('documents.folderLockedSub') %></p>
               <form class="doc-locked-form" onsubmit="submitUnlock(event)">
                 <input type="hidden" id="lockedFolderId" value="<%= lockedFolderId %>">
                 <div class="doc-locked-input-wrap">
-                  <input type="password" id="unlockPasswordInput" class="doc-locked-input" placeholder="Enter password" required autocomplete="off">
-                  <button type="submit" class="btn-submit doc-locked-btn">Unlock</button>
+                  <input type="password" id="unlockPasswordInput" class="doc-locked-input" placeholder="<%= t('documents.enterPassword') %>" required autocomplete="off">
+                  <button type="submit" class="btn-submit doc-locked-btn"><%= t('documents.unlock') %></button>
                 </div>
                 <p class="doc-locked-error" id="unlockError" style="display:none;"></p>
               </form>
@@ -94,8 +94,8 @@
           <% } else if (subfolders.length === 0 && documents.length === 0) { %>
             <div class="doc-empty">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <p style="margin-top: 16px; font-size: 0.95rem;">No documents yet</p>
-              <p style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);">Create a folder or upload files to get started</p>
+              <p style="margin-top: 16px; font-size: 0.95rem;"><%= t('documents.noDocuments') %></p>
+              <p style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);"><%= t('documents.noDocumentsSub') %></p>
             </div>
           <% } else { %>
             <div class="doc-grid">
@@ -106,7 +106,7 @@
                     <div class="doc-card-icon doc-card-icon-folder">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                       <% if (folder.password) { %>
-                        <span class="doc-folder-lock-badge" title="Password protected">
+                        <span class="doc-folder-lock-badge" title="<%= t('documents.passwordProtected') %>">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--amber)" stroke="var(--amber)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </span>
                       <% } %>
@@ -114,18 +114,18 @@
                     <% if (!isGuest) { %>
                     <div class="doc-card-actions">
                       <% if (currentUser && currentUser.role === 'admin') { %>
-                        <button class="column-add-btn" onclick="event.stopPropagation(); openPasswordModal(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>', <%= !!folder.password %>)" title="<%= folder.password ? 'Change/Remove Password' : 'Set Password' %>">
+                        <button class="column-add-btn" onclick="event.stopPropagation(); openPasswordModal(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>', <%= !!folder.password %>)" title="<%= folder.password ? t('documents.changeRemovePassword') : t('documents.setFolderPassword') %>">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="<%= folder.password ? 'var(--amber)' : 'currentColor' %>" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </button>
                       <% } %>
-                      <button class="column-add-btn" onclick="event.stopPropagation(); openMoveModal(<%= folder.id %>, 'folder', '<%= folder.name.replace(/'/g, "\\'") %>')" title="Move">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); openMoveModal(<%= folder.id %>, 'folder', '<%= folder.name.replace(/'/g, "\\'") %>')" title="<%= t('common.move') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l3 3 3-3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
                       </button>
-                      <button class="column-add-btn" onclick="event.stopPropagation(); openFolderModal(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>')" title="Rename">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); openFolderModal(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>')" title="<%= t('common.rename') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
                       <% if (currentUser && currentUser.role === 'admin') { %>
-                      <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteFolder(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>')" title="Delete">
+                      <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteFolder(<%= folder.id %>, '<%= folder.name.replace(/'/g, "\\'") %>')" title="<%= t('common.delete') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                       </button>
                       <% } %>
@@ -134,7 +134,7 @@
                   </div>
                   <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/documents/folder/<%= folder.id %>" class="no-decoration">
                     <p class="doc-card-name"><%= folder.name %></p>
-                    <p class="doc-card-meta"><%= folder._count.documents %> files<% if (folder._count.children > 0) { %>, <%= folder._count.children %> folders<% } %></p>
+                    <p class="doc-card-meta"><%= folder._count.documents %> <%= t('documents.files') %><% if (folder._count.children > 0) { %>, <%= folder._count.children %> <%= t('documents.foldersCount') %><% } %></p>
                   </a>
                 </div>
               <% }) %>
@@ -158,17 +158,17 @@
                       <% } %>
                     </div>
                     <div class="doc-card-actions">
-                      <button class="column-add-btn" onclick="event.stopPropagation(); downloadDoc(<%= doc.id %>)" title="Download">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); downloadDoc(<%= doc.id %>)" title="<%= t('common.download') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                       </button>
                       <% if (!isGuest) { %>
-                      <button class="column-add-btn" onclick="event.stopPropagation(); openMoveModal(<%= doc.id %>, 'document', '<%= doc.title.replace(/'/g, "\\'") %>')" title="Move">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); openMoveModal(<%= doc.id %>, 'document', '<%= doc.title.replace(/'/g, "\\'") %>')" title="<%= t('common.move') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l3 3 3-3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
                       </button>
-                      <button class="column-add-btn" onclick="event.stopPropagation(); renameDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Rename">
+                      <button class="column-add-btn" onclick="event.stopPropagation(); renameDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="<%= t('common.rename') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
-                      <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="Delete">
+                      <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteDoc(<%= doc.id %>, '<%= doc.title.replace(/'/g, "\\'") %>')" title="<%= t('common.delete') %>">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                       </button>
                       <% } %>
@@ -186,8 +186,8 @@
           <% if (!isGuest) { %>
           <div class="doc-upload-zone" id="dropZone">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="doc-upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p style="margin-top: 10px; font-size: 0.85rem;">Drop files here or <strong style="color:var(--accent); cursor:pointer;" onclick="document.getElementById('fileInput').click()">browse</strong></p>
-            <p style="margin-top: 4px; font-size: 0.75rem; color: var(--text-dim);">Max 10 MB per file</p>
+            <p style="margin-top: 10px; font-size: 0.85rem;"><%= t('documents.dropFiles') %> <strong style="color:var(--accent); cursor:pointer;" onclick="document.getElementById('fileInput').click()"><%= t('documents.browse') %></strong></p>
+            <p style="margin-top: 4px; font-size: 0.75rem; color: var(--text-dim);"><%= t('documents.maxFileSize') %></p>
             <input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(this.files)">
           </div>
           <% } %>
@@ -200,16 +200,16 @@
 <!-- Folder Modal -->
 <div class="modal-overlay" id="folderModal">
   <div class="modal">
-    <h2 class="modal-title" id="folderModalTitle">New Folder</h2>
+    <h2 class="modal-title" id="folderModalTitle"><%= t('documents.newFolder') %></h2>
     <form id="folderForm" onsubmit="submitFolder(event)">
       <input type="hidden" id="folderEditId" value="">
       <div class="form-group">
-        <label>FOLDER NAME</label>
-        <input type="text" id="folderNameInput" placeholder="Enter folder name" required>
+        <label><%= t('documents.folderNameLabel') %></label>
+        <input type="text" id="folderNameInput" placeholder="<%= t('documents.enterFolderName') %>" required>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeFolderModal()">Cancel</button>
-        <button type="submit" class="btn-submit" id="folderSubmitBtn">Create</button>
+        <button type="button" class="btn-cancel" onclick="closeFolderModal()"><%= t('common.cancel') %></button>
+        <button type="submit" class="btn-submit" id="folderSubmitBtn"><%= t('common.create') %></button>
       </div>
     </form>
   </div>
@@ -218,12 +218,12 @@
 <!-- Upload Modal -->
 <div class="modal-overlay" id="uploadModal">
   <div class="modal">
-    <h2 class="modal-title">Upload Files</h2>
+    <h2 class="modal-title"><%= t('documents.uploadFiles') %></h2>
     <form id="uploadForm">
       <div class="form-group">
-        <label>SELECT FOLDER (optional)</label>
+        <label><%= t('documents.selectFolder') %></label>
         <select id="uploadFolderSelect" class="form-select">
-          <option value="">Root</option>
+          <option value=""><%= t('documents.root') %></option>
           <% function renderOptions(nodes, depth) { %>
             <% nodes.forEach(node => { %>
               <option value="<%= node.id %>" <%= currentFolder && currentFolder.id === node.id ? 'selected' : '' %>>
@@ -236,17 +236,17 @@
         </select>
       </div>
       <div class="form-group">
-        <label>FILES</label>
+        <label><%= t('documents.filesLabel') %></label>
         <div class="doc-upload-zone-modal" onclick="document.getElementById('modalFileInput').click()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <p style="margin-top: 8px; font-size: 0.8rem;">Click to select files</p>
+          <p style="margin-top: 8px; font-size: 0.8rem;"><%= t('documents.clickToSelect') %></p>
           <input type="file" id="modalFileInput" style="display:none;" multiple>
         </div>
         <div id="uploadFileList" class="doc-upload-file-list"></div>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
-        <button type="button" class="btn-submit" id="uploadSubmitBtn" onclick="submitUpload()">Upload</button>
+        <button type="button" class="btn-cancel" onclick="closeUploadModal()"><%= t('common.cancel') %></button>
+        <button type="button" class="btn-submit" id="uploadSubmitBtn" onclick="submitUpload()"><%= t('common.upload') %></button>
       </div>
     </form>
   </div>
@@ -256,18 +256,18 @@
 <% if (currentUser && currentUser.role === 'admin') { %>
 <div class="modal-overlay" id="passwordModal">
   <div class="modal">
-    <h2 class="modal-title" id="passwordModalTitle">Set Folder Password</h2>
+    <h2 class="modal-title" id="passwordModalTitle"><%= t('documents.setFolderPassword') %></h2>
     <form id="passwordForm" onsubmit="submitPassword(event)">
       <input type="hidden" id="passwordFolderId" value="">
       <p class="modal-confirm-text mb-16" id="passwordFolderName"></p>
       <div class="form-group">
-        <label>PASSWORD</label>
-        <input type="password" id="folderPasswordInput" placeholder="Enter password" autocomplete="new-password">
-        <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;" id="passwordHint">Leave empty to remove password protection</p>
+        <label><%= t('documents.passwordLabel') %></label>
+        <input type="password" id="folderPasswordInput" placeholder="<%= t('documents.enterPassword') %>" autocomplete="new-password">
+        <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;" id="passwordHint"><%= t('documents.passwordHint') %></p>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closePasswordModal()">Cancel</button>
-        <button type="submit" class="btn-submit" id="passwordSubmitBtn">Set Password</button>
+        <button type="button" class="btn-cancel" onclick="closePasswordModal()"><%= t('common.cancel') %></button>
+        <button type="submit" class="btn-submit" id="passwordSubmitBtn"><%= t('documents.setPassword') %></button>
       </div>
     </form>
   </div>
@@ -278,15 +278,15 @@
 <% if (!isGuest) { %>
 <div class="modal-overlay" id="moveModal">
   <div class="modal">
-    <h2 class="modal-title" id="moveModalTitle">Move Item</h2>
+    <h2 class="modal-title" id="moveModalTitle"><%= t('documents.moveItem') %></h2>
     <form id="moveForm" onsubmit="submitMove(event)">
       <input type="hidden" id="moveItemId" value="">
       <input type="hidden" id="moveItemType" value="">
       <p class="modal-confirm-text mb-16" id="moveItemName"></p>
       <div class="form-group">
-        <label>DESTINATION FOLDER</label>
+        <label><%= t('documents.destinationFolder') %></label>
         <select id="moveFolderSelect" class="form-select">
-          <option value="">Root</option>
+          <option value=""><%= t('documents.root') %></option>
           <% function renderMoveOptions(nodes, depth) { %>
             <% nodes.forEach(node => { %>
               <option value="<%= node.id %>">
@@ -299,8 +299,8 @@
         </select>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeMoveModal()">Cancel</button>
-        <button type="submit" class="btn-submit" id="moveSubmitBtn">Move</button>
+        <button type="button" class="btn-cancel" onclick="closeMoveModal()"><%= t('common.cancel') %></button>
+        <button type="submit" class="btn-submit" id="moveSubmitBtn"><%= t('common.move') %></button>
       </div>
     </form>
   </div>
@@ -309,10 +309,10 @@
 
 <!-- Preview Modal -->
 <div class="modal-overlay" id="previewModal">
-  <button class="preview-nav-btn preview-nav-prev" id="previewPrevBtn" onclick="previewNavigate(-1)" title="Previous (←)">
+  <button class="preview-nav-btn preview-nav-prev" id="previewPrevBtn" onclick="previewNavigate(-1)" title="<%= t('documents.prevFile') %>">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
-  <button class="preview-nav-btn preview-nav-next" id="previewNextBtn" onclick="previewNavigate(1)" title="Next (→)">
+  <button class="preview-nav-btn preview-nav-next" id="previewNextBtn" onclick="previewNavigate(1)" title="<%= t('documents.nextFile') %>">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
   </button>
   <div class="modal preview-modal">
@@ -320,16 +320,16 @@
       <span class="preview-filename" id="previewFilename"></span>
       <div class="preview-header-actions">
         <span class="preview-counter" id="previewCounter"></span>
-        <button class="column-add-btn" id="previewDownloadBtn" title="Download">
+        <button class="column-add-btn" id="previewDownloadBtn" title="<%= t('common.download') %>">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
-        <button class="column-add-btn" onclick="closePreviewModal()" title="Close (Esc)">
+        <button class="column-add-btn" onclick="closePreviewModal()" title="<%= t('documents.closeEsc') %>">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     </div>
     <div class="preview-body" id="previewBody">
-      <div class="preview-loading">Loading...</div>
+      <div class="preview-loading"><%= t('documents.loading') %></div>
     </div>
   </div>
 </div>

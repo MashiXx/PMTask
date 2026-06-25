@@ -9,12 +9,13 @@ router.get('/', profile.getProfile);
 router.post('/update', profile.updateProfile);
 router.post('/password', profile.changePassword);
 router.post('/theme', profile.updateTheme);
+router.post('/language', profile.updateLanguage);
 
 // Avatar upload — wrap multer to surface friendly size/type errors as a flash
 router.post('/avatar', (req, res, next) => {
   avatarUpload.single('avatar')(req, res, (err) => {
     if (err) {
-      req.flash('error', err.code === 'LIMIT_FILE_SIZE' ? 'Image too large (max 5 MB)' : (err.message || 'Upload failed'));
+      req.flash('error', err.code === 'LIMIT_FILE_SIZE' ? req.t('flash.imageTooLarge') : (err.message || req.t('flash.uploadFailed')));
       return res.redirect('/profile');
     }
     next();

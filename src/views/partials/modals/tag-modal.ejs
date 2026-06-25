@@ -1,13 +1,13 @@
 <div class="modal-overlay" id="tagManagerModal">
   <div class="modal modal-md">
-    <h2 class="modal-title">Manage Tags</h2>
+    <h2 class="modal-title"><%= t('tag.manageTags') %></h2>
 
     <div id="tagList" class="tag-manager-list"></div>
 
     <div class="tag-add-section">
-      <p class="label-meta mb-8">Add New Tag</p>
+      <p class="label-meta mb-8"><%= t('tag.addNewTag') %></p>
       <div class="flex-center gap-8">
-        <input type="text" id="newTagName" placeholder="Tag name" class="flex-1">
+        <input type="text" id="newTagName" placeholder="<%= t('tag.namePlaceholder') %>" class="flex-1">
         <div class="flex gap-4">
           <% ['#2D6FE0','#2B9CD8','#EF4444','#1E9E60','#F59E0B','#6B6B8E'].forEach((c, i) => { %>
             <label class="color-swatch-label">
@@ -16,12 +16,12 @@
             </label>
           <% }) %>
         </div>
-        <button class="btn-submit" onclick="addNewTag()" style="padding:8px 14px;">Add</button>
+        <button class="btn-submit" onclick="addNewTag()" style="padding:8px 14px;"><%= t('tag.add') %></button>
       </div>
     </div>
 
     <div class="modal-actions mt-20">
-      <button type="button" class="btn-cancel" onclick="closeTagManager()">Close</button>
+      <button type="button" class="btn-cancel" onclick="closeTagManager()"><%= t('common.close') %></button>
     </div>
   </div>
 </div>

@@ -28,14 +28,14 @@
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 
   function timeAgo(iso) {
-    const t = new Date(iso).getTime();
-    if (isNaN(t)) return '';
-    const days = Math.floor((Date.now() - t) / 86400000);
-    if (days <= 0) return 'hôm nay';
-    if (days === 1) return 'hôm qua';
-    if (days < 30) return days + ' ngày trước';
-    if (days < 365) return Math.floor(days / 30) + ' tháng trước';
-    return Math.floor(days / 365) + ' năm trước';
+    const ts = new Date(iso).getTime();
+    if (isNaN(ts)) return '';
+    const days = Math.floor((Date.now() - ts) / 86400000);
+    if (days <= 0) return t('js.time.today');
+    if (days === 1) return t('js.time.yesterday');
+    if (days < 30) return t('js.time.daysAgo', { n: days });
+    if (days < 365) return t('js.time.monthsAgo', { n: Math.floor(days / 30) });
+    return t('js.time.yearsAgo', { n: Math.floor(days / 365) });
   }
 
   function fileExt(name) {
@@ -100,12 +100,12 @@
           try { resolve(JSON.parse(xhr.responseText).attachment); }
           catch (e) { resolve(null); }
         } else {
-          let msg = 'Upload failed';
+          let msg = t('js.attach.uploadFailed');
           try { msg = JSON.parse(xhr.responseText).error || msg; } catch (e) {}
           reject(new Error(msg));
         }
       });
-      xhr.addEventListener('error', function () { reject(new Error('Upload failed for ' + file.name)); });
+      xhr.addEventListener('error', function () { reject(new Error(t('js.attach.uploadFailedFor', { name: file.name }))); });
       const fd = new FormData();
       fd.append('file', file);
       xhr.open('POST', '/api/attachments/tasks/' + taskId);
@@ -184,15 +184,15 @@
             '<span class="attach-sub">' + sub + '</span>' +
           '</div>' +
           '<div class="attach-actions">' +
-            '<a class="attach-act" href="' + dlUrl + '" target="_blank" rel="noopener" title="Tải xuống" aria-label="Tải xuống">' + downloadIcon + '</a>' +
-            (canEdit ? '<button type="button" class="attach-act attach-del" data-id="' + a.id + '" title="Xóa" aria-label="Xóa">' + trashIcon + '</button>' : '') +
+            '<a class="attach-act" href="' + dlUrl + '" target="_blank" rel="noopener" title="' + t('js.attach.download') + '" aria-label="' + t('js.attach.download') + '">' + downloadIcon + '</a>' +
+            (canEdit ? '<button type="button" class="attach-act attach-del" data-id="' + a.id + '" title="' + t('js.attach.delete') + '" aria-label="' + t('js.attach.delete') + '">' + trashIcon + '</button>' : '') +
           '</div>' +
         '</div>';
     }
 
     function render() {
       if (items.length === 0) {
-        container.innerHTML = '<p class="attach-empty">Chưa có tệp đính kèm.</p>';
+        container.innerHTML = '<p class="attach-empty">' + t('js.attach.empty') + '</p>';
         return;
       }
       container.innerHTML = items.map(rowHtml).join('');
@@ -203,14 +203,14 @@
         const res = await fetch('/api/attachments/' + id, { method: 'DELETE' });
         if (!res.ok) {
           const data = await res.json().catch(function () { return {}; });
-          alert(data.error || 'Failed to delete attachment');
+          alert(data.error || t('js.attach.deleteFailed'));
           return;
         }
         items = items.filter(function (a) { return a.id !== id; });
         render();
       } catch (err) {
         console.error(err);
-        alert('Failed to delete attachment');
+        alert(t('js.attach.deleteFailed'));
       }
     }
 
@@ -222,14 +222,14 @@
       container.prepend(status);
       let done = 0;
       for (let i = 0; i < fileList.length; i++) {
-        status.textContent = 'Uploading ' + (done + 1) + ' / ' + fileList.length + '...';
+        status.textContent = t('js.attach.uploading', { current: done + 1, total: fileList.length });
         try {
           const created = await uploadOne(taskId, fileList[i], function (pct) {
-            status.textContent = 'Uploading ' + (done + 1) + ' / ' + fileList.length + ' (' + pct + '%)';
+            status.textContent = t('js.attach.uploadingPct', { current: done + 1, total: fileList.length, pct });
           });
           if (created) items.unshift(created);
         } catch (err) {
-          alert(err.message || 'Upload failed');
+          alert(err.message || t('js.attach.uploadFailed'));
         }
         done++;
       }
@@ -243,7 +243,7 @@
       if (del) {
         e.preventDefault();
         const id = parseInt(del.dataset.id, 10);
-        if (confirm('Xóa tệp đính kèm này?')) doDelete(id);
+        if (confirm(t('js.attach.deleteConfirm'))) doDelete(id);
         return;
       }
       // Click an image's thumbnail → open the lightbox (files use their download link)

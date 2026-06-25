@@ -8,7 +8,7 @@ const MM = {
   selectedId: null,
 };
 const STATUS_COLORS = { todo:'#6B6B8E', inprogress:'#2B9CD8', review:'#F59E0B', done:'#1E9E60' };
-const STATUS_LABELS = { todo:'To Do', inprogress:'In Progress', review:'In Review', done:'Completed' };
+const STATUS_LABELS = { todo: t('js.mindmap.statusTodo'), inprogress: t('js.mindmap.statusInProgress'), review: t('js.mindmap.statusInReview'), done: t('js.mindmap.statusDone') };
 const NODE_W = 180, NODE_H = 70; // approx, for fit bounds
 
 const canvasEl = document.getElementById('mmCanvas');
@@ -111,11 +111,11 @@ function mmRender() {
       statusHtml = `<span class="mm-status" style="color:${c};border-color:${c}55;background:${c}14"><span class="mm-status-dot" style="background:${c}"></span>${STATUS_LABELS[n.task.status] || n.task.status}</span>`;
     }
     const collapseBtn = mmHasChildren(n.id)
-      ? `<button class="mm-collapse" onclick="mmToggleCollapse(${n.id})" title="Collapse/expand">${n.collapsed ? '▸' : '▾'}</button>`
+      ? `<button class="mm-collapse" onclick="mmToggleCollapse(${n.id})" title="${t('js.mindmap.collapseExpand')}">${n.collapsed ? '▸' : '▾'}</button>`
       : '';
     const taskBtn = n.taskId
-      ? `<button onclick="mmOpenTask(${n.taskId})">Open task</button>`
-      : `<button onclick="mmConvert(${n.id})">Create task</button>`;
+      ? `<button onclick="mmOpenTask(${n.taskId})">${t('js.mindmap.openTask')}</button>`
+      : `<button onclick="mmConvert(${n.id})">${t('js.mindmap.createTask')}</button>`;
     el.innerHTML = `
       <div class="mm-node-head">
         ${collapseBtn}
@@ -123,11 +123,11 @@ function mmRender() {
       </div>
       ${statusHtml}
       <div class="mm-node-actions">
-        <button onclick="mmAddChild(${n.id})">+ Child</button>
-        <button onclick="mmEditLabel(${n.id})">Edit</button>
-        <input type="color" class="mm-color" value="${n.color || '#2D6FE0'}" title="Node color" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
+        <button onclick="mmAddChild(${n.id})">${t('js.mindmap.addChild')}</button>
+        <button onclick="mmEditLabel(${n.id})">${t('js.mindmap.edit')}</button>
+        <input type="color" class="mm-color" value="${n.color || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
-        ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">Delete</button>` : ''}
+        ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">${t('js.mindmap.delete')}</button>` : ''}
       </div>`;
     viewportEl.appendChild(el);
   }
@@ -297,7 +297,7 @@ async function apiUpdateNode(id, data, onError) {
     if (!res.ok) throw new Error('save failed');
   } catch (err) {
     console.error('Mindmap save failed:', err);
-    mmToast('Could not save change', 'error');
+    mmToast(t('js.mindmap.couldNotSave'), 'error');
     if (onError) onError();
   }
 }
@@ -306,7 +306,7 @@ async function apiUpdateNode(id, data, onError) {
 async function mmAddChild(parentId) {
   const res = await fetch('/api/mindmap-nodes', {
     method:'POST', headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ mindmapId: MM.id, parentId, label: 'New idea' }),
+    body: JSON.stringify({ mindmapId: MM.id, parentId, label: t('js.mindmap.newIdea') }),
   });
   const data = await res.json();
   if (!data.success) { mmToast(data.error || 'Could not add node', 'error'); return; }
@@ -394,10 +394,10 @@ function mmEditLabel(id) {
 async function mmDeleteNode(id) {
   const node = MM.byId.get(id);
   if (!node || node.parentId == null) return; // never delete the root
-  if (!(await mmConfirm('Delete this node and all its children?'))) return;
+  if (!(await mmConfirm(t('js.mindmap.confirmDeleteNode')))) return;
   let res;
   try { res = await fetch(`/api/mindmap-nodes/${id}`, { method:'DELETE' }); } catch (e) { res = null; }
-  if (!res || !res.ok) { mmToast('Could not delete node', 'error'); return; }
+  if (!res || !res.ok) { mmToast(t('js.mindmap.couldNotDeleteNode'), 'error'); return; }
   const remove = new Set([id]);
   let grew = true;
   while (grew) {
@@ -441,9 +441,9 @@ async function mmConvert(id) {
     node.taskId = data.task.id;
     node.task = { id: data.task.id, status: data.task.status, title: data.task.title };
     mmRender();
-    mmToast('Task created');
+    mmToast(t('js.mindmap.taskCreated'));
   } else {
-    mmToast(data.error || 'Failed to create task', 'error');
+    mmToast(data.error || t('js.mindmap.failedCreateTask'), 'error');
   }
 }
 
@@ -537,18 +537,18 @@ function mmToggleHelp(force) {
     el.className = 'mm-help';
     el.innerHTML = `
       <div class="mm-help-head">
-        <span>Keyboard shortcuts</span>
-        <button class="mm-help-close" onclick="mmToggleHelp(false)" title="Close">&times;</button>
+        <span>${t('js.mindmap.keyboardShortcuts')}</span>
+        <button class="mm-help-close" onclick="mmToggleHelp(false)" title="${t('js.mindmap.close')}">&times;</button>
       </div>
       <dl>
-        <dt>Enter</dt><dd>Edit node · commit while editing</dd>
-        <dt>Esc</dt><dd>Cancel edit · clear selection</dd>
-        <dt>Tab</dt><dd>Add child</dd>
-        <dt>Shift + Enter</dt><dd>Add sibling</dd>
-        <dt>Delete</dt><dd>Delete node</dd>
-        <dt>&uarr; &darr;</dt><dd>Previous / next sibling</dd>
-        <dt>&larr; &rarr;</dt><dd>Parent / child</dd>
-        <dt>?</dt><dd>Toggle this help</dd>
+        <dt>Enter</dt><dd>${t('js.mindmap.helpEnter')}</dd>
+        <dt>Esc</dt><dd>${t('js.mindmap.helpEsc')}</dd>
+        <dt>Tab</dt><dd>${t('js.mindmap.helpTab')}</dd>
+        <dt>Shift + Enter</dt><dd>${t('js.mindmap.helpShiftEnter')}</dd>
+        <dt>Delete</dt><dd>${t('js.mindmap.helpDelete')}</dd>
+        <dt>&uarr; &darr;</dt><dd>${t('js.mindmap.helpUpDown')}</dd>
+        <dt>&larr; &rarr;</dt><dd>${t('js.mindmap.helpLeftRight')}</dd>
+        <dt>?</dt><dd>${t('js.mindmap.helpQuestion')}</dd>
       </dl>`;
     canvasEl.appendChild(el);
   }

@@ -15,13 +15,13 @@
   function relativeTime(iso) {
     const then = new Date(iso).getTime();
     const s = Math.round((Date.now() - then) / 1000);
-    if (s < 60) return 'just now';
+    if (s < 60) return t('js.comment.justNow');
     const m = Math.round(s / 60);
-    if (m < 60) return m + ' minute' + (m > 1 ? 's' : '') + ' ago';
+    if (m < 60) return t(m > 1 ? 'js.comment.minutesAgo' : 'js.comment.minuteAgo', { n: m });
     const h = Math.round(m / 60);
-    if (h < 24) return h + ' hour' + (h > 1 ? 's' : '') + ' ago';
+    if (h < 24) return t(h > 1 ? 'js.comment.hoursAgo' : 'js.comment.hourAgo', { n: h });
     const d = Math.round(h / 24);
-    if (d < 30) return d + ' day' + (d > 1 ? 's' : '') + ' ago';
+    if (d < 30) return t(d > 1 ? 'js.comment.daysAgo' : 'js.comment.dayAgo', { n: d });
     return new Date(iso).toLocaleDateString();
   }
 
@@ -64,10 +64,10 @@
   }
 
   function load(state) {
-    state.root.innerHTML = '<div class="comment-loading">Loading…</div>';
+    state.root.innerHTML = '<div class="comment-loading">' + t('js.comment.loading') + '</div>';
     api('GET', '/api/comments/task/' + state.taskId)
       .then(function (data) { render(state, Array.isArray(data) ? data : []); })
-      .catch(function () { state.root.innerHTML = '<div class="comment-empty">Failed to load comments.</div>'; });
+      .catch(function () { state.root.innerHTML = '<div class="comment-empty">' + t('js.comment.loadFailed') + '</div>'; });
   }
 
   function render(state, comments) {
@@ -77,7 +77,7 @@
     if (!comments.length) {
       const empty = document.createElement('div');
       empty.className = 'comment-empty';
-      empty.textContent = 'No comments yet.';
+      empty.textContent = t('js.comment.empty');
       state.root.appendChild(empty);
       return;
     }
@@ -100,14 +100,14 @@
         '<div class="comment-head">' +
           '<span class="comment-author">' + escapeHtml(c.author.name) + '</span>' +
           '<span class="comment-time" title="' + escapeHtml(new Date(c.createdAt).toLocaleString()) + '">' +
-            escapeHtml(relativeTime(c.createdAt)) + (edited ? ' (edited)' : '') +
+            escapeHtml(relativeTime(c.createdAt)) + (edited ? ' (' + t('js.comment.edited') + ')' : '') +
           '</span>' +
         '</div>' +
         '<div class="comment-body markdown-body">' + renderMarkdown(c.content) + '</div>' +
         '<div class="comment-actions">' +
-          (!isReply && state.canEdit ? '<button type="button" class="comment-link-btn" data-act="reply">Reply</button>' : '') +
-          (manage ? '<button type="button" class="comment-link-btn" data-act="edit">Edit</button>' : '') +
-          (manage ? '<button type="button" class="comment-link-btn danger" data-act="delete">Delete</button>' : '') +
+          (!isReply && state.canEdit ? '<button type="button" class="comment-link-btn" data-act="reply">' + t('js.comment.reply') + '</button>' : '') +
+          (manage ? '<button type="button" class="comment-link-btn" data-act="edit">' + t('js.comment.edit') + '</button>' : '') +
+          (manage ? '<button type="button" class="comment-link-btn danger" data-act="delete">' + t('js.comment.delete') + '</button>' : '') +
         '</div>' +
       '</div>';
     wrap.appendChild(row);
@@ -127,11 +127,11 @@
     const ta = document.createElement('textarea');
     ta.className = 'comment-input';
     ta.rows = parentId ? 2 : 3;
-    ta.placeholder = parentId ? 'Write a reply…' : 'Write a comment…';
+    ta.placeholder = parentId ? t('js.comment.replyPlaceholder') : t('js.comment.commentPlaceholder');
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'comment-submit-btn';
-    btn.textContent = parentId ? 'Reply' : 'Comment';
+    btn.textContent = parentId ? t('js.comment.reply') : t('js.comment.comment');
     btn.addEventListener('click', function () {
       const content = ta.value.trim();
       if (!content) return;
@@ -160,9 +160,9 @@
     const bar = document.createElement('div');
     bar.className = 'comment-edit-bar';
     const save = document.createElement('button');
-    save.type = 'button'; save.className = 'comment-submit-btn'; save.textContent = 'Save';
+    save.type = 'button'; save.className = 'comment-submit-btn'; save.textContent = t('js.comment.save');
     const cancel = document.createElement('button');
-    cancel.type = 'button'; cancel.className = 'comment-link-btn'; cancel.textContent = 'Cancel';
+    cancel.type = 'button'; cancel.className = 'comment-link-btn'; cancel.textContent = t('js.comment.cancel');
     save.addEventListener('click', function () {
       const content = ta.value.trim();
       if (!content) return;
@@ -200,7 +200,7 @@
       } else if (act === 'edit') {
         startEdit(state, itemWrap, id);
       } else if (act === 'delete') {
-        if (!confirm('Delete this comment?')) return;
+        if (!confirm(t('js.comment.deleteConfirm'))) return;
         api('DELETE', '/api/comments/' + id)
           .then(function () { load(state); })
           .catch(function (e) { console.error('Failed to delete comment', e); });

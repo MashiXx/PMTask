@@ -13,7 +13,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    req.flash('error', 'Too many sign-in attempts. Please wait 15 minutes and try again.');
+    req.flash('error', req.t('flash.tooManyLoginAttempts'));
     res.redirect('/auth/login');
   },
 });
@@ -25,7 +25,7 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    req.flash('error', 'Too many registration attempts. Please try again later.');
+    req.flash('error', req.t('flash.tooManyRegisterAttempts'));
     res.redirect('/auth/register');
   },
 });
@@ -37,12 +37,27 @@ router.post('/register', isGuest, registerLimiter, auth.postRegister);
 router.get('/logout', auth.logout);
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/auth/login', failureFlash: true }),
-  (req, res) => {
-    req.flash('success', 'Logged in with Google');
-    res.redirect('/dashboard');
-  }
-);
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err) {
+      console.error('Google login error:', err);
+      req.flash('error', req.t('flash.loginServerError'));
+      return res.redirect('/auth/login');
+    }
+    if (!user) {
+      req.flash('error', req.t((info && info.message) || 'flash.invalidCredentials'));
+      return res.redirect('/auth/login');
+    }
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error('Session error during Google login:', loginErr);
+        req.flash('error', req.t('flash.sessionStartFailed'));
+        return res.redirect('/auth/login');
+      }
+      req.flash('success', req.t('flash.loggedInWithGoogle'));
+      res.redirect('/dashboard');
+    });
+  })(req, res, next);
+});
 
 module.exports = router;

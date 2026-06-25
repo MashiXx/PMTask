@@ -43,7 +43,7 @@ async function loadTagList() {
     const list = document.getElementById('tagList');
 
     if (tags.length === 0) {
-      list.innerHTML = '<p style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); text-align:center; padding:12px;">No tags yet</p>';
+      list.innerHTML = '<p style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); text-align:center; padding:12px;">' + t('js.tag.noTags') + '</p>';
       return;
     }
 
@@ -84,8 +84,7 @@ async function addNewTag() {
 
 async function deleteTagItem(id, name, taskCount) {
   if (taskCount > 0) {
-    const msg = `Tag "${name}" đang được dùng trong ${taskCount} task${taskCount > 1 ? 's' : ''}.\nTag sẽ bị gỡ khỏi tất cả task. Bạn có chắc muốn xoá?`;
-    if (!confirm(msg)) return;
+    if (!confirm(t('js.tag.deleteConfirmInUse', { name, count: taskCount }))) return;
   }
   try {
     await fetch(`/api/tags/${id}`, { method: 'DELETE' });

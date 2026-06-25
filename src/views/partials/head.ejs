@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="<%= typeof userTheme !== 'undefined' && userTheme === 'dark' ? 'dark' : 'light' %>">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'en' %>" data-theme="<%= typeof userTheme !== 'undefined' && userTheme === 'dark' ? 'dark' : 'light' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,6 +35,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/main.css">
+  <script>window.__I18N__ = <%- typeof clientI18n !== 'undefined' ? clientI18n : '{"lang":"en","dict":{}}' %>;</script>
+  <script src="/js/i18n.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
   <script>

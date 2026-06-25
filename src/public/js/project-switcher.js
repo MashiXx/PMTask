@@ -63,7 +63,7 @@
       renderList(allProjects);
     } catch (err) {
       console.error('Failed to load projects:', err);
-      if (list) list.innerHTML = '<p class="project-switcher-empty">Failed to load projects.</p>';
+      if (list) list.innerHTML = '<p class="project-switcher-empty">' + t('js.switcher.loadFailed') + '</p>';
     }
   }
 
@@ -84,13 +84,13 @@
     const list = document.getElementById('projectSwitcherList');
     if (!list) return;
     if (!projects.length) {
-      list.innerHTML = '<p class="project-switcher-empty">No projects found.</p>';
+      list.innerHTML = '<p class="project-switcher-empty">' + t('js.switcher.noProjects') + '</p>';
       return;
     }
     const activeId = currentProjectId();
     list.innerHTML = projects.map(function (p) {
       const isActive = p.id === activeId;
-      const label = p.taskCount === 1 ? '1 task' : (p.taskCount + ' tasks');
+      const label = p.taskCount === 1 ? t('js.switcher.oneTask') : t('js.switcher.nTasks', { n: p.taskCount });
       return '<button type="button" class="project-switcher-item' + (isActive ? ' active' : '') +
         '" data-slug="' + p.id + '-' + escapeHtml(p.slug) + '">' +
         '<span class="project-dot" style="background:' + escapeHtml(p.color) + '; box-shadow:0 0 6px ' + escapeHtml(p.color) + '55;"></span>' +

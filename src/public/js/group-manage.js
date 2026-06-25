@@ -22,7 +22,7 @@ async function loadGroupList() {
     const groups = await res.json();
     const list = document.getElementById('groupList');
     if (!groups.length) {
-      list.innerHTML = '<p class="group-empty">No groups yet</p>';
+      list.innerHTML = '<p class="group-empty">' + t('js.group.noGroups') + '</p>';
       return;
     }
     list.innerHTML = groups.map(g => `
@@ -49,7 +49,7 @@ async function addNewGroup() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, color, projectId: groupProjectId() }),
     });
-    if (res.status === 409) { alert('A group with that name already exists.'); return; }
+    if (res.status === 409) { alert(t('js.group.nameExists')); return; }
     document.getElementById('newGroupName').value = '';
     loadGroupList();
   } catch (err) {
@@ -58,7 +58,7 @@ async function addNewGroup() {
 }
 
 async function deleteGroupItem(id, taskCount) {
-  if (taskCount > 0 && !confirm(`This group has ${taskCount} task${taskCount > 1 ? 's' : ''}. They will move to "Ungrouped". Delete the group?`)) return;
+  if (taskCount > 0 && !confirm(t('js.group.deleteConfirm', { count: taskCount }))) return;
   try {
     await fetch(`/api/groups/${id}`, { method: 'DELETE' });
     const el = document.getElementById(`group-item-${id}`);
