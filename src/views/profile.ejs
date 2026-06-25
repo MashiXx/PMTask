@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: 'Profile' }) %>
+<%- include('partials/head', { title: t('profile.title') }) %>
 
 <div class="app-layout">
   <%- include('partials/sidebar') %>
@@ -10,11 +10,11 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <span class="breadcrumb-text">Profile</span>
+          <span class="breadcrumb-text"><%= t('sidebar.profile') %></span>
         </div>
       </div>
       <div class="topbar-right">
-        <button class="theme-toggle-btn" onclick="cycleTheme()" title="Toggle theme">
+        <button class="theme-toggle-btn" onclick="cycleTheme()" title="<%= t('common.toggleTheme') %>">
           <svg class="theme-icon theme-icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="theme-icon theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="theme-icon theme-icon-system" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -27,7 +27,7 @@
         <div class="profile-header">
           <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="avatar-upload-form">
             <input type="file" id="avatarFile" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" onchange="this.form.submit()">
-            <label for="avatarFile" class="profile-avatar-large profile-avatar-edit" title="Upload a new photo">
+            <label for="avatarFile" class="profile-avatar-large profile-avatar-edit" title="<%= t('profile.uploadPhoto') %>">
               <%- include('partials/avatar', { avatarUser: currentUser }) %>
               <span class="avatar-cam">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -40,34 +40,34 @@
             <% if (currentUser.avatar && !/^https?:\/\//i.test(currentUser.avatar)) { %>
               <div class="avatar-actions">
                 <form action="/profile/avatar/delete" method="POST">
-                  <button type="submit" class="btn-avatar-remove">Remove photo</button>
+                  <button type="submit" class="btn-avatar-remove"><%= t('profile.removePhoto') %></button>
                 </form>
               </div>
             <% } %>
           </div>
           <% if (currentUser.googleId) { %>
-            <span class="profile-badge">Google Account</span>
+            <span class="profile-badge"><%= t('profile.googleAccount') %></span>
           <% } %>
         </div>
 
         <div class="profile-section">
-          <h3 class="profile-section-title">Profile Information</h3>
+          <h3 class="profile-section-title"><%= t('profile.info') %></h3>
           <form action="/profile/update" method="POST">
             <div class="form-group">
-              <label>NAME</label>
+              <label><%= t('profile.name') %></label>
               <input type="text" name="name" value="<%= currentUser.name %>" required>
             </div>
             <div class="form-group">
-              <label>EMAIL</label>
+              <label><%= t('profile.email') %></label>
               <input type="email" name="email" value="<%= currentUser.email %>" required>
             </div>
-            <button type="submit" class="btn-submit" style="margin-top:8px;">Save Changes</button>
+            <button type="submit" class="btn-submit" style="margin-top:8px;"><%= t('profile.saveChanges') %></button>
           </form>
         </div>
 
         <div class="profile-section theme-picker-section">
-          <h3 class="profile-section-title">Theme</h3>
-          <p style="color: var(--text-muted); font-size: 0.8125rem; margin-bottom: 8px;">Choose a theme for the interface</p>
+          <h3 class="profile-section-title"><%= t('profile.theme') %></h3>
+          <p style="color: var(--text-muted); font-size: 0.8125rem; margin-bottom: 8px;"><%= t('profile.themeHint') %></p>
           <div class="theme-picker-grid">
             <!-- Light -->
             <div class="theme-picker-card <%= userTheme !== 'dark' ? 'active' : '' %>" data-theme="light" onclick="applyTheme('light')">
@@ -83,7 +83,7 @@
                 </div>
               </div>
               <div class="theme-picker-info">
-                <span class="theme-picker-name">Light</span>
+                <span class="theme-picker-name"><%= t('profile.themeLight') %></span>
                 <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               </div>
             </div>
@@ -102,7 +102,7 @@
                 </div>
               </div>
               <div class="theme-picker-info">
-                <span class="theme-picker-name">Dark</span>
+                <span class="theme-picker-name"><%= t('profile.themeDark') %></span>
                 <span class="theme-picker-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               </div>
             </div>
@@ -129,23 +129,23 @@
         </div>
 
         <div class="profile-section">
-          <h3 class="profile-section-title">Change Password</h3>
+          <h3 class="profile-section-title"><%= t('profile.changePassword') %></h3>
           <form action="/profile/password" method="POST">
             <% if (currentUser.password) { %>
               <div class="form-group">
-                <label>CURRENT PASSWORD</label>
-                <input type="password" name="currentPassword" placeholder="Enter current password" required>
+                <label><%= t('profile.currentPassword') %></label>
+                <input type="password" name="currentPassword" placeholder="<%= t('profile.currentPasswordPh') %>" required>
               </div>
             <% } %>
             <div class="form-group">
-              <label>NEW PASSWORD</label>
-              <input type="password" name="newPassword" placeholder="Min 6 characters" required minlength="6">
+              <label><%= t('profile.newPassword') %></label>
+              <input type="password" name="newPassword" placeholder="<%= t('profile.newPasswordPh') %>" required minlength="6">
             </div>
             <div class="form-group">
-              <label>CONFIRM NEW PASSWORD</label>
-              <input type="password" name="confirmPassword" placeholder="Re-enter new password" required minlength="6">
+              <label><%= t('profile.confirmPassword') %></label>
+              <input type="password" name="confirmPassword" placeholder="<%= t('profile.confirmPasswordPh') %>" required minlength="6">
             </div>
-            <button type="submit" class="btn-submit" style="margin-top:8px;">Change Password</button>
+            <button type="submit" class="btn-submit" style="margin-top:8px;"><%= t('profile.changePassword') %></button>
           </form>
         </div>
       </div>
