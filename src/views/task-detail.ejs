@@ -50,18 +50,18 @@
       <div class="task-detail">
         <div class="task-detail-main">
           <!-- Editable Title -->
-          <% if (canEdit) { %>
-            <input type="text" id="detailTitle" class="task-detail-title-input" value="<%= task.title %>" data-task-id="<%= task.id %>">
-          <% } else { %>
-            <h1 class="task-detail-title"><%= task.title %></h1>
-          <% } %>
-
-          <% if (canEdit) { %>
-            <button type="button" id="detailDoneToggle" class="done-toggle <%= task.status === 'done' ? 'is-done' : '' %>" style="margin:10px 0 4px;" onclick="toggleDetailDone()">
-              <span class="done-toggle-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span class="done-toggle-label"><%= task.status === 'done' ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành' %></span>
-            </button>
-          <% } %>
+          <div class="task-detail-title-row">
+            <% if (canEdit) { %>
+              <input type="text" id="detailTitle" class="task-detail-title-input" value="<%= task.title %>" data-task-id="<%= task.id %>">
+            <% } else { %>
+              <h1 class="task-detail-title"><%= task.title %></h1>
+            <% } %>
+            <% if (canEdit) { %>
+              <button type="button" id="detailDoneToggle" class="title-done-check <%= task.status === 'done' ? 'is-done' : '' %>" onclick="toggleDetailDone()" title="Đánh dấu hoàn thành" aria-label="Đánh dấu hoàn thành">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            <% } %>
+          </div>
 
           <!-- Description -->
           <div class="task-detail-section">

@@ -1705,46 +1705,6 @@ input, textarea, select {
 
 .task-card.is-done .task-title { text-decoration: line-through; color: var(--text-dim); }
 
-/* Pill toggle used in the preview modal and the detail page */
-.done-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 14px;
-  border-radius: 9px;
-  border: 1px solid var(--border-light);
-  background: var(--card);
-  color: var(--text-muted);
-  font-size: 0.84rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.done-toggle-check {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1.8px solid var(--border-light);
-  display: grid;
-  place-items: center;
-  color: transparent;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-}
-
-.done-toggle-check svg { width: 11px; height: 11px; }
-.done-toggle:hover { border-color: var(--mint); color: var(--text); }
-.done-toggle:hover .done-toggle-check { border-color: var(--mint); }
-
-.done-toggle.is-done {
-  background: color-mix(in srgb, var(--mint) 12%, transparent);
-  border-color: color-mix(in srgb, var(--mint) 40%, transparent);
-  color: var(--mint);
-}
-
-.done-toggle.is-done .done-toggle-check { background: var(--mint); border-color: var(--mint); color: #fff; }
-
 /* ===================================================
    13. SORTABLEJS STATES
    =================================================== */
@@ -3434,9 +3394,45 @@ select option {
 }
 
 .task-preview-title-wrap {
-  flex: 1 1 auto;
-  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
+
+.modal.task-preview .preview-title-display,
+.modal.task-preview .preview-editable-title { flex: 1 1 auto; min-width: 0; }
+
+/* Round completion dot at the right end of the title (preview + detail) */
+.title-done-check {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin-top: 4px;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  background: var(--card);
+  color: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.title-done-check svg { width: 13px; height: 13px; }
+.title-done-check:hover { border-color: var(--mint); color: color-mix(in srgb, var(--mint) 50%, transparent); }
+.title-done-check.is-done { background: var(--mint); border-color: var(--mint); color: #fff; }
+
+/* Detail page: title + completion dot on one row */
+.task-detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.task-detail-title-row .task-detail-title { flex: 1 1 0%; min-width: 0; margin-bottom: 0; }
+.task-detail-title-row .task-detail-title-input { flex: 1 1 0%; min-width: 0; width: auto; margin: -4px 0 0 -8px; }
+.task-detail-title-row .title-done-check { margin-top: 6px; }
 
 .task-preview-header .preview-editable-title {
   margin-bottom: 0;

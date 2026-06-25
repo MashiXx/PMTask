@@ -350,8 +350,8 @@ function syncPreviewDone() {
   if (!btn) return;
   const done = (typeof previewTaskStatus !== 'undefined' && previewTaskStatus === 'done');
   btn.classList.toggle('is-done', done);
-  const label = btn.querySelector('.done-toggle-label');
-  if (label) label.textContent = done ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành';
+  btn.title = done ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành';
+  btn.setAttribute('aria-label', btn.title);
 }
 
 async function togglePreviewDone() {
