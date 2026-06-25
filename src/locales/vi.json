@@ -2,8 +2,20 @@
   "common.save": "Lưu",
   "common.cancel": "Huỷ",
   "common.greeting": "Hello {name}",
+  "common.roleAdmin": "Quản trị viên",
+  "common.roleDeveloper": "Lập trình viên",
   "js.confirmDelete": "Bạn có chắc muốn xoá {name}?",
   "profile.language": "Ngôn ngữ",
-  "profile.languageHint": "Chọn ngôn ngữ hiển thị"
+  "profile.languageHint": "Chọn ngôn ngữ hiển thị",
+  "sidebar.dashboard": "Bảng điều khiển",
+  "sidebar.projects": "Dự án",
+  "sidebar.users": "Người dùng",
+  "sidebar.profile": "Hồ sơ",
+  "sidebar.tasks": "Công việc",
+  "sidebar.documents": "Tài liệu",
+  "sidebar.mindmaps": "Sơ đồ tư duy",
+  "sidebar.login": "Đăng nhập",
+  "sidebar.switchProject": "Đổi dự án",
+  "sidebar.profileTitle": "Hồ sơ",
+  "sidebar.logout": "Đăng xuất"
 }
-

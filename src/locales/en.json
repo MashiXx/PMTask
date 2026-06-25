@@ -3,8 +3,20 @@
   "common.cancel": "Cancel",
   "common.enOnly": "English only",
   "common.greeting": "Hello {name}",
+  "common.roleAdmin": "Admin",
+  "common.roleDeveloper": "Developer",
   "js.confirmDelete": "Are you sure you want to delete {name}?",
   "profile.language": "Language",
-  "profile.languageHint": "Choose the interface language"
+  "profile.languageHint": "Choose the interface language",
+  "sidebar.dashboard": "Dashboard",
+  "sidebar.projects": "Projects",
+  "sidebar.users": "Users",
+  "sidebar.profile": "Profile",
+  "sidebar.tasks": "Tasks",
+  "sidebar.documents": "Documents",
+  "sidebar.mindmaps": "Mindmaps",
+  "sidebar.login": "Login",
+  "sidebar.switchProject": "Switch project",
+  "sidebar.profileTitle": "Profile",
+  "sidebar.logout": "Logout"
 }
-
