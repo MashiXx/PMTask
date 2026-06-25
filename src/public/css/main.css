@@ -2644,13 +2644,21 @@ select option {
 
 .task-detail {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px var(--shadow-color);
 }
 
 .task-detail-main {
   min-width: 0;
+  padding: 26px 30px 30px;
 }
+
+.task-detail-main .preview-section:last-child { margin-bottom: 0; }
 
 .task-detail-title {
   font-family: var(--font-display);
@@ -3005,7 +3013,30 @@ select option {
 
 .task-detail-sidebar {
   min-width: 0;
+  background: var(--surface-2);
+  border-left: 1px solid var(--border);
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
+
+.task-detail-sidebar .preview-section { margin-bottom: 0; }
+
+/* Editable due-date chip on the detail page */
+.detail-date-chip { cursor: pointer; }
+.detail-date-chip input[type="date"] {
+  border: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0;
+  width: auto;
+  cursor: pointer;
+}
+.detail-date-chip input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.55; }
 
 .task-detail-meta-card {
   background: var(--surface);
@@ -3427,7 +3458,7 @@ select option {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 22px;
+  margin-bottom: 6px;
 }
 
 .task-detail-title-row .task-detail-title { flex: 1 1 0%; min-width: 0; margin-bottom: 0; }
@@ -4017,7 +4048,7 @@ select option {
   }
 
   .task-detail {
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: minmax(0, 1fr) 300px;
   }
 }
 
@@ -4071,6 +4102,10 @@ select option {
   /* Task detail single col */
   .task-detail {
     grid-template-columns: 1fr;
+  }
+  .task-detail-sidebar {
+    border-left: none;
+    border-top: 1px solid var(--border);
   }
 
   /* Kanban columns smaller */
@@ -4227,7 +4262,7 @@ select option {
   /* Task detail stacked */
   .task-detail {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 0;
   }
 
   /* Modals fit mobile */

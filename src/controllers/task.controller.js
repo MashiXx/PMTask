@@ -196,15 +196,18 @@ exports.setTaskStatus = async (req, res) => {
       include: { subtasks: true },
     });
 
+    // Keep progress in sync with the new status:
+    //   • with subtasks → done = 100, otherwise the subtask ratio
+    //   • no subtasks  → progress is driven purely by completion (done = 100, else 0)
+    let calc;
     if (task.subtasks.length > 0) {
       const doneCount = task.subtasks.filter(s => s.done).length;
-      const calc = status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
-      await prisma.task.update({ where: { id: taskId }, data: { progress: calc } });
-      task.progress = calc;
-    } else if (status === 'done') {
-      await prisma.task.update({ where: { id: taskId }, data: { progress: 100 } });
-      task.progress = 100;
+      calc = status === 'done' ? 100 : Math.round(doneCount / (task.subtasks.length + 1) * 100);
+    } else {
+      calc = status === 'done' ? 100 : 0;
     }
+    await prisma.task.update({ where: { id: taskId }, data: { progress: calc } });
+    task.progress = calc;
 
     res.json({ success: true, task });
   } catch (err) {
@@ -254,6 +257,7 @@ exports.getTaskPage = async (req, res) => {
       where: { id: taskId },
       include: {
         project: true,
+        createdBy: { select: { name: true } },
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },

@@ -182,9 +182,13 @@ function updateDetailSubtaskProgress() {
   const badge = document.querySelector('.task-detail-section .subtask-count-badge');
   if (badge) badge.textContent = total > 0 ? `${done}/${total}` : '';
 
-  // Update progress bar (formula: done / (total + 1); only status=done gives 100%)
-  const fill = document.querySelector('.task-detail-section .subtask-progress-fill');
+  // Update progress bar + header % (formula: done / (total + 1); only status=done gives 100%)
   const detailTaskStatus = document.getElementById('detailSubtaskList')?.dataset.taskStatus;
-  const detailPercent = detailTaskStatus === 'done' ? 100 : Math.round(done / (total + 1) * 100);
-  if (fill) fill.style.width = total > 0 ? detailPercent + '%' : '0%';
+  const detailPercent = total > 0
+    ? (detailTaskStatus === 'done' ? 100 : Math.round(done / (total + 1) * 100))
+    : (detailTaskStatus === 'done' ? 100 : 0);
+  const fill = document.querySelector('.task-detail-section .subtask-progress-fill');
+  if (fill) fill.style.width = detailPercent + '%';
+  const pct = document.getElementById('detailProgressText');
+  if (pct) pct.textContent = detailPercent + '%';
 }

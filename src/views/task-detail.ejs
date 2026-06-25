@@ -1,15 +1,21 @@
 <%- include('partials/head', { title: task.title }) %>
 
 <%
-  const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
-  const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
-  const statusLabels = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
-  const statusColors = { todo: 'var(--text-muted)', inprogress: 'var(--cyan)', review: 'var(--amber)', done: 'var(--mint)' };
-  const pColor = priorityColors[task.priority] || '#F59E0B';
-  const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
-  const tagColorMap = {};
-  task.tags.forEach(tt => { tagColorMap[tt.tag.name] = tt.tag.color || '#6B6B8E'; });
+  const priorityVN = { high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
   const avatarColors = ['#2D6FE0', '#2B9CD8', '#EF4444', '#1E9E60', '#F59E0B'];
+  function fmtDue(d) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d || '').trim());
+    return m ? (parseInt(m[3], 10) + ' Th' + parseInt(m[2], 10) + ', ' + m[1]) : d;
+  }
+  const _created = new Date(task.createdAt);
+  const _days = Math.floor((Date.now() - _created.getTime()) / 86400000);
+  const createdLabel = _days <= 0 ? 'hôm nay' : _days === 1 ? 'hôm qua'
+    : _days < 30 ? (_days + ' ngày trước')
+    : _days < 365 ? (Math.floor(_days / 30) + ' tháng trước')
+    : (Math.floor(_days / 365) + ' năm trước');
+  const subDoneCount = task.subtasks.filter(s => s.done).length;
+  const subPercent = task.status === 'done' ? 100
+    : (task.subtasks.length ? Math.round(subDoneCount / (task.subtasks.length + 1) * 100) : (task.progress || 0));
 %>
 
 <div class="app-layout">
@@ -48,30 +54,87 @@
 
     <div class="dashboard-body">
       <div class="task-detail">
+        <!-- MAIN COLUMN -->
         <div class="task-detail-main">
-          <!-- Editable Title -->
+          <!-- Title + completion dot -->
           <div class="task-detail-title-row">
             <% if (canEdit) { %>
               <input type="text" id="detailTitle" class="task-detail-title-input" value="<%= task.title %>" data-task-id="<%= task.id %>">
-            <% } else { %>
-              <h1 class="task-detail-title"><%= task.title %></h1>
-            <% } %>
-            <% if (canEdit) { %>
               <button type="button" id="detailDoneToggle" class="title-done-check <%= task.status === 'done' ? 'is-done' : '' %>" onclick="toggleDetailDone()" title="Đánh dấu hoàn thành" aria-label="Đánh dấu hoàn thành">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
+            <% } else { %>
+              <h1 class="task-detail-title"><%= task.title %></h1>
             <% } %>
           </div>
 
-          <!-- Description -->
-          <div class="task-detail-section">
-            <h3 class="task-detail-label">DESCRIPTION</h3>
-            <% if (canEdit) { %>
-              <div id="descriptionRendered" class="task-detail-desc-rendered" title="Click to edit">
-                <% if (task.description) { %>
-                  <span class="desc-placeholder-loading">Loading...</span>
+          <!-- Meta: members / priority / due date -->
+          <div class="preview-meta-row">
+            <div class="preview-meta-item">
+              <span class="preview-meta-label">Thành viên</span>
+              <div class="preview-meta-control">
+                <% if (task.assignees.length > 0) { %>
+                  <div class="preview-avatars">
+                    <% task.assignees.forEach((a, i) => { %>
+                      <% const aColor = avatarColors[i % avatarColors.length]; %>
+                      <div class="preview-avatar" style="background: <%= aColor %>; color:#fff;" title="<%= a.user.name %>"><%- include('partials/avatar', { avatarUser: a.user }) %></div>
+                    <% }) %>
+                  </div>
                 <% } else { %>
-                  <span class="desc-placeholder">Click to add description...</span>
+                  <span class="preview-avatars-empty">Chưa có</span>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="preview-meta-item">
+              <span class="preview-meta-label">Mức ưu tiên</span>
+              <div class="preview-meta-control">
+                <div class="preview-pill-select-wrap">
+                  <span class="preview-priority-pill" id="detailPriorityPill" data-priority="<%= task.priority %>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                    <span id="detailPriorityText"><%= priorityVN[task.priority] || task.priority %></span>
+                  </span>
+                  <% if (canEdit) { %>
+                    <select id="detailPrioritySelect" class="preview-overlay-select" data-task-id="<%= task.id %>" aria-label="Mức ưu tiên">
+                      <option value="low" <%= task.priority === 'low' ? 'selected' : '' %>>Thấp</option>
+                      <option value="medium" <%= task.priority === 'medium' ? 'selected' : '' %>>Trung bình</option>
+                      <option value="high" <%= task.priority === 'high' ? 'selected' : '' %>>Cao</option>
+                    </select>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-meta-item">
+              <span class="preview-meta-label">Hạn chót</span>
+              <div class="preview-meta-control">
+                <% if (canEdit) { %>
+                  <label class="preview-date-chip detail-date-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input type="date" id="detailDueDate" value="<%= task.dueDate || '' %>" data-task-id="<%= task.id %>">
+                  </label>
+                <% } else { %>
+                  <span class="preview-date-chip <%= task.dueDate ? '' : 'preview-date-empty' %>">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <%= task.dueDate ? fmtDue(task.dueDate) : 'Chưa đặt' %>
+                  </span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="task-detail-section preview-section">
+            <p class="preview-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Mô tả
+            </p>
+            <% if (canEdit) { %>
+              <div id="descriptionRendered" class="task-detail-desc-rendered" title="Chỉnh sửa">
+                <% if (task.description) { %>
+                  <span class="desc-placeholder-loading">Đang tải...</span>
+                <% } else { %>
+                  <span class="desc-placeholder">Nhấn để thêm mô tả...</span>
                 <% } %>
               </div>
               <div id="descriptionEditorWrap" class="task-detail-editor-wrap hidden">
@@ -79,66 +142,60 @@
                 <div class="editor-actions">
                   <button type="button" class="btn-editor-save" onclick="saveDescription()">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Save
+                    Lưu
                   </button>
-                  <button type="button" class="btn-editor-cancel" onclick="cancelDescription()">Cancel</button>
+                  <button type="button" class="btn-editor-cancel" onclick="cancelDescription()">Hủy</button>
                 </div>
               </div>
             <% } else { %>
               <% if (task.description) { %>
                 <div id="descriptionRendered" class="task-detail-desc-rendered">
-                  <span class="desc-placeholder-loading">Loading...</span>
+                  <span class="desc-placeholder-loading">Đang tải...</span>
                 </div>
               <% } else { %>
-                <p class="task-detail-text" style="color: var(--text-dim);">No description</p>
+                <p class="task-detail-text" style="color: var(--text-dim);">Chưa có mô tả</p>
               <% } %>
             <% } %>
           </div>
 
-          <% if (task.tags.length > 0) { %>
-            <div class="task-detail-section">
-              <h3 class="task-detail-label">TAGS</h3>
-              <div class="task-tags mt-6">
-                <% task.tags.forEach(tt => { %>
-                  <% const tColor = tagColorMap[tt.tag.name] || '#6B6B8E'; %>
-                  <span class="tag-badge" style="background:<%= tColor %>18; border:1px solid <%= tColor %>35; color:<%= tColor %>;">
-                    <%= tt.tag.name.charAt(0).toUpperCase() + tt.tag.name.slice(1) %>
-                  </span>
-                <% }) %>
-              </div>
-            </div>
-          <% } %>
-
-          <% if (task.assignees.length > 0) { %>
-            <div class="task-detail-section">
-              <h3 class="task-detail-label">ASSIGNEES</h3>
-              <div class="flex gap-8 mt-6">
-                <% task.assignees.forEach((a, i) => { %>
-                  <% const aColor = avatarColors[i % avatarColors.length]; %>
-                  <div class="assignee-chip">
-                    <div class="avatar" style="background: <%= aColor %>22; border-color: <%= aColor %>55; color: <%= aColor %>; width:24px; height:24px; font-size:0.6rem;"><%- include('partials/avatar', { avatarUser: a.user }) %></div>
-                    <span class="assignee-chip-name"><%= a.user.name %></span>
-                  </div>
-                <% }) %>
-              </div>
-            </div>
-          <% } %>
-
-          <!-- Subtasks -->
-          <div class="task-detail-section">
-            <div class="subtask-header">
-              <h3 class="task-detail-label">SUBTASKS</h3>
-              <% if (task.subtasks.length > 0) { %>
-                <span class="subtask-count-badge"><%= task.subtasks.filter(s => s.done).length %>/<%= task.subtasks.length %></span>
+          <!-- Attachments -->
+          <div class="task-detail-section preview-section">
+            <p class="preview-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              Tệp đính kèm
+            </p>
+            <div class="preview-attach-box">
+              <div id="taskAttachmentsList" class="attach-list"></div>
+              <% if (canEdit) { %>
+                <div id="taskAttachmentDrop" class="attach-dropzone">
+                  <input type="file" id="taskAttachmentInput" class="hidden" multiple
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
+                  <label for="taskAttachmentInput" class="attach-dropzone-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Kéo thả tệp vào đây hoặc <span class="attach-browse">duyệt</span>
+                  </label>
+                </div>
               <% } %>
             </div>
-            <% if (task.subtasks.length > 0) { %>
-              <div class="subtask-progress-bar mt-6 mb-10">
-                <% const dtDone = task.subtasks.filter(s => s.done).length; %>
-                <% const dtPercent = task.status === 'done' ? 100 : Math.round(dtDone / (task.subtasks.length + 1) * 100); %>
-                <div class="subtask-progress-fill" style="width:<%= dtPercent %>%;"></div>
-              </div>
-            <% } %>
+            <% if (canEdit) { %><p class="attach-paste-hint">Mẹo: dán ảnh bằng Ctrl+V để đính kèm.</p><% } %>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="task-detail-sidebar">
+          <!-- Checklist -->
+          <div class="task-detail-section preview-section preview-checklist">
+            <div class="preview-section-head">
+              <p class="preview-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Việc cần làm
+                <span class="subtask-count-badge"><%= task.subtasks.length ? subDoneCount + '/' + task.subtasks.length : '' %></span>
+              </p>
+              <span class="preview-checklist-pct" id="detailProgressText"><%= subPercent %>%</span>
+            </div>
+            <div class="subtask-progress-bar mb-8">
+              <div class="subtask-progress-fill" style="width:<%= task.subtasks.length ? subPercent : 0 %>%;"></div>
+            </div>
             <div id="detailSubtaskList" class="subtask-list" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>">
               <% task.subtasks.forEach(sub => { %>
                 <div class="subtask-item <%= sub.done ? 'done' : '' %>" data-subtask-id="<%= sub.id %>">
@@ -157,7 +214,7 @@
             </div>
             <% if (currentUser) { %>
               <div class="subtask-add mt-8">
-                <input type="text" id="detailSubtaskInput" class="subtask-input" placeholder="Add a subtask..." onkeydown="if(event.key==='Enter'){addDetailSubtask(); event.preventDefault();}">
+                <input type="text" id="detailSubtaskInput" class="subtask-input" placeholder="Thêm việc cần làm..." onkeydown="if(event.key==='Enter'){addDetailSubtask(); event.preventDefault();}">
                 <button class="subtask-add-btn" onclick="addDetailSubtask()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
@@ -165,93 +222,20 @@
             <% } %>
           </div>
 
-          <!-- Attachments -->
-          <div class="task-detail-section">
-            <div class="subtask-header">
-              <h3 class="task-detail-label">ATTACHMENTS</h3>
-            </div>
-            <% if (canEdit) { %>
-              <div id="taskAttachmentDrop" class="attach-dropzone">
-                <input type="file" id="taskAttachmentInput" class="hidden" multiple
-                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z">
-                <label for="taskAttachmentInput" class="attach-dropzone-label">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Drop files here or <span class="attach-browse">browse</span>
-                </label>
-              </div>
-              <p class="attach-paste-hint">Tip: paste an image with Ctrl+V to attach it.</p>
-            <% } %>
-            <div id="taskAttachmentsList" class="attach-list mt-8"></div>
-          </div>
-
           <!-- Comments -->
-          <div class="task-detail-section">
-            <p class="label-meta">Comments</p>
+          <div class="task-detail-section preview-section">
+            <p class="preview-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Bình luận
+            </p>
             <div id="detailComments" class="comment-list"></div>
           </div>
-        </div>
 
-        <div class="task-detail-sidebar">
-          <div class="task-detail-meta-card">
-            <% if (canEdit) { %>
-              <div class="task-detail-meta-item">
-                <span class="task-detail-label">STATUS</span>
-                <select id="detailStatusSelect" class="detail-inline-select" data-task-id="<%= task.id %>">
-                  <option value="todo" <%= task.status === 'todo' ? 'selected' : '' %>>To Do</option>
-                  <option value="inprogress" <%= task.status === 'inprogress' ? 'selected' : '' %>>In Progress</option>
-                  <option value="review" <%= task.status === 'review' ? 'selected' : '' %>>In Review</option>
-                  <option value="done" <%= task.status === 'done' ? 'selected' : '' %>>Completed</option>
-                </select>
-              </div>
-              <div class="task-detail-meta-item">
-                <span class="task-detail-label">PRIORITY</span>
-                <select id="detailPrioritySelect" class="detail-inline-select" data-task-id="<%= task.id %>">
-                  <option value="low" <%= task.priority === 'low' ? 'selected' : '' %>>Low</option>
-                  <option value="medium" <%= task.priority === 'medium' ? 'selected' : '' %>>Medium</option>
-                  <option value="high" <%= task.priority === 'high' ? 'selected' : '' %>>High</option>
-                </select>
-              </div>
-              <div class="task-detail-meta-item">
-                <span class="task-detail-label">DUE DATE</span>
-                <input type="date" id="detailDueDate" class="detail-inline-input" value="<%= task.dueDate || '' %>" data-task-id="<%= task.id %>">
-              </div>
-            <% } else { %>
-              <div class="task-detail-meta-item">
-                <span class="task-detail-label">STATUS</span>
-                <span class="task-detail-meta-value" style="color:<%= statusColors[task.status] %>;">
-                  <%= statusLabels[task.status] %>
-                </span>
-              </div>
-              <div class="task-detail-meta-item">
-                <span class="task-detail-label">PRIORITY</span>
-                <span class="task-detail-meta-value" style="color:<%= pColor %>;">
-                  <%= priorityLabels[task.priority] %>
-                </span>
-              </div>
-              <% if (task.dueDate) { %>
-                <div class="task-detail-meta-item">
-                  <span class="task-detail-label">DUE DATE</span>
-                  <span class="task-detail-meta-value"><%= task.dueDate %></span>
-                </div>
-              <% } %>
-            <% } %>
-            <div class="task-detail-meta-item">
-              <span class="task-detail-label">PROGRESS</span>
-              <div class="progress-inline">
-                <div class="task-progress-track" style="flex:1;">
-                  <div class="task-progress-fill" style="width:<%= task.progress %>%; background:<%= progressColor %>;"></div>
-                </div>
-                <span class="progress-value" style="color:<%= progressColor %>;"><%= task.progress %>%</span>
-              </div>
-            </div>
-            <div class="task-detail-meta-item">
-              <span class="task-detail-label">CREATED</span>
-              <span class="task-detail-meta-value text-sm">
-                <%= new Date(task.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-              </span>
-            </div>
+          <div class="preview-side-footer">
+            <p>Tạo bởi <strong><%= task.createdBy ? task.createdBy.name : '—' %></strong></p>
+            <p class="preview-side-foot-time"><%= createdLabel %></p>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   </main>

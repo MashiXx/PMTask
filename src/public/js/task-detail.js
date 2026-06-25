@@ -194,8 +194,22 @@ async function toggleDetailDone() {
     }
   }
 
+  // Reflect the priority select onto its coloured pill
+  function syncDetailPriorityPill() {
+    if (!prioritySelect) return;
+    const pill = document.getElementById('detailPriorityPill');
+    const txt = document.getElementById('detailPriorityText');
+    if (!pill) return;
+    const labels = { low: 'Thấp', medium: 'Trung bình', high: 'Cao' };
+    pill.dataset.priority = prioritySelect.value;
+    if (txt) txt.textContent = labels[prioritySelect.value] || prioritySelect.value;
+  }
+
   if (statusSelect) statusSelect.addEventListener('change', saveMetaField);
-  if (prioritySelect) prioritySelect.addEventListener('change', saveMetaField);
+  if (prioritySelect) {
+    prioritySelect.addEventListener('change', saveMetaField);
+    prioritySelect.addEventListener('change', syncDetailPriorityPill);
+  }
   if (dueDateInput) dueDateInput.addEventListener('change', saveMetaField);
 
   // ── Initial render ──
