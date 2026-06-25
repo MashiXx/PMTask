@@ -5,6 +5,7 @@ const methodOverride = require('method-override');
 const helmet = require('helmet');
 const sessionConfig = require('./config/session');
 const passport = require('passport');
+const { t, normalizeLang, clientDict, SUPPORTED, LABELS } = require('./config/i18n');
 
 const app = express();
 
@@ -53,6 +54,14 @@ app.use(passport.session());
 // Flash messages
 app.use(flash());
 
+// Read a single cookie value from the request header (avoids a cookie-parser dependency).
+function readLangCookie(req) {
+  const header = req.headers && req.headers.cookie;
+  if (!header) return null;
+  const found = header.split(';').map((s) => s.trim()).find((s) => s.startsWith('pmtask-lang='));
+  return found ? decodeURIComponent(found.slice('pmtask-lang='.length)) : null;
+}
+
 // Global template variables
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
@@ -61,6 +70,22 @@ app.use((req, res, next) => {
   res.locals.userTheme = savedTheme === 'dark' ? 'dark' : 'light';
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
+
+  // Language: user preference -> cookie -> default 'en'
+  let lang = 'en';
+  if (req.user && req.user.language) lang = req.user.language;
+  else {
+    const cookieLang = readLangCookie(req);
+    if (cookieLang) lang = cookieLang;
+  }
+  lang = normalizeLang(lang);
+  res.locals.lang = lang;
+  res.locals.t = (key, vars) => t(key, lang, vars);
+  res.locals.langLabels = LABELS;
+  res.locals.supportedLangs = SUPPORTED;
+  req.t = res.locals.t; // controllers localize flash messages via req.t
+  // Escape '<' so the JSON is safe to embed inside a <script> tag.
+  res.locals.clientI18n = JSON.stringify({ lang, dict: clientDict(lang) }).replace(/</g, '\\u003c');
   next();
 });
 
