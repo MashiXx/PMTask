@@ -28,7 +28,7 @@
           <div class="mm-dialog-title"></div>
           ${input ? '<input class="mm-dialog-input" type="text" autocomplete="off">' : ''}
           <div class="mm-dialog-actions">
-            <button class="mm-dialog-cancel" type="button">Cancel</button>
+            <button class="mm-dialog-cancel" type="button">${t('js.mindmap.cancel')}</button>
             <button class="mm-dialog-ok${danger ? ' danger' : ''}" type="button"></button>
           </div>
         </div>`;
@@ -53,6 +53,6 @@
   }
 
   window.mmToast = toast;
-  window.mmPrompt = (title, value, confirmText) => dialog({ title, value, input: true, confirmText: confirmText || 'Save' });
-  window.mmConfirm = (title, confirmText) => dialog({ title, input: false, danger: true, confirmText: confirmText || 'Delete' });
+  window.mmPrompt = (title, value, confirmText) => dialog({ title, value, input: true, confirmText: confirmText || t('js.mindmap.save') });
+  window.mmConfirm = (title, confirmText) => dialog({ title, input: false, danger: true, confirmText: confirmText || t('js.mindmap.delete') });
 })();

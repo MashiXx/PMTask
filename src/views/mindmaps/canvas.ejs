@@ -10,7 +10,7 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps" class="breadcrumb-link">Mindmaps</a>
+          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps" class="breadcrumb-link"><%= t('mindmap.title') %></a>
           <span class="breadcrumb-sep">/</span>
           <span class="breadcrumb-text"><%= mindmap.name %></span>
         </div>
@@ -19,10 +19,10 @@
 
     <div class="mm-canvas" id="mmCanvas">
       <div class="mm-toolbar">
-        <button onclick="mmZoom(0.1)" title="Zoom in">+</button>
-        <button onclick="mmZoom(-0.1)" title="Zoom out">&minus;</button>
-        <button onclick="mmFit()" title="Reset view">&#9633;</button>
-        <button onclick="mmToggleHelp()" title="Keyboard shortcuts">?</button>
+        <button onclick="mmZoom(0.1)" title="<%= t('mindmap.zoomIn') %>">+</button>
+        <button onclick="mmZoom(-0.1)" title="<%= t('mindmap.zoomOut') %>">&minus;</button>
+        <button onclick="mmFit()" title="<%= t('mindmap.resetView') %>">&#9633;</button>
+        <button onclick="mmToggleHelp()" title="<%= t('mindmap.keyboardShortcuts') %>">?</button>
       </div>
       <svg class="mm-svg" id="mmSvg"></svg>
       <div class="mm-viewport" id="mmViewport"></div>
