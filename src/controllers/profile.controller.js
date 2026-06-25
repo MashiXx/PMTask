@@ -4,6 +4,7 @@ const path = require('path');
 const prisma = require('../config/prisma');
 const { uploadDir } = require('../config/upload');
 const { isPathSafe } = require('../utils/file-serve');
+const { SUPPORTED } = require('../config/i18n');
 
 // A local (uploaded) avatar is a relative path; a Google avatar is an http(s) URL.
 function isLocalAvatar(avatar) {
@@ -202,5 +203,27 @@ exports.updateTheme = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update theme' });
+  }
+};
+
+exports.updateLanguage = async (req, res) => {
+  try {
+    const { language } = req.body;
+    if (!SUPPORTED.includes(language)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { language },
+    });
+    res.cookie('pmtask-lang', language, {
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax',
+      httpOnly: true,
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update language' });
   }
 };
