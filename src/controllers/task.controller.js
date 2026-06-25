@@ -89,15 +89,18 @@ exports.updateTask = async (req, res) => {
     if (access === null) return res.status(404).json({ error: 'Task not found' });
     if (access === false) return res.status(403).json({ error: 'Access denied' });
 
-    const safeProgress = Math.min(100, Math.max(0, parseInt(progress) || 0));
-
-    const updateData = {
-      title,
-      description: description || null,
-      priority: VALID_PRIORITIES.includes(priority) ? priority : access.priority,
-      dueDate: dueDate || null,
-      progress: safeProgress,
-    };
+    // Only update fields that were actually sent, so partial saves (e.g. the
+    // preview modal, which omits dueDate/progress) never clobber existing values.
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description || null;
+    if (priority !== undefined) {
+      updateData.priority = VALID_PRIORITIES.includes(priority) ? priority : access.priority;
+    }
+    if (dueDate !== undefined) updateData.dueDate = dueDate || null;
+    if (progress !== undefined) {
+      updateData.progress = Math.min(100, Math.max(0, parseInt(progress) || 0));
+    }
     if (title && title !== access.title) {
       updateData.slug = generateSlug(title);
     }
@@ -326,6 +329,7 @@ exports.getTask = async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         project: { select: { publicTasks: true } },
+        createdBy: { select: { name: true } },
         tags: { include: { tag: true } },
         assignees: { include: { user: true } },
         subtasks: { orderBy: { position: 'asc' } },

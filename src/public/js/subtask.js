@@ -21,14 +21,19 @@ function renderPreviewSubtasks(subtasks, isGuest) {
     addEl.classList.toggle('hidden', isGuest);
   }
 
+  // Keep the checklist header percentage in sync with the rendered bar
+  const pctEl = document.getElementById('previewProgressText');
+
   if (total === 0) {
     list.innerHTML = '';
+    if (pctEl) pctEl.textContent = (typeof previewTaskStatus !== 'undefined' && previewTaskStatus === 'done') ? '100%' : '0%';
     return;
   }
 
   // Progress bar + items
   // Formula: doneSubtasks / (totalSubtasks + 1); parent task completion = 100%
   const percent = (typeof previewTaskStatus !== 'undefined' && previewTaskStatus === 'done') ? 100 : Math.round(doneCount / (total + 1) * 100);
+  if (pctEl) pctEl.textContent = percent + '%';
   list.innerHTML =
     `<div class="subtask-progress-bar mb-8">
       <div class="subtask-progress-fill" style="width:${percent}%;"></div>

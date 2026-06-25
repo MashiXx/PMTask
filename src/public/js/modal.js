@@ -151,6 +151,10 @@ async function openTaskPreview(taskId) {
     document.getElementById('previewStatusSelect').value = task.status;
     document.getElementById('previewPrioritySelect').value = task.priority;
 
+    const codeEl = document.getElementById('previewTaskCode');
+    if (codeEl) codeEl.textContent = 'TASK-' + task.id;
+    syncPreviewPriorityPill();
+
     // Render click-to-edit title + markdown description
     renderPreviewTitle(task.title || '', isGuest);
     renderPreviewDescription(task.description || '', isGuest);
@@ -173,36 +177,35 @@ async function openTaskPreview(taskId) {
     }
 
     const dueDateWrap = document.getElementById('previewDueDateWrap');
+    const dueDateEl = document.getElementById('previewDueDate');
     if (task.dueDate) {
-      document.getElementById('previewDueDate').textContent = task.dueDate;
-      dueDateWrap.classList.remove('hidden');
+      dueDateEl.textContent = formatPreviewDueDate(task.dueDate);
+      dueDateEl.parentElement.classList.remove('preview-date-empty');
     } else {
-      dueDateWrap.classList.add('hidden');
+      dueDateEl.textContent = 'Chưa đặt';
+      dueDateEl.parentElement.classList.add('preview-date-empty');
     }
+    if (dueDateWrap) dueDateWrap.classList.remove('hidden');
 
-    const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
-    const bar = document.getElementById('previewProgressBar');
-    bar.style.width = task.progress + '%';
-    bar.style.background = progressColor;
+    // Checklist percentage (the visible bar is rendered by renderPreviewSubtasks)
     const pText = document.getElementById('previewProgressText');
-    pText.textContent = task.progress + '%';
-    pText.style.color = progressColor;
+    if (pText) pText.textContent = task.progress + '%';
 
-    const assigneesWrap = document.getElementById('previewAssigneesWrap');
     const assigneesEl = document.getElementById('previewAssignees');
     const avatarColors = ['#2D6FE0', '#2B9CD8', '#EF4444', '#1E9E60', '#F59E0B'];
     if (task.assignees && task.assignees.length > 0) {
       assigneesEl.innerHTML = task.assignees.map((a, i) => {
         const c = avatarColors[i % avatarColors.length];
-        return `<div class="assignee-chip" style="padding:4px 10px; border-radius:6px;">
-          <div class="avatar" style="background:${c}22; border-color:${c}55; color:${c}; width:20px; height:20px; font-size:0.55rem;">${avatarInner(a.user)}</div>
-          <span class="assignee-chip-name" style="font-size:0.75rem;">${a.user.name}</span>
-        </div>`;
+        return `<div class="preview-avatar" style="background:${c}; color:#fff;" title="${a.user.name}">${avatarInner(a.user)}</div>`;
       }).join('');
-      assigneesWrap.classList.remove('hidden');
     } else {
-      assigneesWrap.classList.add('hidden');
+      assigneesEl.innerHTML = '<span class="preview-avatars-empty">Chưa có</span>';
     }
+
+    const creatorEl = document.getElementById('previewCreator');
+    if (creatorEl) creatorEl.textContent = (task.createdBy && task.createdBy.name) ? task.createdBy.name : '—';
+    const createdEl = document.getElementById('previewCreatedAt');
+    if (createdEl) createdEl.textContent = task.createdAt ? previewRelativeTime(task.createdAt) : '';
 
     // Render subtasks
     if (typeof renderPreviewSubtasks === 'function') {
@@ -258,6 +261,45 @@ async function openTaskPreview(taskId) {
   } catch (err) {
     console.error('Failed to load task preview:', err);
   }
+}
+
+// Reflect the priority <select> value onto the visible coloured pill
+function syncPreviewPriorityPill() {
+  const sel = document.getElementById('previewPrioritySelect');
+  const pill = document.getElementById('previewPriorityPill');
+  const txt = document.getElementById('previewPriorityText');
+  if (!sel || !pill) return;
+  const labels = { low: 'Thấp', medium: 'Trung bình', high: 'Cao' };
+  pill.dataset.priority = sel.value;
+  if (txt) txt.textContent = labels[sel.value] || sel.value;
+}
+
+// Sidebar "Việc cần làm" shortcut → focus the add-subtask input
+function focusPreviewSubtask() {
+  const input = document.getElementById('previewSubtaskInput');
+  if (input) {
+    input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    input.focus();
+  }
+}
+
+// "X ngày trước" relative time for the created-by footer
+function previewRelativeTime(iso) {
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return '';
+  const days = Math.floor((Date.now() - then) / 86400000);
+  if (days <= 0) return 'hôm nay';
+  if (days === 1) return 'hôm qua';
+  if (days < 30) return days + ' ngày trước';
+  if (days < 365) return Math.floor(days / 30) + ' tháng trước';
+  return Math.floor(days / 365) + ' năm trước';
+}
+
+// "2025-07-02" → "2 Th7, 2025"
+function formatPreviewDueDate(d) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d).trim());
+  if (!m) return d;
+  return parseInt(m[3], 10) + ' Th' + parseInt(m[2], 10) + ', ' + m[1];
 }
 
 const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
@@ -583,7 +625,10 @@ if (_previewTitle) {
 var _previewStatus = document.getElementById('previewStatusSelect');
 if (_previewStatus) _previewStatus.addEventListener('change', savePreviewField);
 var _previewPriority = document.getElementById('previewPrioritySelect');
-if (_previewPriority) _previewPriority.addEventListener('change', savePreviewField);
+if (_previewPriority) {
+  _previewPriority.addEventListener('change', savePreviewField);
+  _previewPriority.addEventListener('change', syncPreviewPriorityPill);
+}
 
 // ── Preview Description: Rendered Markdown + Click-to-Edit ──
 function renderPreviewDescription(description, isGuest) {
