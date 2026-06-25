@@ -1,15 +1,15 @@
 <%- include('partials/head', { title: task.title }) %>
 
 <%
-  const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
   const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
   const statusLabels = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
   const statusColors = { todo: 'var(--text-muted)', inprogress: 'var(--cyan)', review: 'var(--amber)', done: 'var(--mint)' };
-  const pColor = priorityColors[task.priority] || '#FFB347';
-  const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+  const pColor = priorityColors[task.priority] || '#F59E0B';
+  const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
   const tagColorMap = {};
   task.tags.forEach(tt => { tagColorMap[tt.tag.name] = tt.tag.color || '#6B6B8E'; });
-  const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
+  const avatarColors = ['#2D6FE0', '#2B9CD8', '#EF4444', '#1E9E60', '#F59E0B'];
 %>
 
 <div class="app-layout">

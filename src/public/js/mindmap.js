@@ -7,7 +7,7 @@ const MM = {
   zoom: 1,
   selectedId: null,
 };
-const STATUS_COLORS = { todo:'#6B6B8E', inprogress:'#00D9FF', review:'#FFB347', done:'#00F5A0' };
+const STATUS_COLORS = { todo:'#6B6B8E', inprogress:'#2B9CD8', review:'#F59E0B', done:'#1E9E60' };
 const STATUS_LABELS = { todo:'To Do', inprogress:'In Progress', review:'In Review', done:'Completed' };
 const NODE_W = 180, NODE_H = 70; // approx, for fit bounds
 
@@ -125,7 +125,7 @@ function mmRender() {
       <div class="mm-node-actions">
         <button onclick="mmAddChild(${n.id})">+ Child</button>
         <button onclick="mmEditLabel(${n.id})">Edit</button>
-        <input type="color" class="mm-color" value="${n.color || '#6C63FF'}" title="Node color" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
+        <input type="color" class="mm-color" value="${n.color || '#2D6FE0'}" title="Node color" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
         ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">Delete</button>` : ''}
       </div>`;
@@ -427,7 +427,7 @@ async function mmSetColor(id, color) {
   if (el) el.style.borderLeftColor = color;
   apiUpdateNode(id, { color }, () => {
     node.color = prev;
-    if (el) el.style.borderLeftColor = prev || '#6C63FF';
+    if (el) el.style.borderLeftColor = prev || '#2D6FE0';
   });
 }
 

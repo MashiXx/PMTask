@@ -9,7 +9,7 @@
       <div class="flex-center gap-8">
         <input type="text" id="newTagName" placeholder="Tag name" class="flex-1">
         <div class="flex gap-4">
-          <% ['#6C63FF','#00D9FF','#FF5C7A','#00F5A0','#FFB347','#6B6B8E'].forEach((c, i) => { %>
+          <% ['#2D6FE0','#2B9CD8','#EF4444','#1E9E60','#F59E0B','#6B6B8E'].forEach((c, i) => { %>
             <label class="color-swatch-label">
               <input type="radio" name="newTagColor" value="<%= c %>" class="color-swatch-radio" <%= i === 0 ? 'checked' : '' %>>
               <span class="color-swatch" data-color="<%= c %>" style="display:block; width:22px; height:22px; border-radius:6px; background:<%= c %>; border:2px solid transparent; transition:all 0.15s;"></span>

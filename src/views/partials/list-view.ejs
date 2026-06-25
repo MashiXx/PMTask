@@ -1,5 +1,5 @@
 <%
-  const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
   const priorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
 %>
 
@@ -30,8 +30,8 @@
         <% } %>
 
         <% col.tasks.forEach(task => { %>
-          <% const pColor = priorityColors[task.priority] || '#FFB347'; %>
-          <% const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347'; %>
+          <% const pColor = priorityColors[task.priority] || '#F59E0B'; %>
+          <% const progColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B'; %>
           <div class="list-row" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
             <div class="list-col list-col-title">
               <div class="list-priority-dot" style="background:<%= pColor %>;"></div>

@@ -42,7 +42,7 @@ async function loadGroupList() {
 async function addNewGroup() {
   const name = document.getElementById('newGroupName').value.trim();
   if (!name) return;
-  const color = document.getElementById('newGroupColor').value || '#6C63FF';
+  const color = document.getElementById('newGroupColor').value || '#2D6FE0';
   try {
     const res = await fetch('/api/groups', {
       method: 'POST',

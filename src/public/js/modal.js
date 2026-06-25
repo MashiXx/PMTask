@@ -180,7 +180,7 @@ async function openTaskPreview(taskId) {
       dueDateWrap.classList.add('hidden');
     }
 
-    const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+    const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
     const bar = document.getElementById('previewProgressBar');
     bar.style.width = task.progress + '%';
     bar.style.background = progressColor;
@@ -190,7 +190,7 @@ async function openTaskPreview(taskId) {
 
     const assigneesWrap = document.getElementById('previewAssigneesWrap');
     const assigneesEl = document.getElementById('previewAssignees');
-    const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
+    const avatarColors = ['#2D6FE0', '#2B9CD8', '#EF4444', '#1E9E60', '#F59E0B'];
     if (task.assignees && task.assignees.length > 0) {
       assigneesEl.innerHTML = task.assignees.map((a, i) => {
         const c = avatarColors[i % avatarColors.length];
@@ -260,7 +260,7 @@ async function openTaskPreview(taskId) {
   }
 }
 
-const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
 const priorityLabels = { high: 'HIGH', medium: 'MEDIUM', low: 'LOW' };
 
 async function savePreviewField() {
@@ -303,7 +303,7 @@ function updateCardInDOM(taskId, changes) {
 
     if (changes.priority) {
       const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
-      const pColor = priorityColors[changes.priority] || '#FFB347';
+      const pColor = priorityColors[changes.priority] || '#F59E0B';
       const badge = card.querySelector('.badge-priority');
       if (badge) {
         badge.style.color = pColor;
@@ -327,7 +327,7 @@ function updateCardInDOM(taskId, changes) {
 
 const listPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
 const statusLabelsMap = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
-const statusColorsMap = { todo: '#6B6B8E', inprogress: '#00D9FF', review: '#FFB347', done: '#00F5A0' };
+const statusColorsMap = { todo: '#6B6B8E', inprogress: '#2B9CD8', review: '#F59E0B', done: '#1E9E60' };
 
 // Update the per-card status badge in place (status no longer drives columns)
 function updateCardStatusBadge(card, status) {
@@ -350,7 +350,7 @@ function updateListRowsInDOM(taskId, changes) {
     }
 
     if (changes.priority) {
-      const pColor = priorityColors[changes.priority] || '#FFB347';
+      const pColor = priorityColors[changes.priority] || '#F59E0B';
       const dot = row.querySelector('.list-priority-dot');
       if (dot) dot.style.background = pColor;
       const prioCol = row.querySelector('.list-col-priority > div');
@@ -381,9 +381,9 @@ async function refreshCardFromAPI(taskId) {
     if (!task || task.error) return;
 
     const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
-    const pColor = priorityColors[task.priority] || '#FFB347';
+    const pColor = priorityColors[task.priority] || '#F59E0B';
     const pLabel = cardPriorityLabels[task.priority] || 'MED';
-    const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+    const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
 
     // Priority accent line
     const line = card.querySelector('.task-priority-line');
@@ -456,7 +456,7 @@ async function refreshCardFromAPI(taskId) {
     let progressEl = card.querySelector('.task-progress-mini');
     if (task.progress > 0) {
       const progressHTML = `
-        <div class="task-progress-mini-track"><div class="task-progress-mini-fill" style="width:${task.progress}%; background:${progressColor}; ${task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : ''}"></div></div>
+        <div class="task-progress-mini-track"><div class="task-progress-mini-fill" style="width:${task.progress}%; background:${progressColor}; ${task.progress === 100 ? 'box-shadow: 0 0 8px #1E9E6055;' : ''}"></div></div>
         <span class="task-progress-mini-pct" style="color:${progressColor}">${task.progress}%</span>`;
       if (!progressEl) {
         progressEl = document.createElement('div');
@@ -488,8 +488,8 @@ async function refreshListRowsFromAPI(taskId) {
     const task = await res.json();
     if (!task || task.error) return;
 
-    const pColor = priorityColors[task.priority] || '#FFB347';
-    const progColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
+    const pColor = priorityColors[task.priority] || '#F59E0B';
+    const progColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
 
     rows.forEach(row => {
       // Title

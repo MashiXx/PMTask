@@ -39,10 +39,10 @@
         <% users.forEach(user => { %>
           <div class="list-row" id="user-row-<%= user.id %>">
             <div class="list-col" style="flex:2;">
-              <div class="avatar" style="background:rgba(108,99,255,0.15); border-color:rgba(108,99,255,0.35); color:var(--accent); width:28px; height:28px; font-size:0.65rem; flex-shrink:0;"><%- include('../partials/avatar', { avatarUser: user }) %></div>
+              <div class="avatar" style="background:rgba(45,111,224,0.15); border-color:rgba(45,111,224,0.35); color:var(--accent); width:28px; height:28px; font-size:0.65rem; flex-shrink:0;"><%- include('../partials/avatar', { avatarUser: user }) %></div>
               <span class="list-task-name"><%= user.name %></span>
               <% if (user.id === currentUser.id) { %>
-                <span class="list-status-badge" style="color:var(--accent); background:rgba(108,99,255,0.12); font-size:0.55rem;">You</span>
+                <span class="list-status-badge" style="color:var(--accent); background:rgba(45,111,224,0.12); font-size:0.55rem;">You</span>
               <% } %>
             </div>
             <div class="list-col font-mono text-muted" style="flex:1.5; font-size:0.75rem;"><%= user.email %></div>

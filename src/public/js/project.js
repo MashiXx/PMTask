@@ -69,7 +69,7 @@ document.getElementById('projectForm').addEventListener('submit', async (e) => {
 
   const projectId = document.getElementById('projectId').value;
   const name = document.getElementById('projectName').value.trim();
-  const color = document.querySelector('input[name="projectColor"]:checked')?.value || '#6C63FF';
+  const color = document.querySelector('input[name="projectColor"]:checked')?.value || '#2D6FE0';
 
   if (!name) return;
 

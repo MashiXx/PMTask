@@ -67,7 +67,7 @@ async function loadTagList() {
 async function addNewTag() {
   const name = document.getElementById('newTagName').value.trim();
   if (!name) return;
-  const color = document.querySelector('#tagManagerModal input[name="newTagColor"]:checked')?.value || '#6C63FF';
+  const color = document.querySelector('#tagManagerModal input[name="newTagColor"]:checked')?.value || '#2D6FE0';
 
   try {
     await fetch('/api/tags', {

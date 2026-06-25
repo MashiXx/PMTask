@@ -1,10 +1,10 @@
 <%
-  const priorityColors = { high: '#FF5C7A', medium: '#FFB347', low: '#00F5A0' };
+  const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
   const priorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
-  const pColor = priorityColors[task.priority] || '#FFB347';
+  const pColor = priorityColors[task.priority] || '#F59E0B';
   const pLabel = priorityLabels[task.priority] || 'MED';
-  const progressColor = task.progress === 100 ? '#00F5A0' : task.progress > 60 ? '#6C63FF' : '#FFB347';
-  const avatarColors = ['#6C63FF', '#00D9FF', '#FF5C7A', '#00F5A0', '#FFB347'];
+  const progressColor = task.progress === 100 ? '#1E7C4D' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
+  const avatarColors = ['#2D6FE0', '#2B9CD8', '#EF4444', '#1E7C4D', '#F59E0B'];
   const subDone = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
   const subTotal = task.subtasks ? task.subtasks.length : 0;
   const subComplete = subTotal > 0 && (subDone === subTotal || task.status === 'done');
@@ -67,7 +67,7 @@
   <% if (task.progress > 0) { %>
     <div class="task-progress-mini">
       <div class="task-progress-mini-track">
-        <div class="task-progress-mini-fill" style="width: <%= task.progress %>%; background: <%= progressColor %>; <%= task.progress === 100 ? 'box-shadow: 0 0 8px #00F5A055;' : '' %>"></div>
+        <div class="task-progress-mini-fill" style="width: <%= task.progress %>%; background: <%= progressColor %>; <%= task.progress === 100 ? 'box-shadow: 0 0 8px #1E7C4D55;' : '' %>"></div>
       </div>
       <span class="task-progress-mini-pct" style="color: <%= progressColor %>"><%= task.progress %>%</span>
     </div>
