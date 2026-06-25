@@ -22,8 +22,38 @@
     return THUMBNAIL_MIMES.indexOf(mime) !== -1;
   }
 
-  const fileIconSvg =
-    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  const downloadIcon =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  const trashIcon =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+  function timeAgo(iso) {
+    const t = new Date(iso).getTime();
+    if (isNaN(t)) return '';
+    const days = Math.floor((Date.now() - t) / 86400000);
+    if (days <= 0) return 'hôm nay';
+    if (days === 1) return 'hôm qua';
+    if (days < 30) return days + ' ngày trước';
+    if (days < 365) return Math.floor(days / 30) + ' tháng trước';
+    return Math.floor(days / 365) + ' năm trước';
+  }
+
+  function fileExt(name) {
+    const m = /\.([a-z0-9]+)$/i.exec(name || '');
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  // Map an extension to a colour category (drives the badge colour in CSS)
+  function fileCategory(ext) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'heic'].indexOf(ext) !== -1) return 'img';
+    if (ext === 'pdf') return 'pdf';
+    if (['doc', 'docx', 'rtf', 'odt'].indexOf(ext) !== -1) return 'doc';
+    if (['xls', 'xlsx', 'csv', 'ods'].indexOf(ext) !== -1) return 'sheet';
+    if (['ppt', 'pptx', 'odp'].indexOf(ext) !== -1) return 'slide';
+    if (['zip', 'rar', '7z', 'tar', 'gz'].indexOf(ext) !== -1) return 'zip';
+    if (['txt', 'md', 'json', 'xml', 'log', 'yml', 'yaml'].indexOf(ext) !== -1) return 'text';
+    return 'file';
+  }
 
   // ── Lightbox ──
   let lightboxEl = null;
@@ -128,40 +158,44 @@
     let items = Array.isArray(opts.attachments) ? opts.attachments.slice() : [];
     let busy = false;
 
+    function rowHtml(a) {
+      const ext = fileExt(a.filename);
+      const isImg = isImageMime(a.mimeType);
+      const cat = isImg ? 'img' : fileCategory(ext);
+      const previewUrl = '/api/attachments/' + a.id + '/preview';
+      const dlUrl = '/api/attachments/' + a.id + '/download';
+      const badge = ext ? escapeHtml(ext.toUpperCase().slice(0, 4)) : 'FILE';
+      const sub = formatSize(a.size) + (a.createdAt ? ' · ' + timeAgo(a.createdAt) : '');
+      const name = escapeHtml(a.filename);
+
+      // The label is the always-present fallback; an image overlays it and
+      // removes itself on error (missing file / 404) so we never show a broken icon.
+      const media =
+        '<span class="attach-media attach-media--' + cat + '">' +
+          '<span class="attach-media-label">' + badge + '</span>' +
+          (isImg ? '<img class="attach-media-img" src="' + previewUrl + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+        '</span>';
+
+      return '<div class="attach-item" data-id="' + a.id + '" data-type="' + (isImg ? 'img' : 'file') +
+        '" data-url="' + previewUrl + '" data-name="' + name + '">' +
+          media +
+          '<div class="attach-info">' +
+            '<a class="attach-name" href="' + dlUrl + '" target="_blank" rel="noopener" title="' + name + '">' + name + '</a>' +
+            '<span class="attach-sub">' + sub + '</span>' +
+          '</div>' +
+          '<div class="attach-actions">' +
+            '<a class="attach-act" href="' + dlUrl + '" target="_blank" rel="noopener" title="Tải xuống" aria-label="Tải xuống">' + downloadIcon + '</a>' +
+            (canEdit ? '<button type="button" class="attach-act attach-del" data-id="' + a.id + '" title="Xóa" aria-label="Xóa">' + trashIcon + '</button>' : '') +
+          '</div>' +
+        '</div>';
+    }
+
     function render() {
       if (items.length === 0) {
-        container.innerHTML = '<p class="attach-empty">No attachments yet.</p>';
+        container.innerHTML = '<p class="attach-empty">Chưa có tệp đính kèm.</p>';
         return;
       }
-      const images = items.filter(function (a) { return isImageMime(a.mimeType); });
-      const others = items.filter(function (a) { return !isImageMime(a.mimeType); });
-
-      let html = '';
-      if (images.length) {
-        html += '<div class="attach-grid">';
-        images.forEach(function (a) {
-          const url = '/api/attachments/' + a.id + '/preview';
-          html += '<div class="attach-thumb" data-id="' + a.id + '">' +
-            '<img src="' + url + '" alt="' + escapeHtml(a.filename) + '" loading="lazy" data-url="' + url + '" data-name="' + escapeHtml(a.filename) + '">' +
-            (canEdit ? '<button type="button" class="attach-del" data-id="' + a.id + '" title="Delete">&times;</button>' : '') +
-            '<span class="attach-thumb-name">' + escapeHtml(a.filename) + '</span>' +
-            '</div>';
-        });
-        html += '</div>';
-      }
-      if (others.length) {
-        html += '<div class="attach-files">';
-        others.forEach(function (a) {
-          html += '<div class="attach-file" data-id="' + a.id + '">' +
-            '<span class="attach-file-icon">' + fileIconSvg + '</span>' +
-            '<a class="attach-file-name" href="/api/attachments/' + a.id + '/download" target="_blank" rel="noopener">' + escapeHtml(a.filename) + '</a>' +
-            '<span class="attach-file-size">' + formatSize(a.size) + '</span>' +
-            (canEdit ? '<button type="button" class="attach-del" data-id="' + a.id + '" title="Delete">&times;</button>' : '') +
-            '</div>';
-        });
-        html += '</div>';
-      }
-      container.innerHTML = html;
+      container.innerHTML = items.map(rowHtml).join('');
     }
 
     async function doDelete(id) {
@@ -209,12 +243,14 @@
       if (del) {
         e.preventDefault();
         const id = parseInt(del.dataset.id, 10);
-        if (confirm('Delete this attachment?')) doDelete(id);
+        if (confirm('Xóa tệp đính kèm này?')) doDelete(id);
         return;
       }
-      const thumbImg = e.target.closest('.attach-thumb img');
-      if (thumbImg) {
-        openLightbox(thumbImg.dataset.url, thumbImg.dataset.name);
+      // Click an image's thumbnail → open the lightbox (files use their download link)
+      const media = e.target.closest('.attach-item[data-type="img"] .attach-media');
+      if (media) {
+        const item = media.closest('.attach-item');
+        if (item) openLightbox(item.dataset.url, item.dataset.name);
       }
     };
 
