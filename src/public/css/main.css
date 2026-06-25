@@ -1656,6 +1656,96 @@ input, textarea, select {
 }
 
 /* ===================================================
+   12b. MARK-AS-DONE CONTROLS
+   =================================================== */
+
+/* Board card: round completion checkbox at the start of the title row */
+.task-title-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding-left: 0;
+  transition: padding-left 0.18s ease;
+}
+
+/* Title slides right (and back) as the check fades in on hover / when done */
+.task-card:hover .task-title-row,
+.task-card.is-done .task-title-row {
+  padding-left: 24px;
+}
+
+.card-done-check {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.6px solid var(--border-light);
+  background: var(--card);
+  color: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Reveal on card hover; stay visible once completed */
+.task-card:hover .card-done-check,
+.card-done-check.checked {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card-done-check svg { width: 10px; height: 10px; }
+.card-done-check:hover { border-color: var(--mint); color: color-mix(in srgb, var(--mint) 45%, transparent); }
+.card-done-check.checked { background: var(--mint); border-color: var(--mint); color: #fff; }
+
+.task-card.is-done .task-title { text-decoration: line-through; color: var(--text-dim); }
+
+/* Pill toggle used in the preview modal and the detail page */
+.done-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border-light);
+  background: var(--card);
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.done-toggle-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.8px solid var(--border-light);
+  display: grid;
+  place-items: center;
+  color: transparent;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.done-toggle-check svg { width: 11px; height: 11px; }
+.done-toggle:hover { border-color: var(--mint); color: var(--text); }
+.done-toggle:hover .done-toggle-check { border-color: var(--mint); }
+
+.done-toggle.is-done {
+  background: color-mix(in srgb, var(--mint) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mint) 40%, transparent);
+  color: var(--mint);
+}
+
+.done-toggle.is-done .done-toggle-check { background: var(--mint); border-color: var(--mint); color: #fff; }
+
+/* ===================================================
    13. SORTABLEJS STATES
    =================================================== */
 

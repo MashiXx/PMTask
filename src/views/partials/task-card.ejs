@@ -10,7 +10,7 @@
   const subComplete = subTotal > 0 && (subDone === subTotal || task.status === 'done');
 %>
 
-<div class="task-card" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-group-id="<%= task.groupId == null ? '' : task.groupId %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
+<div class="task-card <%= task.status === 'done' ? 'is-done' : '' %>" data-task-id="<%= task.id %>" data-status="<%= task.status %>" data-group-id="<%= task.groupId == null ? '' : task.groupId %>" data-tags="<%= task.tags.map(tt => tt.tag.name).join(',') %>" onclick="openTaskPreview(<%= task.id %>)">
   <div class="task-priority-line" style="background: <%= pColor %>"></div>
 
   <% if (typeof currentUser !== 'undefined' && currentUser) { %>
@@ -30,7 +30,14 @@
     </div>
   <% } %>
 
-  <p class="task-title task-drag-handle"><%= task.title %></p>
+  <div class="task-title-row">
+    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <button type="button" class="card-done-check <%= task.status === 'done' ? 'checked' : '' %>" title="Đánh dấu hoàn thành" aria-label="Đánh dấu hoàn thành" onclick="event.stopPropagation(); toggleCardDone(<%= task.id %>, !this.classList.contains('checked'), this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    <% } %>
+    <p class="task-title task-drag-handle"><%= task.title %></p>
+  </div>
 
   <div class="task-meta">
     <div class="task-badges">

@@ -33,6 +33,11 @@
           <input type="text" id="previewTitle" class="preview-editable-title hidden" placeholder="Tiêu đề công việc">
         </div>
 
+        <button type="button" id="previewDoneToggle" class="done-toggle preview-auth-btn" onclick="togglePreviewDone()">
+          <span class="done-toggle-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="done-toggle-label">Đánh dấu hoàn thành</span>
+        </button>
+
         <!-- Meta: members / priority / due date -->
         <div class="preview-meta-row">
           <div class="preview-meta-item" id="previewAssigneesWrap">

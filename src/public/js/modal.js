@@ -166,6 +166,7 @@ async function openTaskPreview(taskId) {
     const codeEl = document.getElementById('previewTaskCode');
     if (codeEl) codeEl.textContent = 'TASK-' + task.id;
     syncPreviewPriorityPill();
+    syncPreviewDone();
 
     // Render click-to-edit title + markdown description
     renderPreviewTitle(task.title || '', isGuest);
@@ -308,6 +309,71 @@ function formatPreviewDueDate(d) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d).trim());
   if (!m) return d;
   return parseInt(m[3], 10) + ' Th' + parseInt(m[2], 10) + ', ' + m[1];
+}
+
+// ── Mark task as completed (status done ↔ todo) — shared by board, preview, detail ──
+async function setTaskStatusRemote(taskId, status) {
+  const res = await fetch(`/api/tasks/${taskId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error('status update failed');
+  return (await res.json()).task;
+}
+
+// Board card completion checkbox
+async function toggleCardDone(taskId, done, btn) {
+  const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+  if (btn) btn.classList.toggle('checked', done); // optimistic
+  if (card) card.classList.toggle('is-done', done);
+  try {
+    await setTaskStatusRemote(taskId, done ? 'done' : 'todo');
+    if (typeof refreshCardFromAPI === 'function') refreshCardFromAPI(taskId);
+    if (typeof refreshListRowsFromAPI === 'function') refreshListRowsFromAPI(taskId);
+    if (typeof previewTaskId !== 'undefined' && previewTaskId === taskId) {
+      previewTaskStatus = done ? 'done' : 'todo';
+      previewDirty = true;
+      syncPreviewDone();
+      if (typeof refreshPreviewSubtasks === 'function') refreshPreviewSubtasks();
+    }
+  } catch (err) {
+    console.error('Failed to toggle done:', err);
+    if (btn) btn.classList.toggle('checked', !done); // revert
+    if (card) card.classList.toggle('is-done', !done);
+  }
+}
+
+// Preview "mark as completed" pill
+function syncPreviewDone() {
+  const btn = document.getElementById('previewDoneToggle');
+  if (!btn) return;
+  const done = (typeof previewTaskStatus !== 'undefined' && previewTaskStatus === 'done');
+  btn.classList.toggle('is-done', done);
+  const label = btn.querySelector('.done-toggle-label');
+  if (label) label.textContent = done ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành';
+}
+
+async function togglePreviewDone() {
+  if (!previewTaskId) return;
+  const done = previewTaskStatus !== 'done';
+  previewTaskStatus = done ? 'done' : 'todo'; // optimistic
+  previewDirty = true;
+  syncPreviewDone();
+  try {
+    await setTaskStatusRemote(previewTaskId, done ? 'done' : 'todo');
+    if (typeof refreshPreviewSubtasks === 'function') refreshPreviewSubtasks();
+    if (typeof refreshCardFromAPI === 'function') refreshCardFromAPI(previewTaskId);
+    if (typeof refreshListRowsFromAPI === 'function') refreshListRowsFromAPI(previewTaskId);
+    const card = document.querySelector(`.task-card[data-task-id="${previewTaskId}"]`);
+    if (card) card.classList.toggle('is-done', done);
+    const check = card && card.querySelector('.card-done-check');
+    if (check) check.classList.toggle('checked', done);
+  } catch (err) {
+    console.error('Failed to toggle done:', err);
+    previewTaskStatus = done ? 'todo' : 'done'; // revert
+    syncPreviewDone();
+  }
 }
 
 const priorityColors = { high: '#EF4444', medium: '#F59E0B', low: '#1E9E60' };
