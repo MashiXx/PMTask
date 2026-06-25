@@ -436,5 +436,8 @@
   "flash.tooManyRegisterAttempts": "Quá nhiều lần đăng ký. Vui lòng thử lại sau.",
   "flash.loggedInWithGoogle": "Đăng nhập bằng Google thành công",
   "flash.imageTooLarge": "Ảnh quá lớn (tối đa 5 MB)",
-  "flash.uploadFailed": "Tải lên thất bại"
+  "flash.uploadFailed": "Tải lên thất bại",
+  "flash.accountPendingLocal": "Tài khoản của bạn đang chờ phê duyệt. Vui lòng chờ quản trị viên kích hoạt.",
+  "flash.accountCreatedPending": "Đã tạo tài khoản. Vui lòng chờ quản trị viên phê duyệt.",
+  "flash.accountPendingGoogle": "Tài khoản của bạn đang chờ phê duyệt."
 }

@@ -437,5 +437,8 @@
   "flash.tooManyRegisterAttempts": "Too many registration attempts. Please try again later.",
   "flash.loggedInWithGoogle": "Logged in with Google",
   "flash.imageTooLarge": "Image too large (max 5 MB)",
-  "flash.uploadFailed": "Upload failed"
+  "flash.uploadFailed": "Upload failed",
+  "flash.accountPendingLocal": "Your account is pending approval. Please wait for admin to activate it.",
+  "flash.accountCreatedPending": "Account created. Please wait for admin approval.",
+  "flash.accountPendingGoogle": "Your account is pending approval."
 }

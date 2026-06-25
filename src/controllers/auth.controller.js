@@ -55,7 +55,7 @@ exports.postLogin = (req, res, next) => {
     // Authentication failed (bad credentials, pending account, etc.).
     // `info.message` carries the specific reason from the local strategy.
     if (!user) {
-      req.flash('error', (info && info.message) || req.t('flash.invalidCredentials'));
+      req.flash('error', req.t((info && info.message) || 'flash.invalidCredentials'));
       return res.redirect('/auth/login');
     }
     // Success — establish the session.
