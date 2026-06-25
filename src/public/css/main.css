@@ -9,7 +9,7 @@
 :root {
   --bg:           #F4F6FA;
   --surface:      #FBFCFE;
-  --surface-2:    #E4EAF5;
+  --surface-2:    #EEF1F6;
   --card:         #FFFFFF;
   --card-hover:   #F1F6FE;
   --border:       #DCE4F3;
@@ -35,7 +35,7 @@
 [data-theme="light"] {
   --bg:           #F4F6FA;
   --surface:      #FBFCFE;
-  --surface-2:    #E4EAF5;
+  --surface-2:    #EEF1F6;
   --card:         #FFFFFF;
   --card-hover:   #F1F6FE;
   --border:       #DCE4F3;
@@ -3505,7 +3505,7 @@ select option {
    TASK PREVIEW — Trello-style two-column card
    =================================================== */
 .modal.task-preview {
-  max-width: 760px;
+  max-width: 860px;
   padding: 0;
   overflow: hidden;
   display: flex;
@@ -3579,8 +3579,8 @@ select option {
 }
 
 .modal.task-preview .preview-sidebar {
-  flex: 0 0 234px;
-  width: 234px;
+  flex: 0 0 340px;
+  width: 340px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -3590,6 +3590,9 @@ select option {
   border-left: 1px solid var(--border);
   border-radius: 0;
 }
+
+/* Sections relocated into the sidebar: let the flex gap own the spacing */
+.modal.task-preview .preview-sidebar .preview-section { margin-bottom: 0; }
 
 /* Code + title */
 .preview-code {
