@@ -1,7 +1,7 @@
 module.exports = {
   isAuthenticated(req, res, next) {
     if (req.isAuthenticated()) return next();
-    req.flash('error', 'Please log in first');
+    req.flash('error', req.t('flash.pleaseLogin'));
     res.redirect('/auth/login');
   },
   isGuest(req, res, next) {
@@ -13,7 +13,7 @@ module.exports = {
     if (req.headers.accept?.includes('application/json')) {
       return res.status(403).json({ error: 'Access denied' });
     }
-    req.flash('error', 'Access denied');
+    req.flash('error', req.t('flash.accessDenied'));
     res.redirect('/dashboard');
   },
 };

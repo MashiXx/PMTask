@@ -434,6 +434,8 @@
   "flash.somethingWentWrong": "Đã có lỗi xảy ra",
   "flash.loginServerError": "Không thể đăng nhập lúc này — máy chủ gặp sự cố. Vui lòng thử lại sau.",
   "flash.invalidCredentials": "Email hoặc mật khẩu không đúng",
+  "flash.pleaseLogin": "Vui lòng đăng nhập trước",
+  "flash.accessDenied": "Truy cập bị từ chối",
   "flash.sessionStartFailed": "Đăng nhập thành công nhưng không thể khởi tạo phiên. Vui lòng thử lại.",
   "flash.loggedOut": "Đăng xuất thành công",
   "flash.loadDashboardFailed": "Không thể tải bảng điều khiển",

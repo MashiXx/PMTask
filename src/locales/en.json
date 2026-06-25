@@ -435,6 +435,8 @@
   "flash.somethingWentWrong": "Something went wrong",
   "flash.loginServerError": "Unable to sign in right now — the server had a problem. Please try again in a moment.",
   "flash.invalidCredentials": "Invalid email or password",
+  "flash.pleaseLogin": "Please log in first",
+  "flash.accessDenied": "Access denied",
   "flash.sessionStartFailed": "Signed in, but we could not start your session. Please try again.",
   "flash.loggedOut": "Logged out successfully",
   "flash.loadDashboardFailed": "Failed to load dashboard",
