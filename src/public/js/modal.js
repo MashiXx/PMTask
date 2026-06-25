@@ -158,7 +158,6 @@ async function openTaskPreview(taskId) {
     renderPreviewTitle(task.title || '', isGuest);
     renderPreviewDescription(task.description || '', isGuest);
 
-    const tagsEl = document.getElementById('previewTags');
     previewCurrentTags = (task.tags || []).map(tt => tt.tag.name);
     renderPreviewTagBadges();
 
@@ -720,6 +719,7 @@ let previewCurrentTags = [];
 
 function renderPreviewTagBadges() {
   const tagsEl = document.getElementById('previewTags');
+  if (!tagsEl) return;
   if (previewCurrentTags.length > 0) {
     tagsEl.innerHTML = previewCurrentTags.map(name => {
       const c = tagColorMap[name] || '#6B6B8E';

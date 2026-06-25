@@ -3520,28 +3520,11 @@ select option {
   padding: 16px 20px;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   background: linear-gradient(135deg, #2D6FE0, #5B8DEF);
   flex-shrink: 0;
 }
-
-.preview-cover-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-self: flex-end;
-}
-
-.preview-cover-tags .tag-badge {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.34) !important;
-  text-transform: none;
-  font-weight: 700;
-}
-
-.preview-cover-tags > span { color: rgba(255, 255, 255, 0.88); font-size: 0.75rem; }
 
 .preview-cover-actions {
   display: flex;
