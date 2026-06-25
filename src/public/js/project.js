@@ -10,8 +10,8 @@ function openProjectModal(id, name, color, publicTasks, publicDocuments) {
   const pdCheck = document.getElementById('projectPublicDocuments');
 
   if (id) {
-    title.textContent = 'Edit Project';
-    submitBtn.textContent = 'Save Changes';
+    title.textContent = t('js.project.editProject');
+    submitBtn.textContent = t('js.project.saveChanges');
     idInput.value = id;
     nameInput.value = name || '';
     const radios = document.querySelectorAll('input[name="projectColor"]');
@@ -23,8 +23,8 @@ function openProjectModal(id, name, color, publicTasks, publicDocuments) {
       if (pdCheck) pdCheck.checked = !!publicDocuments;
     }
   } else {
-    title.textContent = 'New Project';
-    submitBtn.textContent = 'Create Project';
+    title.textContent = t('js.project.newProject');
+    submitBtn.textContent = t('js.project.createProject');
     idInput.value = '';
     nameInput.value = '';
     const radios = document.querySelectorAll('input[name="projectColor"]');

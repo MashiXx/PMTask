@@ -11,14 +11,14 @@ function openFolderModal(editId, editName) {
   const hidden = document.getElementById('folderEditId');
 
   if (editId && editName) {
-    title.textContent = 'Rename Folder';
+    title.textContent = t('js.docs.renameFolder');
     input.value = editName;
-    btn.textContent = 'Save';
+    btn.textContent = t('js.docs.save');
     hidden.value = editId;
   } else {
-    title.textContent = 'New Folder';
+    title.textContent = t('js.docs.newFolder');
     input.value = '';
-    btn.textContent = 'Create';
+    btn.textContent = t('js.docs.create');
     hidden.value = '';
   }
 
@@ -45,7 +45,7 @@ async function submitFolder(e) {
         body: JSON.stringify({ name }),
       });
       const data = await res.json();
-      if (!res.ok) return alert(data.error || 'Failed to rename folder');
+      if (!res.ok) return alert(data.error || t('js.docs.renameFolderFailed'));
     } else {
       const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders`, {
         method: 'POST',
@@ -53,27 +53,27 @@ async function submitFolder(e) {
         body: JSON.stringify({ name, projectId: PROJECT_ID, parentId: CURRENT_FOLDER_ID }),
       });
       const data = await res.json();
-      if (!res.ok) return alert(data.error || 'Failed to create folder');
+      if (!res.ok) return alert(data.error || t('js.docs.createFolderFailed'));
     }
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   }
 }
 
 async function deleteFolder(id, name) {
-  if (!confirm(`Delete folder "${name}" and all its contents?`)) return;
+  if (!confirm(t('js.docs.deleteFolderConfirm', { name }))) return;
   try {
     const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/folders/${id}`, {
       method: 'DELETE',
     });
     const data = await res.json();
-    if (!res.ok) return alert(data.error || 'Failed to delete folder');
+    if (!res.ok) return alert(data.error || t('js.docs.deleteFolderFailed'));
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   }
 }
 
@@ -172,10 +172,10 @@ function uploadFileWithProgress(file, folderId, index) {
 }
 
 async function submitUpload() {
-  if (selectedFiles.length === 0) return alert('Please select files to upload');
+  if (selectedFiles.length === 0) return alert(t('js.docs.selectFiles'));
 
   const btn = document.getElementById('uploadSubmitBtn');
-  btn.textContent = 'Uploading...';
+  btn.textContent = t('js.docs.uploading') + '...';
   btn.disabled = true;
 
   const folderId = document.getElementById('uploadFolderSelect').value;
@@ -193,13 +193,13 @@ async function submitUpload() {
     if (!hasError) {
       window.location.reload();
     } else {
-      btn.textContent = 'Retry';
+      btn.textContent = t('js.docs.retry');
       btn.disabled = false;
     }
   } catch (err) {
     console.error(err);
-    alert('Upload failed');
-    btn.textContent = 'Upload';
+    alert(t('js.docs.uploadFailed'));
+    btn.textContent = t('js.docs.upload');
     btn.disabled = false;
   }
 }
@@ -210,7 +210,7 @@ function downloadDoc(id) {
 }
 
 async function renameDoc(id, currentName) {
-  const name = prompt('Rename document:', currentName);
+  const name = prompt(t('js.docs.renameDocPrompt'), currentName);
   if (!name || name === currentName) return;
 
   try {
@@ -220,26 +220,26 @@ async function renameDoc(id, currentName) {
       body: JSON.stringify({ title: name }),
     });
     const data = await res.json();
-    if (!res.ok) return alert(data.error || 'Failed to rename');
+    if (!res.ok) return alert(data.error || t('js.docs.renameFailed'));
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   }
 }
 
 async function deleteDoc(id, name) {
-  if (!confirm(`Delete "${name}"?`)) return;
+  if (!confirm(t('js.docs.deleteDocConfirm', { name }))) return;
   try {
     const res = await fetch(`/projects/${PROJECT_SLUG}/documents/api/files/${id}`, {
       method: 'DELETE',
     });
     const data = await res.json();
-    if (!res.ok) return alert(data.error || 'Failed to delete');
+    if (!res.ok) return alert(data.error || t('js.docs.deleteFailed'));
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   }
 }
 
@@ -250,9 +250,9 @@ function openMoveModal(id, type, name) {
 
   document.getElementById('moveItemId').value = id;
   document.getElementById('moveItemType').value = type;
-  document.getElementById('moveModalTitle').textContent = type === 'folder' ? 'Move Folder' : 'Move Document';
+  document.getElementById('moveModalTitle').textContent = type === 'folder' ? t('js.docs.moveFolder') : t('js.docs.moveDocument');
   document.getElementById('moveItemName').innerHTML =
-    (type === 'folder' ? 'Folder: ' : 'File: ') +
+    (type === 'folder' ? t('js.docs.folderPrefix') : t('js.docs.filePrefix')) + ': ' +
     '<strong style="color:var(--text)">' + escapeHtml(name) + '</strong>';
 
   const select = document.getElementById('moveFolderSelect');
@@ -304,11 +304,11 @@ async function submitMove(e) {
       body,
     });
     const data = await res.json();
-    if (!res.ok) return alert(data.error || 'Failed to move');
+    if (!res.ok) return alert(data.error || t('js.docs.moveFailed'));
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   } finally {
     btn.textContent = 'Move';
     btn.disabled = false;
@@ -330,13 +330,13 @@ function openPasswordModal(folderId, folderName, hasPassword) {
   const hint = document.getElementById('passwordHint');
 
   if (hasPassword) {
-    title.textContent = 'Change Folder Password';
-    btn.textContent = 'Update Password';
-    hint.textContent = 'Leave empty to remove password protection';
+    title.textContent = t('js.docs.changeFolderPwd');
+    btn.textContent = t('js.docs.updatePwd');
+    hint.textContent = t('js.docs.pwdHintRemove');
   } else {
-    title.textContent = 'Set Folder Password';
-    btn.textContent = 'Set Password';
-    hint.textContent = 'Non-admin users will need this password to access the folder';
+    title.textContent = t('js.docs.setFolderPwd');
+    btn.textContent = t('js.docs.setPwd');
+    hint.textContent = t('js.docs.pwdHintSet');
   }
 
   modal.classList.add('active');
@@ -360,11 +360,11 @@ async function submitPassword(e) {
       body: JSON.stringify({ password }),
     });
     const data = await res.json();
-    if (!res.ok) return alert(data.error || 'Failed to set password');
+    if (!res.ok) return alert(data.error || t('js.docs.setPwdFailed'));
     window.location.reload();
   } catch (err) {
     console.error(err);
-    alert('An error occurred');
+    alert(t('js.docs.errorOccurred'));
   }
 }
 
@@ -383,7 +383,7 @@ async function submitUnlock(e) {
     });
     const data = await res.json();
     if (!res.ok) {
-      errorEl.textContent = data.error || 'Incorrect password';
+      errorEl.textContent = data.error || t('js.docs.incorrectPwd');
       errorEl.style.display = 'block';
       document.getElementById('unlockPasswordInput').value = '';
       document.getElementById('unlockPasswordInput').focus();
@@ -392,7 +392,7 @@ async function submitUnlock(e) {
     window.location.reload();
   } catch (err) {
     console.error(err);
-    errorEl.textContent = 'An error occurred';
+    errorEl.textContent = t('js.docs.errorOccurred');
     errorEl.style.display = 'block';
   }
 }
@@ -420,7 +420,7 @@ if (dropZone) {
     const origHTML = dropZone.innerHTML;
     dropZone.innerHTML = `
       <div class="dropzone-progress">
-        <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+        <p style="font-size:0.85rem;margin-bottom:8px;">${t('js.docs.uploading')} <span id="dzCurrent">0</span> / ${files.length} ${t('js.docs.uploadingFiles')}...</p>
         <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
           <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
         </div>
@@ -466,7 +466,7 @@ if (fileInput) {
     if (dropZone) {
       dropZone.innerHTML = `
         <div class="dropzone-progress">
-          <p style="font-size:0.85rem;margin-bottom:8px;">Uploading <span id="dzCurrent">0</span> / ${files.length} files...</p>
+          <p style="font-size:0.85rem;margin-bottom:8px;">${t('js.docs.uploading')} <span id="dzCurrent">0</span> / ${files.length} ${t('js.docs.uploadingFiles')}...</p>
           <div class="doc-upload-progress" style="display:block;width:100%;max-width:300px;margin:0 auto;">
             <div class="doc-upload-progress-bar" id="dzProgressBar" style="width:0%"></div>
           </div>
@@ -568,7 +568,7 @@ function previewDoc(id, mimeType, title) {
   const filename = document.getElementById('previewFilename');
 
   filename.textContent = title;
-  body.innerHTML = '<div class="preview-loading">Loading preview...</div>';
+  body.innerHTML = '<div class="preview-loading">' + t('js.docs.loadingPreview') + '</div>';
   modal.classList.add('active');
 
   // Track current index for navigation
@@ -596,8 +596,8 @@ function previewDoc(id, mimeType, title) {
     body.innerHTML = `
       <div class="preview-unsupported">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p>Preview not available for this file type</p>
-        <button class="btn-submit" onclick="downloadDoc(${id}); closePreviewModal();">Download File</button>
+        <p>${t('js.docs.previewUnavailable')}</p>
+        <button class="btn-submit" onclick="downloadDoc(${id}); closePreviewModal();">${t('js.docs.downloadFile')}</button>
       </div>`;
   }
 }
@@ -611,7 +611,7 @@ async function previewImage(url, body) {
     currentBlobUrl = URL.createObjectURL(blob);
     body.innerHTML = `<img src="${currentBlobUrl}" class="preview-image" alt="preview">`;
   } catch (err) {
-    body.innerHTML = '<div class="preview-unsupported"><p>Failed to load image</p></div>';
+    body.innerHTML = '<div class="preview-unsupported"><p>' + t('js.docs.loadImageFailed') + '</p></div>';
   }
 }
 
@@ -620,7 +620,7 @@ async function previewFetch(url, body, type) {
     const res = await fetch(url);
     const data = await res.json();
     if (data.type === 'unsupported') {
-      body.innerHTML = `<div class="preview-unsupported"><p>${escapeHtml(data.message || 'Preview not available')}</p></div>`;
+      body.innerHTML = `<div class="preview-unsupported"><p>${escapeHtml(data.message || t('js.docs.previewUnavailable'))}</p></div>`;
       return;
     }
     if (type === 'text') {
@@ -641,7 +641,7 @@ async function previewFetch(url, body, type) {
       body.appendChild(iframe);
     }
   } catch (err) {
-    body.innerHTML = '<div class="preview-unsupported"><p>Failed to load preview</p></div>';
+    body.innerHTML = '<div class="preview-unsupported"><p>' + t('js.docs.loadPreviewFailed') + '</p></div>';
   }
 }
 
@@ -680,7 +680,7 @@ async function previewPdf(url, body) {
     }
   } catch (err) {
     console.error(err);
-    body.innerHTML = '<div class="preview-unsupported"><p>Failed to load PDF preview</p></div>';
+    body.innerHTML = '<div class="preview-unsupported"><p>' + t('js.docs.loadPdfFailed') + '</p></div>';
   }
 }
 

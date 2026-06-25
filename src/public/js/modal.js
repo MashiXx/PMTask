@@ -1,7 +1,7 @@
 function openTaskModal(status) {
   const modal = document.getElementById('taskModal');
-  document.getElementById('taskModalTitle').textContent = 'New Task';
-  document.getElementById('taskSubmitBtn').textContent = 'Create Task';
+  document.getElementById('taskModalTitle').textContent = t('js.modal.newTask');
+  document.getElementById('taskSubmitBtn').textContent = t('js.modal.createTask');
   document.getElementById('taskId').value = '';
   document.getElementById('taskForm').reset();
   if (status) {
@@ -20,8 +20,8 @@ async function openEditModal(taskId) {
     const res = await fetch(`/api/tasks/${taskId}`);
     const task = await res.json();
 
-    document.getElementById('taskModalTitle').textContent = 'Edit Task';
-    document.getElementById('taskSubmitBtn').textContent = 'Save Changes';
+    document.getElementById('taskModalTitle').textContent = t('js.modal.editTask');
+    document.getElementById('taskSubmitBtn').textContent = t('js.modal.saveChanges');
     document.getElementById('taskId').value = task.id;
     document.getElementById('taskTitle').value = task.title;
     document.getElementById('taskDescription').value = task.description || '';
@@ -134,7 +134,7 @@ let previewDirty = false;
 // Build tagColorMap dynamically from PROJECT_TAGS
 const tagColorMap = {};
 if (typeof window.PROJECT_TAGS !== 'undefined') {
-  window.PROJECT_TAGS.forEach(t => { tagColorMap[t.name] = t.color; });
+  window.PROJECT_TAGS.forEach(tag => { tagColorMap[tag.name] = tag.color; });
 }
 
 // Inner content for an avatar circle: <img> when the user has an avatar, else initials.
@@ -181,10 +181,10 @@ async function openTaskPreview(taskId) {
     // Build tag pill options
     const optionsEl = document.getElementById('previewTagOptions');
     if (window.PROJECT_TAGS && window.PROJECT_TAGS.length > 0) {
-      optionsEl.innerHTML = window.PROJECT_TAGS.map(t => {
-        const isActive = previewCurrentTags.includes(t.name);
-        const label = t.name.charAt(0).toUpperCase() + t.name.slice(1);
-        return `<span class="preview-tag-pill${isActive ? ' active' : ''}" style="--pill-color:${t.color}" data-tag="${t.name}" onclick="togglePreviewTag('${t.name}')">${label}</span>`;
+      optionsEl.innerHTML = window.PROJECT_TAGS.map(tag => {
+        const isActive = previewCurrentTags.includes(tag.name);
+        const label = tag.name.charAt(0).toUpperCase() + tag.name.slice(1);
+        return `<span class="preview-tag-pill${isActive ? ' active' : ''}" style="--pill-color:${tag.color}" data-tag="${tag.name}" onclick="togglePreviewTag('${tag.name}')">${label}</span>`;
       }).join('');
     }
 
@@ -194,7 +194,7 @@ async function openTaskPreview(taskId) {
       dueDateEl.textContent = formatPreviewDueDate(task.dueDate);
       dueDateEl.parentElement.classList.remove('preview-date-empty');
     } else {
-      dueDateEl.textContent = 'Chưa đặt';
+      dueDateEl.textContent = t('js.modal.dateNone');
       dueDateEl.parentElement.classList.add('preview-date-empty');
     }
     if (dueDateWrap) dueDateWrap.classList.remove('hidden');
@@ -211,7 +211,7 @@ async function openTaskPreview(taskId) {
         return `<div class="preview-avatar" style="background:${c}; color:#fff;" title="${a.user.name}">${avatarInner(a.user)}</div>`;
       }).join('');
     } else {
-      assigneesEl.innerHTML = '<span class="preview-avatars-empty">Chưa có</span>';
+      assigneesEl.innerHTML = '<span class="preview-avatars-empty">' + t('js.modal.noMembers') + '</span>';
     }
 
     const creatorEl = document.getElementById('previewCreator');
@@ -278,7 +278,7 @@ function syncPreviewPriorityPill() {
   const pill = document.getElementById('previewPriorityPill');
   const txt = document.getElementById('previewPriorityText');
   if (!sel || !pill) return;
-  const labels = { low: 'Thấp', medium: 'Trung bình', high: 'Cao' };
+  const labels = { low: t('js.priority.low'), medium: t('js.priority.medium'), high: t('js.priority.high') };
   pill.dataset.priority = sel.value;
   if (txt) txt.textContent = labels[sel.value] || sel.value;
 }
@@ -297,11 +297,11 @@ function previewRelativeTime(iso) {
   const then = new Date(iso).getTime();
   if (isNaN(then)) return '';
   const days = Math.floor((Date.now() - then) / 86400000);
-  if (days <= 0) return 'hôm nay';
-  if (days === 1) return 'hôm qua';
-  if (days < 30) return days + ' ngày trước';
-  if (days < 365) return Math.floor(days / 30) + ' tháng trước';
-  return Math.floor(days / 365) + ' năm trước';
+  if (days <= 0) return t('js.time.today');
+  if (days === 1) return t('js.time.yesterday');
+  if (days < 30) return t('js.time.daysAgo', { n: days });
+  if (days < 365) return t('js.time.monthsAgo', { n: Math.floor(days / 30) });
+  return t('js.time.yearsAgo', { n: Math.floor(days / 365) });
 }
 
 // "2025-07-02" → "2 Th7, 2025"
@@ -350,7 +350,7 @@ function syncPreviewDone() {
   if (!btn) return;
   const done = (typeof previewTaskStatus !== 'undefined' && previewTaskStatus === 'done');
   btn.classList.toggle('is-done', done);
-  btn.title = done ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành';
+  btn.title = done ? t('js.modal.alreadyDone') : t('js.modal.markDone');
   btn.setAttribute('aria-label', btn.title);
 }
 
@@ -415,7 +415,7 @@ function updateCardInDOM(taskId, changes) {
     if (titleEl && changes.title) titleEl.textContent = changes.title;
 
     if (changes.priority) {
-      const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+      const cardPriorityLabels = { high: t('js.priority.badgeHigh'), medium: t('js.priority.badgeMed'), low: t('js.priority.badgeLow') };
       const pColor = priorityColors[changes.priority] || '#F59E0B';
       const badge = card.querySelector('.badge-priority');
       if (badge) {
@@ -438,8 +438,8 @@ function updateCardInDOM(taskId, changes) {
   updateListRowsInDOM(taskId, changes);
 }
 
-const listPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
-const statusLabelsMap = { todo: 'To Do', inprogress: 'In Progress', review: 'In Review', done: 'Completed' };
+const listPriorityLabels = { high: t('js.priority.badgeHigh'), medium: t('js.priority.badgeMed'), low: t('js.priority.badgeLow') };
+const statusLabelsMap = { todo: t('js.status.todo'), inprogress: t('js.status.inProgress'), review: t('js.status.inReview'), done: t('js.status.done') };
 const statusColorsMap = { todo: '#6B6B8E', inprogress: '#2B9CD8', review: '#F59E0B', done: '#1E9E60' };
 
 // Update the per-card status badge in place (status no longer drives columns)
@@ -493,7 +493,7 @@ async function refreshCardFromAPI(taskId) {
     const task = await res.json();
     if (!task || task.error) return;
 
-    const cardPriorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+    const cardPriorityLabels = { high: t('js.priority.badgeHigh'), medium: t('js.priority.badgeMed'), low: t('js.priority.badgeLow') };
     const pColor = priorityColors[task.priority] || '#F59E0B';
     const pLabel = cardPriorityLabels[task.priority] || 'MED';
     const progressColor = task.progress === 100 ? '#1E9E60' : task.progress > 60 ? '#2D6FE0' : '#F59E0B';
@@ -663,8 +663,8 @@ function renderPreviewTitle(title, isGuest) {
   display.classList.remove('hidden');
   input.classList.add('hidden');
 
-  const t = (title || '').trim();
-  display.textContent = t || (isGuest ? 'Untitled' : 'Click to add a title...');
+  const titleText = (title || '').trim();
+  display.textContent = titleText || (isGuest ? t('js.modal.untitled') : t('js.modal.addTitle'));
 
   if (!isGuest) {
     display.classList.remove('preview-readonly');
@@ -716,8 +716,8 @@ function renderPreviewDescription(description, isGuest) {
     rendered.innerHTML = '<div class="markdown-body">' + safeHtml + '</div>';
   } else {
     rendered.innerHTML = isGuest
-      ? '<span class="preview-desc-empty">No description</span>'
-      : '<span class="preview-desc-empty">Click to add description...</span>';
+      ? '<span class="preview-desc-empty">' + t('js.modal.noDescription') + '</span>'
+      : '<span class="preview-desc-empty">' + t('js.modal.addDescription') + '</span>';
   }
 
   // Editable: click to switch to textarea
@@ -808,7 +808,7 @@ function renderPreviewTagBadges() {
       return `<span class="tag-badge" style="background:${c}18; border:1px solid ${c}35; color:${c};">${label}</span>`;
     }).join('');
   } else {
-    tagsEl.innerHTML = '<span style="color:var(--text-dim); font-size:0.75rem;">No tags</span>';
+    tagsEl.innerHTML = '<span style="color:var(--text-dim); font-size:0.75rem;">' + t('js.modal.noTags') + '</span>';
   }
 }
 
