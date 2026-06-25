@@ -5,13 +5,17 @@ const LOCALES = { en, vi };
 const SUPPORTED = ['en', 'vi'];
 const LABELS = { en: 'English', vi: 'Tiếng Việt' };
 
+for (const lang of SUPPORTED) {
+  if (!LOCALES[lang]) throw new Error(`[i18n] SUPPORTED lang '${lang}' has no LOCALES entry`);
+}
+
 function normalizeLang(lang) {
   return SUPPORTED.includes(lang) ? lang : 'en';
 }
 
 function interpolate(str, vars) {
   if (!vars) return str;
-  return str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+  return str.replace(/\{(\w+)\}/g, (m, k) => (Object.hasOwn(vars, k) ? String(vars[k]) : m));
 }
 
 function t(key, lang, vars) {

@@ -19,7 +19,9 @@ test('t falls back to English when key missing in target lang', () => {
 });
 
 test('t returns the key itself when missing everywhere', () => {
+  const orig = console.warn; console.warn = () => {};
   assert.strictEqual(t('nope.nope', 'en'), 'nope.nope');
+  console.warn = orig;
 });
 
 test('t interpolates {vars}', () => {
