@@ -97,14 +97,46 @@ async function confirmDelete() {
   }
 }
 
-function toggleTaskMenu(taskId) {
-  closeAllMenus();
+function toggleTaskMenu(taskId, btn) {
   const menu = document.getElementById(`menu-${taskId}`);
-  if (menu) menu.classList.toggle('active');
+  if (!menu) return;
+  const wasOpen = menu.classList.contains('active');
+  closeAllMenus();
+  if (wasOpen) return;
+
+  const anchor = btn || menu.previousElementSibling;
+  // Portal the menu to <body> before showing it. The card lives inside the column's
+  // overflow:auto/hidden boxes (which would clip the menu), and .task-card:hover sets
+  // a transform that makes the card a containing block for position:fixed (which would
+  // re-clip it). Moving the menu to <body> escapes both; restore it on close.
+  if (menu.parentElement !== document.body) {
+    menu._home = menu.parentElement;
+    menu._next = menu.nextSibling;
+    document.body.appendChild(menu);
+  }
+  menu.classList.add('active'); // display:block so we can measure it
+
+  const r = anchor.getBoundingClientRect();
+  const gap = 4;
+  const margin = 8;
+  let left = Math.max(margin, r.right - menu.offsetWidth);
+  let top = r.bottom + gap;
+  if (top + menu.offsetHeight > window.innerHeight - margin) {
+    top = Math.max(margin, r.top - menu.offsetHeight - gap);
+  }
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
 }
 
 function closeAllMenus() {
-  document.querySelectorAll('.task-menu').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.task-menu').forEach(m => {
+    m.classList.remove('active');
+    if (m._home) {
+      m._home.insertBefore(m, m._next);
+      m._home = null;
+      m._next = null;
+    }
+  });
 }
 
 document.addEventListener('click', (e) => {
@@ -112,6 +144,10 @@ document.addEventListener('click', (e) => {
     closeAllMenus();
   }
 });
+
+// A fixed-position menu won't follow its card on scroll/resize — close it instead.
+window.addEventListener('scroll', closeAllMenus, true);
+window.addEventListener('resize', closeAllMenus);
 
 // Preview cover "..." menu (delete card)
 function togglePreviewCoverMenu() {
