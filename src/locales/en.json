@@ -180,6 +180,8 @@
   "js.mindmap.helpDelete": "Delete node",
   "js.mindmap.helpUpDown": "Previous / next sibling",
   "js.mindmap.helpLeftRight": "Parent / child",
+  "js.mindmap.helpUndo": "Undo (label/color/move/collapse)",
+  "js.mindmap.helpRedo": "Redo",
   "js.mindmap.helpQuestion": "Toggle this help",
   "js.mindmap.cancel": "Cancel",
   "js.mindmap.save": "Save",

@@ -7,6 +7,19 @@ const MM = {
   zoom: 1,
   selectedId: null,
 };
+MM.history = mmCreateHistory(50);
+function mmRecord(cmd) { MM.history.push(cmd); }
+async function mmUndo() { const c = MM.history.undo(); if (c) await c.undo(); }
+async function mmRedo() { const c = MM.history.redo(); if (c) await c.redo(); }
+// Persist a single scalar field and re-render (used by undo/redo closures).
+function mmSetField(id, field, value) {
+  const node = MM.byId.get(id);
+  if (!node) return;
+  node[field] = value;
+  mmRender();
+  apiUpdateNode(id, { [field]: value });
+}
+
 const STATUS_COLORS = { todo:'#6B6B8E', inprogress:'#2B9CD8', review:'#F59E0B', done:'#1E9E60' };
 const STATUS_LABELS = { todo: t('js.mindmap.statusTodo'), inprogress: t('js.mindmap.statusInProgress'), review: t('js.mindmap.statusInReview'), done: t('js.mindmap.statusDone') };
 const NODE_W = 180, NODE_H = 70; // approx, for fit bounds
@@ -256,6 +269,9 @@ function endPointer(e) {
       node.x = g.nx; node.y = g.ny;
       mmRender(); // settle: auto-descendants keep following the dropped parent
       apiUpdateNode(g.id, { x: g.nx, y: g.ny }, () => { node.x = prevX; node.y = prevY; mmRender(); });
+      mmRecord({ label: 'move',
+        undo: () => { const m = MM.byId.get(g.id); m.x = prevX; m.y = prevY; mmRender(); apiUpdateNode(g.id, { x: prevX, y: prevY }); },
+        redo: () => { const m = MM.byId.get(g.id); m.x = g.nx; m.y = g.ny; mmRender(); apiUpdateNode(g.id, { x: g.nx, y: g.ny }); } });
     } else {
       mmSelect(g.id); // a click (no movement) selects the node
     }
@@ -403,6 +419,9 @@ function mmEditLabel(id) {
       const prev = node.label;
       node.label = text;
       apiUpdateNode(id, { label: text }, () => { node.label = prev; labelEl.textContent = prev; });
+      mmRecord({ label: 'label',
+        undo: () => mmSetField(id, 'label', prev),
+        redo: () => mmSetField(id, 'label', text) });
     } else {
       labelEl.textContent = node.label; // revert on empty / unchanged / cancel
     }
@@ -448,6 +467,9 @@ async function mmToggleCollapse(id) {
   node.collapsed = !node.collapsed;
   mmRender();
   apiUpdateNode(id, { collapsed: node.collapsed }, () => { node.collapsed = prev; mmRender(); });
+  mmRecord({ label: 'collapse',
+    undo: () => mmSetField(id, 'collapsed', prev),
+    redo: () => mmSetField(id, 'collapsed', !prev) });
 }
 
 async function mmSetColor(id, color) {
@@ -464,6 +486,9 @@ async function mmSetColor(id, color) {
     node.color = prev;
     if (el) { const c = mmNodeColors(node, MM.byId); el.style.borderLeftColor = c.accent; el.style.background = c.bg; }
   });
+  mmRecord({ label: 'color',
+    undo: () => mmSetField(id, 'color', prev),
+    redo: () => mmSetField(id, 'color', color) });
   mmRenderEdges(mmPositions()); // descendants' edge colors follow an explicit override
 }
 
@@ -487,6 +512,9 @@ async function mmResetNode(id) {
   node.x = null; node.y = null;
   mmRender();
   apiUpdateNode(id, { x: null, y: null }, () => { node.x = px; node.y = py; mmRender(); });
+  mmRecord({ label: 'reset',
+    undo: () => { const m = MM.byId.get(id); m.x = px; m.y = py; mmRender(); apiUpdateNode(id, { x: px, y: py }); },
+    redo: () => { const m = MM.byId.get(id); m.x = null; m.y = null; mmRender(); apiUpdateNode(id, { x: null, y: null }); } });
 }
 
 async function mmConvert(id) {
@@ -604,6 +632,17 @@ function mmNavigate(key) {
 const MM_NAV_KEYS = ['Enter', 'Tab', 'F2', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 document.addEventListener('keydown', (e) => {
   if (e.defaultPrevented) return; // already handled elsewhere (e.g. inline label edit)
+  // Undo/redo: handle before the field-guard so they work without a node selected,
+  // but skip when focus is in a text field or contentEditable (label edit, search box).
+  if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+    const ae2 = document.activeElement;
+    const inField = ae2 && (ae2.isContentEditable || ae2.tagName === 'INPUT' || ae2.tagName === 'TEXTAREA' || ae2.tagName === 'SELECT');
+    if (!inField) {
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) { e.preventDefault(); mmUndo(); return; }
+      if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); mmRedo(); return; }
+    }
+  }
   // Ignore while typing in a field, editing a label inline, or any modal/dialog is open.
   const ae = document.activeElement;
   if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return;
@@ -651,6 +690,8 @@ function mmToggleHelp(force) {
         <dt>Delete</dt><dd>${t('js.mindmap.helpDelete')}</dd>
         <dt>&uarr; &darr;</dt><dd>${t('js.mindmap.helpUpDown')}</dd>
         <dt>&larr; &rarr;</dt><dd>${t('js.mindmap.helpLeftRight')}</dd>
+        <dt>Ctrl + Z</dt><dd>${t('js.mindmap.helpUndo')}</dd>
+        <dt>Ctrl + Y</dt><dd>${t('js.mindmap.helpRedo')}</dd>
         <dt>?</dt><dd>${t('js.mindmap.helpQuestion')}</dd>
       </dl>`;
     canvasEl.appendChild(el);

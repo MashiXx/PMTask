@@ -179,6 +179,8 @@
   "js.mindmap.helpDelete": "Xoá nút",
   "js.mindmap.helpUpDown": "Nút cùng cấp trước / tiếp theo",
   "js.mindmap.helpLeftRight": "Nút cha / nút con",
+  "js.mindmap.helpUndo": "Hoàn tác (nhãn/màu/di chuyển/thu gọn)",
+  "js.mindmap.helpRedo": "Làm lại",
   "js.mindmap.helpQuestion": "Bật/tắt trợ giúp này",
   "js.mindmap.cancel": "Huỷ",
   "js.mindmap.save": "Lưu",
