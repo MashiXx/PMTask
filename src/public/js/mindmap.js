@@ -396,7 +396,7 @@ function mmEditLabel(id) {
     labelEl.removeAttribute('contenteditable');
     labelEl.removeEventListener('blur', onBlur);
     labelEl.removeEventListener('keydown', onKey);
-    const text = labelEl.textContent.trim();
+    const text = labelEl.innerText.replace(/ /g, ' ').replace(/[ \t]+\n/g, '\n').trim();
     if (save && text && text !== node.label) {
       const prev = node.label;
       node.label = text;
@@ -408,8 +408,11 @@ function mmEditLabel(id) {
   function onBlur() { finish(true); }
   function onKey(e) {
     if (e.isComposing) return; // let an IME (e.g. Vietnamese) finish composing first
-    // Labels are single-line: any Enter commits (no newline). stopPropagation so this
-    // same keypress can't bubble to the canvas handler and immediately re-open edit mode.
+    if (e.key === 'Enter' && e.shiftKey) {
+      // Shift+Enter inserts a newline; let the browser do it, just stop it bubbling to canvas.
+      e.stopPropagation();
+      return;
+    }
     if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); finish(true); labelEl.blur(); }
     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); labelEl.blur(); }
   }
