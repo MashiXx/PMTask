@@ -28,6 +28,10 @@
         <button onclick="mmExportPng()" title="<%= t('mindmap.exportPng') %>">&#11015;</button>
         <button onclick="mmToggleHelp()" title="<%= t('mindmap.keyboardShortcuts') %>">?</button>
       </div>
+      <div class="mm-search" id="mmSearch" hidden>
+        <input type="text" id="mmSearchInput" placeholder="<%= t('mindmap.search') %>" autocomplete="off">
+        <span class="mm-search-count" id="mmSearchCount"></span>
+      </div>
       <svg class="mm-svg" id="mmSvg"></svg>
       <div class="mm-viewport" id="mmViewport"></div>
     </div>

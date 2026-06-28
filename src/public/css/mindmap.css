@@ -70,3 +70,11 @@
 .mm-dialog-ok { background: var(--accent); border-color: var(--accent); color: #fff; }
 .mm-dialog-ok.danger { background: var(--coral); border-color: var(--coral); }
 .mm-dialog-ok:hover { filter: brightness(1.1); }
+
+/* Search */
+.mm-search { position:absolute; top:56px; right:14px; z-index:15; display:flex; align-items:center; gap:8px; padding:7px 10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.28); }
+.mm-search input { width:200px; padding:6px 9px; background:var(--card); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:0.82rem; }
+.mm-search input:focus { outline:none; border-color:var(--accent); }
+.mm-search-count { font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono); min-width:30px; }
+.mm-node.mm-dim { opacity:.32; }
+.mm-node.mm-hit { box-shadow:0 0 0 2px var(--accent), 0 8px 22px rgba(0,0,0,.28); }

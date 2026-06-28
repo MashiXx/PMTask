@@ -151,6 +151,7 @@ function mmRender() {
   }
   mmRenderEdges(pos);
   mmApplyTransform();
+  if (MM.search && MM.search.matches.length) mmApplyHighlight();
 }
 
 function mmRenderEdges(pos) {
@@ -503,6 +504,51 @@ async function mmConvert(id) {
     mmToast(data.error || t('js.mindmap.failedCreateTask'), 'error');
   }
 }
+
+// ── Search ──
+MM.search = { open: false, matches: [], idx: -1 };
+function mmToggleSearch(force) {
+  const box = document.getElementById('mmSearch');
+  const input = document.getElementById('mmSearchInput');
+  const open = force === undefined ? box.hasAttribute('hidden') : force;
+  if (open) { box.removeAttribute('hidden'); input.focus(); input.select(); }
+  else { box.setAttribute('hidden', ''); input.value = ''; mmRunSearch(''); }
+  MM.search.open = open;
+}
+function mmApplyHighlight() {
+  const hit = new Set(MM.search.matches);
+  viewportEl.querySelectorAll('.mm-node').forEach((el) => {
+    const id = parseInt(el.dataset.nodeId);
+    el.classList.toggle('mm-hit', hit.has(id));
+    el.classList.toggle('mm-dim', hit.size > 0 && !hit.has(id));
+  });
+}
+function mmRunSearch(query) {
+  const { matches, expand } = mmSearchNodes(MM.nodes, query);
+  // expand ancestors of matches so matches are visible
+  let changed = false;
+  for (const id of expand) { const n = MM.byId.get(id); if (n && n.collapsed) { n.collapsed = false; changed = true; apiUpdateNode(id, { collapsed: false }); } }
+  if (changed) mmRender();
+  MM.search.matches = matches;
+  MM.search.idx = matches.length ? 0 : -1;
+  document.getElementById('mmSearchCount').textContent = matches.length ? `1/${matches.length}` : (query.trim() ? '0' : '');
+  mmApplyHighlight();
+  if (matches.length) mmFocusMatch(0);
+}
+function mmFocusMatch(i) {
+  if (!MM.search.matches.length) return;
+  MM.search.idx = (i + MM.search.matches.length) % MM.search.matches.length;
+  const id = MM.search.matches[MM.search.idx];
+  document.getElementById('mmSearchCount').textContent = `${MM.search.idx + 1}/${MM.search.matches.length}`;
+  mmSelectReveal(id);
+  mmApplyHighlight();
+}
+document.addEventListener('input', (e) => { if (e.target && e.target.id === 'mmSearchInput') mmRunSearch(e.target.value); });
+document.addEventListener('keydown', (e) => {
+  if (!(document.activeElement && document.activeElement.id === 'mmSearchInput')) return;
+  if (e.key === 'Enter') { e.preventDefault(); mmFocusMatch(MM.search.idx + (e.shiftKey ? -1 : 1)); }
+  else if (e.key === 'Escape') { e.preventDefault(); mmToggleSearch(false); }
+});
 
 function mmOpenTask(taskId) {
   if (typeof openTaskPreview === 'function') openTaskPreview(taskId);
