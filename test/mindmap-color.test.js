@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors } = require('../src/public/js/mindmap-color');
+const { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors, mmEffectiveAccent } = require('../src/public/js/mindmap-color');
 
 function makeById(nodes) { return new Map(nodes.map((n) => [n.id, n])); }
 
@@ -44,4 +44,15 @@ test('explicit node color overrides derived branch color', () => {
     { id: 2, parentId: 1, position: 0, color: '#ff0000' },
   ]);
   assert.strictEqual(mmNodeColors(byId.get(2), byId).accent, '#ff0000');
+});
+
+test('a descendant inherits the nearest explicit ancestor color over the branch palette', () => {
+  const byId = makeById([
+    { id: 1, parentId: null, position: 0 },
+    { id: 2, parentId: 1, position: 0 },
+    { id: 5, parentId: 2, position: 0, color: '#abcdef' },
+    { id: 9, parentId: 5, position: 0 },
+  ]);
+  assert.strictEqual(mmEffectiveAccent(9, byId), '#abcdef'); // nearest explicit ancestor (node 5)
+  assert.strictEqual(mmEffectiveAccent(2, byId), mmBranchColor(2, byId)); // no explicit ancestor → branch palette
 });

@@ -30,11 +30,23 @@
     return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
   }
 
+  // Walk from the node UP toward the root; the first node (including self) with a
+  // truthy .color wins. Falls back to mmBranchColor, or null for the root.
+  function mmEffectiveAccent(id, byId) {
+    let node = byId.get(id);
+    while (node) {
+      if (node.color) return node.color;
+      if (node.parentId == null) break;
+      node = byId.get(node.parentId);
+    }
+    return mmBranchColor(id, byId);
+  }
+
   function mmNodeColors(node, byId) {
-    const accent = (node && node.color) || mmBranchColor(node.id, byId) || '#2D6FE0';
+    const accent = mmEffectiveAccent(node.id, byId) || '#2D6FE0';
     return { accent, bg: mmHexAlpha(accent, 0.10) };
   }
 
-  Object.assign(root, { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors });
-  if (typeof module !== 'undefined' && module.exports) module.exports = { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors };
+  Object.assign(root, { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors, mmEffectiveAccent });
+  if (typeof module !== 'undefined' && module.exports) module.exports = { MM_PALETTE, mmBranchColor, mmHexAlpha, mmNodeColors, mmEffectiveAccent };
 })(typeof window !== 'undefined' ? window : globalThis);

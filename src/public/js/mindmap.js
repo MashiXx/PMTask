@@ -155,7 +155,7 @@ function mmRender() {
       <div class="mm-node-actions">
         <button onclick="mmAddChild(${n.id})">${t('js.mindmap.addChild')}</button>
         <button onclick="mmEditLabel(${n.id})">${t('js.mindmap.edit')}</button>
-        <input type="color" class="mm-color" value="${n.color || mmBranchColor(n.id, MM.byId) || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
+        <input type="color" class="mm-color" value="${n.color || mmEffectiveAccent(n.id, MM.byId) || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
         ${(n.x != null || n.y != null) ? `<button onclick="mmResetNode(${n.id})" title="${t('js.mindmap.resetToAuto')}">${t('js.mindmap.resetToAuto')}</button>` : ''}
         ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">${t('js.mindmap.delete')}</button>` : ''}
@@ -183,7 +183,7 @@ function mmRenderEdges(pos) {
     const x2 = leftSide ? b.x + cw : b.x;
     const y1 = a.y + ph / 2, y2 = b.y + ch / 2;
     const mx = (x1 + x2) / 2;
-    const color = mmBranchColor(n.id, MM.byId) || 'var(--border-light)';
+    const color = mmEffectiveAccent(n.id, MM.byId) || 'var(--border-light)';
     paths += `<path class="mm-edge" stroke="${color}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
   }
   svgEl.innerHTML = paths;
@@ -476,20 +476,11 @@ async function mmSetColor(id, color) {
   const node = MM.byId.get(id);
   const prev = node.color;
   node.color = color;
-  const el = viewportEl.querySelector(`.mm-node[data-node-id="${id}"]`);
-  if (el) {
-    const c = mmNodeColors(node, MM.byId);
-    el.style.borderLeftColor = c.accent;
-    el.style.background = c.bg;
-  }
-  apiUpdateNode(id, { color }, () => {
-    node.color = prev;
-    if (el) { const c = mmNodeColors(node, MM.byId); el.style.borderLeftColor = c.accent; el.style.background = c.bg; }
-  });
+  mmRender(); // descendant nodes/edges inherit the nearest explicit ancestor color
+  apiUpdateNode(id, { color }, () => { node.color = prev; mmRender(); });
   mmRecord({ label: 'color',
     undo: () => mmSetField(id, 'color', prev),
     redo: () => mmSetField(id, 'color', color) });
-  mmRenderEdges(mmPositions()); // descendants' edge colors follow an explicit override
 }
 
 // Re-fit the current layout to the viewport (does not clear manual pins).
@@ -534,7 +525,7 @@ async function mmConvert(id) {
 }
 
 // ── Search ──
-MM.search = { open: false, matches: [], idx: -1 };
+MM.search = { open: false, matches: [], idx: -1, expanded: new Set() };
 function mmToggleSearch(force) {
   const box = document.getElementById('mmSearch');
   const input = document.getElementById('mmSearchInput');
@@ -552,11 +543,18 @@ function mmApplyHighlight() {
   });
 }
 function mmRunSearch(query) {
+  // Restore previously search-expanded nodes to their real collapsed state (no server write).
+  for (const id of MM.search.expanded) { const n = MM.byId.get(id); if (n) n.collapsed = true; }
+  MM.search.expanded.clear();
+
   const { matches, expand } = mmSearchNodes(MM.nodes, query);
-  // expand ancestors of matches so matches are visible
+  // Expand ancestors of matches so matches are visible — view-only, no server writes.
   let changed = false;
-  for (const id of expand) { const n = MM.byId.get(id); if (n && n.collapsed) { n.collapsed = false; changed = true; apiUpdateNode(id, { collapsed: false }); } }
-  if (changed) mmRender();
+  for (const id of expand) {
+    const n = MM.byId.get(id);
+    if (n && n.collapsed) { n.collapsed = false; MM.search.expanded.add(id); changed = true; }
+  }
+  mmRender(); // re-render once after restore+expand so DOM matches the new state
   MM.search.matches = matches;
   MM.search.idx = matches.length ? 0 : -1;
   document.getElementById('mmSearchCount').textContent = matches.length ? `1/${matches.length}` : (query.trim() ? '0' : '');
