@@ -33,9 +33,23 @@ function mmVisibleNodes() {
   });
 }
 
-// Resolve render positions: manual x/y wins, else auto-layout over the visible set.
+// Measure rendered node sizes (for variable multi-line heights). Falls back to
+// approximate defaults for nodes not currently in the DOM.
+function mmMeasure(list) {
+  const sizes = new Map();
+  for (const n of list) {
+    const el = viewportEl.querySelector(`.mm-node[data-node-id="${n.id}"]`);
+    sizes.set(n.id, el ? { w: el.offsetWidth, h: el.offsetHeight } : { w: NODE_W, h: NODE_H });
+  }
+  return sizes;
+}
+
 function mmComputeAuto(list) {
-  return computeMindmapLayout(list.map(n => ({ id: n.id, parentId: n.parentId, position: n.position })));
+  const sizes = mmMeasure(list);
+  return computeMindmapLayout(list.map((n) => {
+    const s = sizes.get(n.id) || { w: NODE_W, h: NODE_H };
+    return { id: n.id, parentId: n.parentId, position: n.position, w: s.w, h: s.h };
+  }));
 }
 
 // Resolve top-down: a node with manual x/y (or the live-dragged override) is absolute;
@@ -62,6 +76,7 @@ function mmResolve(list, auto, overrideId, overridePos) {
     } else {
       p = { x: a.x, y: a.y };
     }
+    p.side = a.side || 'right';
     pos[node.id] = p;
     for (const c of (childrenOf.get(node.id) || [])) resolve(c, p, a);
   }
@@ -104,7 +119,9 @@ function mmRender() {
     el.dataset.nodeId = n.id;
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
-    if (n.color) el.style.borderLeftColor = n.color;
+    const colors = mmNodeColors(n, MM.byId);
+    el.style.borderLeftColor = colors.accent;
+    el.style.background = colors.bg;
     let statusHtml = '';
     if (n.task) {
       const c = STATUS_COLORS[n.task.status] || '#6B6B8E';
@@ -125,7 +142,7 @@ function mmRender() {
       <div class="mm-node-actions">
         <button onclick="mmAddChild(${n.id})">${t('js.mindmap.addChild')}</button>
         <button onclick="mmEditLabel(${n.id})">${t('js.mindmap.edit')}</button>
-        <input type="color" class="mm-color" value="${n.color || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
+        <input type="color" class="mm-color" value="${n.color || mmBranchColor(n.id, MM.byId) || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
         ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">${t('js.mindmap.delete')}</button>` : ''}
       </div>`;
@@ -140,10 +157,19 @@ function mmRenderEdges(pos) {
   for (const n of MM.nodes) {
     if (n.parentId == null) continue;
     const a = pos[n.parentId], b = pos[n.id];
-    if (!a || !b) continue; // skip edges to/from collapsed (hidden) nodes
-    const x1 = a.x + 60, y1 = a.y + 18, x2 = b.x + 10, y2 = b.y + 18;
+    if (!a || !b) continue; // skip edges to/from hidden (collapsed) nodes
+    const pEl = viewportEl.querySelector(`.mm-node[data-node-id="${n.parentId}"]`);
+    const cEl = viewportEl.querySelector(`.mm-node[data-node-id="${n.id}"]`);
+    const pw = pEl ? pEl.offsetWidth : NODE_W, ph = pEl ? pEl.offsetHeight : NODE_H;
+    const cw = cEl ? cEl.offsetWidth : NODE_W, ch = cEl ? cEl.offsetHeight : NODE_H;
+    // child on the left of its parent → leave parent's left edge, enter child's right edge
+    const leftSide = b.side === 'left' || (b.x + cw / 2) < (a.x + pw / 2);
+    const x1 = leftSide ? a.x : a.x + pw;
+    const x2 = leftSide ? b.x + cw : b.x;
+    const y1 = a.y + ph / 2, y2 = b.y + ch / 2;
     const mx = (x1 + x2) / 2;
-    paths += `<path class="mm-edge" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
+    const color = mmBranchColor(n.id, MM.byId) || 'var(--border-light)';
+    paths += `<path class="mm-edge" stroke="${color}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
   }
   svgEl.innerHTML = paths;
 }
@@ -424,11 +450,16 @@ async function mmSetColor(id, color) {
   const prev = node.color;
   node.color = color;
   const el = viewportEl.querySelector(`.mm-node[data-node-id="${id}"]`);
-  if (el) el.style.borderLeftColor = color;
+  if (el) {
+    const c = mmNodeColors(node, MM.byId);
+    el.style.borderLeftColor = c.accent;
+    el.style.background = c.bg;
+  }
   apiUpdateNode(id, { color }, () => {
     node.color = prev;
-    if (el) el.style.borderLeftColor = prev || '#2D6FE0';
+    if (el) { const c = mmNodeColors(node, MM.byId); el.style.borderLeftColor = c.accent; el.style.background = c.bg; }
   });
+  mmRenderEdges(mmPositions()); // descendants' edge colors follow an explicit override
 }
 
 async function mmConvert(id) {
