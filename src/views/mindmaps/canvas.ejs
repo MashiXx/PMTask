@@ -19,9 +19,13 @@
 
     <div class="mm-canvas" id="mmCanvas">
       <div class="mm-toolbar">
+        <button onclick="mmAutoArrange()" title="<%= t('mindmap.autoArrange') %>">&#10070;</button>
+        <button onclick="mmClearPins()" title="<%= t('mindmap.resetLayout') %>">&#8635;</button>
+        <button onclick="mmToggleSearch()" title="<%= t('mindmap.search') %>">&#128269;</button>
         <button onclick="mmZoom(0.1)" title="<%= t('mindmap.zoomIn') %>">+</button>
         <button onclick="mmZoom(-0.1)" title="<%= t('mindmap.zoomOut') %>">&minus;</button>
         <button onclick="mmFit()" title="<%= t('mindmap.resetView') %>">&#9633;</button>
+        <button onclick="mmExportPng()" title="<%= t('mindmap.exportPng') %>">&#11015;</button>
         <button onclick="mmToggleHelp()" title="<%= t('mindmap.keyboardShortcuts') %>">?</button>
       </div>
       <svg class="mm-svg" id="mmSvg"></svg>

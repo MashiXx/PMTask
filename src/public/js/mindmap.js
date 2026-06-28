@@ -144,6 +144,7 @@ function mmRender() {
         <button onclick="mmEditLabel(${n.id})">${t('js.mindmap.edit')}</button>
         <input type="color" class="mm-color" value="${n.color || mmBranchColor(n.id, MM.byId) || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
+        ${(n.x != null || n.y != null) ? `<button onclick="mmResetNode(${n.id})" title="${t('js.mindmap.resetToAuto')}">${t('js.mindmap.resetToAuto')}</button>` : ''}
         ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">${t('js.mindmap.delete')}</button>` : ''}
       </div>`;
     viewportEl.appendChild(el);
@@ -463,6 +464,28 @@ async function mmSetColor(id, color) {
     if (el) { const c = mmNodeColors(node, MM.byId); el.style.borderLeftColor = c.accent; el.style.background = c.bg; }
   });
   mmRenderEdges(mmPositions()); // descendants' edge colors follow an explicit override
+}
+
+// Re-fit the current layout to the viewport (does not clear manual pins).
+function mmAutoArrange() { mmRender(); mmFit(); }
+
+// Drop ALL manual positions back to auto-layout, persist, and re-fit.
+async function mmClearPins() {
+  if (!(await mmConfirm(t('js.mindmap.confirmResetLayout')))) return;
+  const pinned = MM.nodes.filter((n) => n.x != null || n.y != null);
+  for (const n of pinned) { n.x = null; n.y = null; }
+  mmRender(); mmFit();
+  for (const n of pinned) apiUpdateNode(n.id, { x: null, y: null });
+}
+
+// Drop one node back to auto-layout.
+async function mmResetNode(id) {
+  const node = MM.byId.get(id);
+  if (!node || (node.x == null && node.y == null)) return;
+  const px = node.x, py = node.y;
+  node.x = null; node.y = null;
+  mmRender();
+  apiUpdateNode(id, { x: null, y: null }, () => { node.x = px; node.y = py; mmRender(); });
 }
 
 async function mmConvert(id) {
