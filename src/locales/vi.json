@@ -193,6 +193,8 @@
   "js.mindmap.failedDelete": "Không thể xoá",
   "js.mindmap.confirmResetLayout": "Đặt lại toàn bộ vị trí thủ công về tự động?",
   "js.mindmap.resetToAuto": "Về tự động",
+  "js.mindmap.exportUnavailable": "Chưa tải được thư viện xuất ảnh",
+  "js.mindmap.exportFailed": "Không thể xuất ảnh",
   "admin.users.title": "Quản lý người dùng",
   "admin.users.addUser": "Thêm người dùng",
   "admin.users.colUser": "Người dùng",

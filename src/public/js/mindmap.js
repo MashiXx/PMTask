@@ -583,6 +583,44 @@ function mmOpenTask(taskId) {
   else window.location.href = `/dashboard/${MM.slug}`;
 }
 
+// Export the whole mindmap (nodes + edges) to a downloadable PNG. Temporarily
+// fits all content into a fixed-size offscreen transform so the full map is captured.
+async function mmExportPng() {
+  if (typeof htmlToImage === 'undefined') { mmToast(t('js.mindmap.exportUnavailable'), 'error'); return; }
+  const pos = mmPositions();
+  const ids = Object.keys(pos);
+  if (!ids.length) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const id of ids) {
+    const el = viewportEl.querySelector(`.mm-node[data-node-id="${id}"]`);
+    const w = el ? el.offsetWidth : NODE_W, h = el ? el.offsetHeight : NODE_H;
+    minX = Math.min(minX, pos[id].x); minY = Math.min(minY, pos[id].y);
+    maxX = Math.max(maxX, pos[id].x + w); maxY = Math.max(maxY, pos[id].y + h);
+  }
+  const pad = 40;
+  const W = (maxX - minX) + pad * 2, H = (maxY - minY) + pad * 2;
+  // save view, switch to a 1:1 transform that frames the whole map
+  const saved = { pan: { ...MM.pan }, zoom: MM.zoom };
+  MM.zoom = 1; MM.pan = { x: pad - minX, y: pad - minY }; mmApplyTransform();
+  // hide overlays during capture
+  const overlays = canvasEl.querySelectorAll('.mm-toolbar, .mm-search, .mm-help');
+  overlays.forEach((el) => { el.dataset.mmPrevDisplay = el.style.display; el.style.display = 'none'; });
+  try {
+    const bg = getComputedStyle(canvasEl).backgroundColor;
+    const dataUrl = await htmlToImage.toPng(canvasEl, { width: W, height: H, pixelRatio: 2, backgroundColor: bg,
+      style: { } });
+    const a = document.createElement('a');
+    a.download = (window.MINDMAP_NAME || 'mindmap').replace(/[^\w\-]+/g, '_') + '.png';
+    a.href = dataUrl; a.click();
+  } catch (err) {
+    console.error('Export failed:', err);
+    mmToast(t('js.mindmap.exportFailed'), 'error');
+  } finally {
+    MM.pan = saved.pan; MM.zoom = saved.zoom; mmApplyTransform();
+    canvasEl.querySelectorAll('.mm-toolbar, .mm-search, .mm-help').forEach((el) => { el.style.display = el.dataset.mmPrevDisplay || ''; });
+  }
+}
+
 // ── Keyboard interaction ──
 function mmRootId() { const r = MM.nodes.find(n => n.parentId == null); return r ? r.id : null; }
 function mmChildrenOf(id) { return MM.nodes.filter(n => n.parentId === id).sort((a, b) => a.position - b.position); }

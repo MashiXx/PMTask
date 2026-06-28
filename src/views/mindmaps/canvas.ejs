@@ -56,7 +56,9 @@
 <script src="/js/mindmap-history.js"></script>
 <script>
   window.MINDMAP = { id: <%= mindmap.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
+  window.MINDMAP_NAME = <%- JSON.stringify(mindmap.name) %>;
   window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
 </script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
 <script src="/js/mindmap.js"></script>
 <%- include('../partials/foot') %>
