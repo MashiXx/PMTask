@@ -7,6 +7,19 @@ const MM = {
   zoom: 1,
   selectedId: null,
 };
+MM.history = mmCreateHistory(50);
+function mmRecord(cmd) { MM.history.push(cmd); }
+async function mmUndo() { const c = MM.history.undo(); if (c) await c.undo(); }
+async function mmRedo() { const c = MM.history.redo(); if (c) await c.redo(); }
+// Persist a single scalar field and re-render (used by undo/redo closures).
+function mmSetField(id, field, value) {
+  const node = MM.byId.get(id);
+  if (!node) return;
+  node[field] = value;
+  mmRender();
+  apiUpdateNode(id, { [field]: value });
+}
+
 const STATUS_COLORS = { todo:'#6B6B8E', inprogress:'#2B9CD8', review:'#F59E0B', done:'#1E9E60' };
 const STATUS_LABELS = { todo: t('js.mindmap.statusTodo'), inprogress: t('js.mindmap.statusInProgress'), review: t('js.mindmap.statusInReview'), done: t('js.mindmap.statusDone') };
 const NODE_W = 180, NODE_H = 70; // approx, for fit bounds
@@ -33,9 +46,23 @@ function mmVisibleNodes() {
   });
 }
 
-// Resolve render positions: manual x/y wins, else auto-layout over the visible set.
+// Measure rendered node sizes (for variable multi-line heights). Falls back to
+// approximate defaults for nodes not currently in the DOM.
+function mmMeasure(list) {
+  const sizes = new Map();
+  for (const n of list) {
+    const el = viewportEl.querySelector(`.mm-node[data-node-id="${n.id}"]`);
+    sizes.set(n.id, el ? { w: el.offsetWidth, h: el.offsetHeight } : { w: NODE_W, h: NODE_H });
+  }
+  return sizes;
+}
+
 function mmComputeAuto(list) {
-  return computeMindmapLayout(list.map(n => ({ id: n.id, parentId: n.parentId, position: n.position })));
+  const sizes = mmMeasure(list);
+  return computeMindmapLayout(list.map((n) => {
+    const s = sizes.get(n.id) || { w: NODE_W, h: NODE_H };
+    return { id: n.id, parentId: n.parentId, position: n.position, w: s.w, h: s.h };
+  }));
 }
 
 // Resolve top-down: a node with manual x/y (or the live-dragged override) is absolute;
@@ -62,11 +89,12 @@ function mmResolve(list, auto, overrideId, overridePos) {
     } else {
       p = { x: a.x, y: a.y };
     }
+    p.side = a.side || 'right';
     pos[node.id] = p;
     for (const c of (childrenOf.get(node.id) || [])) resolve(c, p, a);
   }
   if (root) resolve(root, null, null);
-  for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0 }; // defensive
+  for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0, side: 'right' }; // defensive
   return pos;
 }
 
@@ -104,7 +132,9 @@ function mmRender() {
     el.dataset.nodeId = n.id;
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
-    if (n.color) el.style.borderLeftColor = n.color;
+    const colors = mmNodeColors(n, MM.byId);
+    el.style.borderLeftColor = colors.accent;
+    el.style.background = colors.bg;
     let statusHtml = '';
     if (n.task) {
       const c = STATUS_COLORS[n.task.status] || '#6B6B8E';
@@ -125,14 +155,16 @@ function mmRender() {
       <div class="mm-node-actions">
         <button onclick="mmAddChild(${n.id})">${t('js.mindmap.addChild')}</button>
         <button onclick="mmEditLabel(${n.id})">${t('js.mindmap.edit')}</button>
-        <input type="color" class="mm-color" value="${n.color || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
+        <input type="color" class="mm-color" value="${n.color || mmEffectiveAccent(n.id, MM.byId) || '#2D6FE0'}" title="${t('js.mindmap.nodeColor')}" onchange="mmSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
         ${taskBtn}
+        ${(n.x != null || n.y != null) ? `<button onclick="mmResetNode(${n.id})" title="${t('js.mindmap.resetToAuto')}">${t('js.mindmap.resetToAuto')}</button>` : ''}
         ${n.parentId != null ? `<button onclick="mmDeleteNode(${n.id})">${t('js.mindmap.delete')}</button>` : ''}
       </div>`;
     viewportEl.appendChild(el);
   }
   mmRenderEdges(pos);
   mmApplyTransform();
+  if (MM.search && MM.search.matches.length) mmApplyHighlight();
 }
 
 function mmRenderEdges(pos) {
@@ -140,10 +172,19 @@ function mmRenderEdges(pos) {
   for (const n of MM.nodes) {
     if (n.parentId == null) continue;
     const a = pos[n.parentId], b = pos[n.id];
-    if (!a || !b) continue; // skip edges to/from collapsed (hidden) nodes
-    const x1 = a.x + 60, y1 = a.y + 18, x2 = b.x + 10, y2 = b.y + 18;
+    if (!a || !b) continue; // skip edges to/from hidden (collapsed) nodes
+    const pEl = viewportEl.querySelector(`.mm-node[data-node-id="${n.parentId}"]`);
+    const cEl = viewportEl.querySelector(`.mm-node[data-node-id="${n.id}"]`);
+    const pw = pEl ? pEl.offsetWidth : NODE_W, ph = pEl ? pEl.offsetHeight : NODE_H;
+    const cw = cEl ? cEl.offsetWidth : NODE_W, ch = cEl ? cEl.offsetHeight : NODE_H;
+    // child on the left of its parent → leave parent's left edge, enter child's right edge
+    const leftSide = b.side === 'left' || (b.x + cw / 2) < (a.x + pw / 2);
+    const x1 = leftSide ? a.x : a.x + pw;
+    const x2 = leftSide ? b.x + cw : b.x;
+    const y1 = a.y + ph / 2, y2 = b.y + ch / 2;
     const mx = (x1 + x2) / 2;
-    paths += `<path class="mm-edge" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
+    const color = mmEffectiveAccent(n.id, MM.byId) || 'var(--border-light)';
+    paths += `<path class="mm-edge" stroke="${color}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
   }
   svgEl.innerHTML = paths;
 }
@@ -228,6 +269,9 @@ function endPointer(e) {
       node.x = g.nx; node.y = g.ny;
       mmRender(); // settle: auto-descendants keep following the dropped parent
       apiUpdateNode(g.id, { x: g.nx, y: g.ny }, () => { node.x = prevX; node.y = prevY; mmRender(); });
+      mmRecord({ label: 'move',
+        undo: () => { const m = MM.byId.get(g.id); m.x = prevX; m.y = prevY; mmRender(); apiUpdateNode(g.id, { x: prevX, y: prevY }); },
+        redo: () => { const m = MM.byId.get(g.id); m.x = g.nx; m.y = g.ny; mmRender(); apiUpdateNode(g.id, { x: g.nx, y: g.ny }); } });
     } else {
       mmSelect(g.id); // a click (no movement) selects the node
     }
@@ -370,11 +414,14 @@ function mmEditLabel(id) {
     labelEl.removeAttribute('contenteditable');
     labelEl.removeEventListener('blur', onBlur);
     labelEl.removeEventListener('keydown', onKey);
-    const text = labelEl.textContent.trim();
+    const text = labelEl.innerText.replace(/ /g, ' ').replace(/[ \t]+\n/g, '\n').trim();
     if (save && text && text !== node.label) {
       const prev = node.label;
       node.label = text;
       apiUpdateNode(id, { label: text }, () => { node.label = prev; labelEl.textContent = prev; });
+      mmRecord({ label: 'label',
+        undo: () => mmSetField(id, 'label', prev),
+        redo: () => mmSetField(id, 'label', text) });
     } else {
       labelEl.textContent = node.label; // revert on empty / unchanged / cancel
     }
@@ -382,8 +429,11 @@ function mmEditLabel(id) {
   function onBlur() { finish(true); }
   function onKey(e) {
     if (e.isComposing) return; // let an IME (e.g. Vietnamese) finish composing first
-    // Labels are single-line: any Enter commits (no newline). stopPropagation so this
-    // same keypress can't bubble to the canvas handler and immediately re-open edit mode.
+    if (e.key === 'Enter' && e.shiftKey) {
+      // Shift+Enter inserts a newline; let the browser do it, just stop it bubbling to canvas.
+      e.stopPropagation();
+      return;
+    }
     if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); finish(true); labelEl.blur(); }
     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); labelEl.blur(); }
   }
@@ -417,18 +467,45 @@ async function mmToggleCollapse(id) {
   node.collapsed = !node.collapsed;
   mmRender();
   apiUpdateNode(id, { collapsed: node.collapsed }, () => { node.collapsed = prev; mmRender(); });
+  mmRecord({ label: 'collapse',
+    undo: () => mmSetField(id, 'collapsed', prev),
+    redo: () => mmSetField(id, 'collapsed', !prev) });
 }
 
 async function mmSetColor(id, color) {
   const node = MM.byId.get(id);
   const prev = node.color;
   node.color = color;
-  const el = viewportEl.querySelector(`.mm-node[data-node-id="${id}"]`);
-  if (el) el.style.borderLeftColor = color;
-  apiUpdateNode(id, { color }, () => {
-    node.color = prev;
-    if (el) el.style.borderLeftColor = prev || '#2D6FE0';
-  });
+  mmRender(); // descendant nodes/edges inherit the nearest explicit ancestor color
+  apiUpdateNode(id, { color }, () => { node.color = prev; mmRender(); });
+  mmRecord({ label: 'color',
+    undo: () => mmSetField(id, 'color', prev),
+    redo: () => mmSetField(id, 'color', color) });
+}
+
+// Re-fit the current layout to the viewport (does not clear manual pins).
+function mmAutoArrange() { mmRender(); mmFit(); }
+
+// Drop ALL manual positions back to auto-layout, persist, and re-fit.
+async function mmClearPins() {
+  if (!(await mmConfirm(t('js.mindmap.confirmResetLayout')))) return;
+  const pinned = MM.nodes.filter((n) => n.x != null || n.y != null);
+  for (const n of pinned) { n.x = null; n.y = null; }
+  mmRender(); mmFit();
+  for (const n of pinned) apiUpdateNode(n.id, { x: null, y: null });
+}
+
+// Drop one node back to auto-layout.
+async function mmResetNode(id) {
+  const node = MM.byId.get(id);
+  if (!node || (node.x == null && node.y == null)) return;
+  const px = node.x, py = node.y;
+  node.x = null; node.y = null;
+  mmRender();
+  apiUpdateNode(id, { x: null, y: null }, () => { node.x = px; node.y = py; mmRender(); });
+  mmRecord({ label: 'reset',
+    undo: () => { const m = MM.byId.get(id); m.x = px; m.y = py; mmRender(); apiUpdateNode(id, { x: px, y: py }); },
+    redo: () => { const m = MM.byId.get(id); m.x = null; m.y = null; mmRender(); apiUpdateNode(id, { x: null, y: null }); } });
 }
 
 async function mmConvert(id) {
@@ -447,9 +524,99 @@ async function mmConvert(id) {
   }
 }
 
+// ── Search ──
+MM.search = { open: false, matches: [], idx: -1, expanded: new Set() };
+function mmToggleSearch(force) {
+  const box = document.getElementById('mmSearch');
+  const input = document.getElementById('mmSearchInput');
+  const open = force === undefined ? box.hasAttribute('hidden') : force;
+  if (open) { box.removeAttribute('hidden'); input.focus(); input.select(); }
+  else { box.setAttribute('hidden', ''); input.value = ''; mmRunSearch(''); }
+  MM.search.open = open;
+}
+function mmApplyHighlight() {
+  const hit = new Set(MM.search.matches);
+  viewportEl.querySelectorAll('.mm-node').forEach((el) => {
+    const id = parseInt(el.dataset.nodeId);
+    el.classList.toggle('mm-hit', hit.has(id));
+    el.classList.toggle('mm-dim', hit.size > 0 && !hit.has(id));
+  });
+}
+function mmRunSearch(query) {
+  // Restore previously search-expanded nodes to their real collapsed state (no server write).
+  for (const id of MM.search.expanded) { const n = MM.byId.get(id); if (n) n.collapsed = true; }
+  MM.search.expanded.clear();
+
+  const { matches, expand } = mmSearchNodes(MM.nodes, query);
+  // Expand ancestors of matches so matches are visible — view-only, no server writes.
+  let changed = false;
+  for (const id of expand) {
+    const n = MM.byId.get(id);
+    if (n && n.collapsed) { n.collapsed = false; MM.search.expanded.add(id); changed = true; }
+  }
+  mmRender(); // re-render once after restore+expand so DOM matches the new state
+  MM.search.matches = matches;
+  MM.search.idx = matches.length ? 0 : -1;
+  document.getElementById('mmSearchCount').textContent = matches.length ? `1/${matches.length}` : (query.trim() ? '0' : '');
+  mmApplyHighlight();
+  if (matches.length) mmFocusMatch(0);
+}
+function mmFocusMatch(i) {
+  if (!MM.search.matches.length) return;
+  MM.search.idx = (i + MM.search.matches.length) % MM.search.matches.length;
+  const id = MM.search.matches[MM.search.idx];
+  document.getElementById('mmSearchCount').textContent = `${MM.search.idx + 1}/${MM.search.matches.length}`;
+  mmSelectReveal(id);
+  mmApplyHighlight();
+}
+document.addEventListener('input', (e) => { if (e.target && e.target.id === 'mmSearchInput') mmRunSearch(e.target.value); });
+document.addEventListener('keydown', (e) => {
+  if (!(document.activeElement && document.activeElement.id === 'mmSearchInput')) return;
+  if (e.key === 'Enter') { e.preventDefault(); mmFocusMatch(MM.search.idx + (e.shiftKey ? -1 : 1)); }
+  else if (e.key === 'Escape') { e.preventDefault(); mmToggleSearch(false); }
+});
+
 function mmOpenTask(taskId) {
   if (typeof openTaskPreview === 'function') openTaskPreview(taskId);
   else window.location.href = `/dashboard/${MM.slug}`;
+}
+
+// Export the whole mindmap (nodes + edges) to a downloadable PNG. Temporarily
+// fits all content into a fixed-size offscreen transform so the full map is captured.
+async function mmExportPng() {
+  if (typeof htmlToImage === 'undefined') { mmToast(t('js.mindmap.exportUnavailable'), 'error'); return; }
+  const pos = mmPositions();
+  const ids = Object.keys(pos);
+  if (!ids.length) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const id of ids) {
+    const el = viewportEl.querySelector(`.mm-node[data-node-id="${id}"]`);
+    const w = el ? el.offsetWidth : NODE_W, h = el ? el.offsetHeight : NODE_H;
+    minX = Math.min(minX, pos[id].x); minY = Math.min(minY, pos[id].y);
+    maxX = Math.max(maxX, pos[id].x + w); maxY = Math.max(maxY, pos[id].y + h);
+  }
+  const pad = 40;
+  const W = (maxX - minX) + pad * 2, H = (maxY - minY) + pad * 2;
+  // save view, switch to a 1:1 transform that frames the whole map
+  const saved = { pan: { ...MM.pan }, zoom: MM.zoom };
+  MM.zoom = 1; MM.pan = { x: pad - minX, y: pad - minY }; mmApplyTransform();
+  // hide overlays during capture
+  const overlays = canvasEl.querySelectorAll('.mm-toolbar, .mm-search, .mm-help');
+  overlays.forEach((el) => { el.dataset.mmPrevDisplay = el.style.display; el.style.display = 'none'; });
+  try {
+    const bg = getComputedStyle(canvasEl).backgroundColor;
+    const dataUrl = await htmlToImage.toPng(canvasEl, { width: W, height: H, pixelRatio: 2, backgroundColor: bg,
+      style: { } });
+    const a = document.createElement('a');
+    a.download = (window.MINDMAP_NAME || 'mindmap').replace(/[^\w\-]+/g, '_') + '.png';
+    a.href = dataUrl; a.click();
+  } catch (err) {
+    console.error('Export failed:', err);
+    mmToast(t('js.mindmap.exportFailed'), 'error');
+  } finally {
+    MM.pan = saved.pan; MM.zoom = saved.zoom; mmApplyTransform();
+    canvasEl.querySelectorAll('.mm-toolbar, .mm-search, .mm-help').forEach((el) => { el.style.display = el.dataset.mmPrevDisplay || ''; });
+  }
 }
 
 // ── Keyboard interaction ──
@@ -501,6 +668,17 @@ function mmNavigate(key) {
 const MM_NAV_KEYS = ['Enter', 'Tab', 'F2', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 document.addEventListener('keydown', (e) => {
   if (e.defaultPrevented) return; // already handled elsewhere (e.g. inline label edit)
+  // Undo/redo: handle before the field-guard so they work without a node selected,
+  // but skip when focus is in a text field or contentEditable (label edit, search box).
+  if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+    const ae2 = document.activeElement;
+    const inField = ae2 && (ae2.isContentEditable || ae2.tagName === 'INPUT' || ae2.tagName === 'TEXTAREA' || ae2.tagName === 'SELECT');
+    if (!inField) {
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) { e.preventDefault(); mmUndo(); return; }
+      if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); mmRedo(); return; }
+    }
+  }
   // Ignore while typing in a field, editing a label inline, or any modal/dialog is open.
   const ae = document.activeElement;
   if (ae && (ae.isContentEditable || ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return;
@@ -548,6 +726,8 @@ function mmToggleHelp(force) {
         <dt>Delete</dt><dd>${t('js.mindmap.helpDelete')}</dd>
         <dt>&uarr; &darr;</dt><dd>${t('js.mindmap.helpUpDown')}</dd>
         <dt>&larr; &rarr;</dt><dd>${t('js.mindmap.helpLeftRight')}</dd>
+        <dt>Ctrl + Z</dt><dd>${t('js.mindmap.helpUndo')}</dd>
+        <dt>Ctrl + Y</dt><dd>${t('js.mindmap.helpRedo')}</dd>
         <dt>?</dt><dd>${t('js.mindmap.helpQuestion')}</dd>
       </dl>`;
     canvasEl.appendChild(el);
@@ -556,6 +736,8 @@ function mmToggleHelp(force) {
   el.classList.toggle('show', show);
 }
 
-// init
+// init: first render populates the DOM, second render measures real node
+// sizes (multi-line labels vary in height) so the layout/fit are accurate.
+mmRender();
 mmRender();
 mmFit();

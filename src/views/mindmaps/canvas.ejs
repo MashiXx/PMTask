@@ -19,10 +19,18 @@
 
     <div class="mm-canvas" id="mmCanvas">
       <div class="mm-toolbar">
+        <button onclick="mmAutoArrange()" title="<%= t('mindmap.autoArrange') %>">&#10070;</button>
+        <button onclick="mmClearPins()" title="<%= t('mindmap.resetLayout') %>">&#8635;</button>
+        <button onclick="mmToggleSearch()" title="<%= t('mindmap.search') %>">&#128269;</button>
         <button onclick="mmZoom(0.1)" title="<%= t('mindmap.zoomIn') %>">+</button>
         <button onclick="mmZoom(-0.1)" title="<%= t('mindmap.zoomOut') %>">&minus;</button>
         <button onclick="mmFit()" title="<%= t('mindmap.resetView') %>">&#9633;</button>
+        <button onclick="mmExportPng()" title="<%= t('mindmap.exportPng') %>">&#11015;</button>
         <button onclick="mmToggleHelp()" title="<%= t('mindmap.keyboardShortcuts') %>">?</button>
+      </div>
+      <div class="mm-search" id="mmSearch" hidden>
+        <input type="text" id="mmSearchInput" placeholder="<%= t('mindmap.search') %>" autocomplete="off">
+        <span class="mm-search-count" id="mmSearchCount"></span>
       </div>
       <svg class="mm-svg" id="mmSvg"></svg>
       <div class="mm-viewport" id="mmViewport"></div>
@@ -43,9 +51,14 @@
 <script src="/js/comment.js"></script>
 <script src="/js/mm-ui.js"></script>
 <script src="/js/mindmap-layout.js"></script>
+<script src="/js/mindmap-color.js"></script>
+<script src="/js/mindmap-search.js"></script>
+<script src="/js/mindmap-history.js"></script>
 <script>
   window.MINDMAP = { id: <%= mindmap.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
+  window.MINDMAP_NAME = <%- JSON.stringify(mindmap.name) %>;
   window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
 </script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
 <script src="/js/mindmap.js"></script>
 <%- include('../partials/foot') %>

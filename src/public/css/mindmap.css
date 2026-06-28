@@ -17,13 +17,13 @@
 .mm-canvas.panning { cursor:grabbing; }
 .mm-viewport { position:absolute; top:0; left:0; transform-origin:0 0; }
 .mm-svg { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
-.mm-edge { fill:none; stroke:var(--border-light); stroke-width:2; }
-.mm-node { position:absolute; z-index:1; min-width:120px; max-width:240px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.18); cursor:grab; user-select:none; }
+.mm-edge { fill:none; stroke:var(--border-light); stroke-width:2.5; stroke-linecap:round; opacity:.85; }
+.mm-node { position:absolute; z-index:1; min-width:120px; max-width:260px; padding:11px 14px; background:var(--card); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.16); cursor:grab; user-select:none; transition:box-shadow .15s ease, transform .05s ease; }
 /* Raise the active node so its expanded actions sit above neighbours and stay clickable */
 .mm-node:hover, .mm-node.selected, .mm-node.dragging { z-index:30; }
-.mm-node.dragging { cursor:grabbing; box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.mm-node.dragging { cursor:grabbing; box-shadow:0 12px 30px rgba(0,0,0,.30); }
 .mm-node-head { display:flex; align-items:flex-start; gap:6px; }
-.mm-node-label { font-size:0.82rem; color:var(--text); word-break:break-word; }
+.mm-node-label { font-size:0.82rem; color:var(--text); word-break:break-word; white-space:pre-wrap; line-height:1.35; }
 .mm-node-label[contenteditable="true"] { outline:1px solid var(--accent); border-radius:4px; }
 .mm-collapse { flex-shrink:0; width:18px; height:18px; line-height:1; padding:0; background:var(--surface); border:1px solid var(--border); border-radius:5px; color:var(--text-muted); cursor:pointer; font-size:0.7rem; }
 .mm-collapse:hover { color:var(--text); border-color:var(--border-light); }
@@ -49,7 +49,7 @@
 .mm-help dd { margin:0; font-size:0.74rem; color:var(--text-muted); align-self:center; }
 
 /* Selected node */
-.mm-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0,0,0,.3); }
+.mm-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 10px 26px rgba(0,0,0,.28); }
 
 /* Toasts */
 .mm-toast-host { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; }
@@ -70,3 +70,12 @@
 .mm-dialog-ok { background: var(--accent); border-color: var(--accent); color: #fff; }
 .mm-dialog-ok.danger { background: var(--coral); border-color: var(--coral); }
 .mm-dialog-ok:hover { filter: brightness(1.1); }
+
+/* Search */
+.mm-search { position:absolute; top:56px; right:14px; z-index:15; display:flex; align-items:center; gap:8px; padding:7px 10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.28); }
+.mm-search[hidden] { display:none; }
+.mm-search input { width:200px; padding:6px 9px; background:var(--card); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:0.82rem; }
+.mm-search input:focus { outline:none; border-color:var(--accent); }
+.mm-search-count { font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono); min-width:30px; }
+.mm-node.mm-dim { opacity:.32; }
+.mm-node.mm-hit { box-shadow:0 0 0 2px var(--accent), 0 8px 22px rgba(0,0,0,.28); }
