@@ -81,7 +81,7 @@ function mmResolve(list, auto, overrideId, overridePos) {
     for (const c of (childrenOf.get(node.id) || [])) resolve(c, p, a);
   }
   if (root) resolve(root, null, null);
-  for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0 }; // defensive
+  for (const n of list) if (!pos[n.id]) pos[n.id] = auto[n.id] || { x: 0, y: 0, side: 'right' }; // defensive
   return pos;
 }
 
@@ -587,6 +587,8 @@ function mmToggleHelp(force) {
   el.classList.toggle('show', show);
 }
 
-// init
+// init: first render populates the DOM, second render measures real node
+// sizes (multi-line labels vary in height) so the layout/fit are accurate.
+mmRender();
 mmRender();
 mmFit();
