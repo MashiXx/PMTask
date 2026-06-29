@@ -177,14 +177,29 @@ function mmRenderEdges(pos) {
     const cEl = viewportEl.querySelector(`.mm-node[data-node-id="${n.id}"]`);
     const pw = pEl ? pEl.offsetWidth : NODE_W, ph = pEl ? pEl.offsetHeight : NODE_H;
     const cw = cEl ? cEl.offsetWidth : NODE_W, ch = cEl ? cEl.offsetHeight : NODE_H;
-    // child on the left of its parent → leave parent's left edge, enter child's right edge
-    const leftSide = b.side === 'left' || (b.x + cw / 2) < (a.x + pw / 2);
-    const x1 = leftSide ? a.x : a.x + pw;
-    const x2 = leftSide ? b.x + cw : b.x;
-    const y1 = a.y + ph / 2, y2 = b.y + ch / 2;
-    const mx = (x1 + x2) / 2;
+    // Anchor the edge on whichever pair of faces actually point at each other so the
+    // curve stays in the gap between the two nodes instead of doubling back across one.
+    const acx = a.x + pw / 2, acy = a.y + ph / 2;
+    const bcx = b.x + cw / 2, bcy = b.y + ch / 2;
+    const sepH = Math.max(b.x - (a.x + pw), a.x - (b.x + cw), 0); // clear horizontal gap between the boxes
+    const sepV = Math.max(b.y - (a.y + ph), a.y - (b.y + ch), 0); // clear vertical gap between the boxes
     const color = mmEffectiveAccent(n.id, MM.byId) || 'var(--border-light)';
-    paths += `<path class="mm-edge" stroke="${color}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`;
+    let d;
+    if (sepH > 0 || sepV === 0) {
+      // Side-by-side (the normal branch case): leave/enter on the facing left|right edges.
+      const x1 = bcx >= acx ? a.x + pw : a.x;
+      const x2 = bcx >= acx ? b.x : b.x + cw;
+      const mx = (x1 + x2) / 2;
+      d = `M${x1},${acy} C${mx},${acy} ${mx},${bcy} ${x2},${bcy}`;
+    } else {
+      // Stacked with horizontal overlap: leave/enter on the facing top|bottom edges so
+      // the curve runs through the vertical gap rather than back over a node's own body.
+      const y1 = bcy >= acy ? a.y + ph : a.y;
+      const y2 = bcy >= acy ? b.y : b.y + ch;
+      const my = (y1 + y2) / 2;
+      d = `M${acx},${y1} C${acx},${my} ${bcx},${my} ${bcx},${y2}`;
+    }
+    paths += `<path class="mm-edge" stroke="${color}" d="${d}"/>`;
   }
   svgEl.innerHTML = paths;
 }
