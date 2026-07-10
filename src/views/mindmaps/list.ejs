@@ -31,7 +31,10 @@
 
       <div class="mm-grid" id="mmGrid">
         <% mindmaps.forEach(m => { %>
+          <% var _type = m.type || 'mindmap';
+             var _typeLabel = _type === 'flowchart' ? t('diagram.typeFlowchart') : (_type === 'architecture' ? t('diagram.typeArchitecture') : t('diagram.typeMindmap')); %>
           <a class="mm-card" href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps/<%= m.id %>" data-mm-id="<%= m.id %>">
+            <span class="mm-card-badge mm-badge-<%= _type %>"><%= _typeLabel %></span>
             <span class="mm-card-name"><%= m.name %></span>
             <span class="mm-card-meta"><%= m._count.nodes %> <%= m._count.nodes === 1 ? t('mindmap.node') : t('mindmap.nodes') %></span>
             <span class="mm-card-actions">

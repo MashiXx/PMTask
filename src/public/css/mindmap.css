@@ -79,3 +79,14 @@
 .mm-search-count { font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono); min-width:30px; }
 .mm-node.mm-dim { opacity:.32; }
 .mm-node.mm-hit { box-shadow:0 0 0 2px var(--accent), 0 8px 22px rgba(0,0,0,.28); }
+
+/* Diagram type badge on list cards */
+.mm-card-badge { align-self:flex-start; font-size:0.6rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; font-family:var(--font-mono); padding:2px 8px; border-radius:999px; border:1px solid; }
+.mm-badge-mindmap { color:#6C63FF; border-color:color-mix(in srgb, #6C63FF 45%, transparent); background:color-mix(in srgb, #6C63FF 12%, transparent); }
+.mm-badge-flowchart { color:#0EA5A4; border-color:color-mix(in srgb, #0EA5A4 45%, transparent); background:color-mix(in srgb, #0EA5A4 12%, transparent); }
+.mm-badge-architecture { color:#F59E0B; border-color:color-mix(in srgb, #F59E0B 45%, transparent); background:color-mix(in srgb, #F59E0B 12%, transparent); }
+
+/* Type picker dialog */
+.mm-type-choices { display:flex; flex-direction:column; gap:8px; margin:14px 0 4px; }
+.mm-type-choice { text-align:left; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:9px; color:var(--text); font-size:0.85rem; font-weight:600; cursor:pointer; transition:border-color .15s, background .15s; }
+.mm-type-choice:hover { border-color:var(--accent); background:var(--card-hover); }
