@@ -1,0 +1,88 @@
+/* Free-form diagram editor (flowchart + architecture) — layered over mindmap.css. */
+
+.mm-viewport { position:absolute; top:0; left:0; transform-origin:0 0; }
+.mm-svg { position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; transform-origin:0 0; pointer-events:none; }
+
+/* Nodes */
+.dg-node {
+  position:absolute; z-index:2; box-sizing:border-box;
+  min-width:120px; max-width:320px; min-height:48px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:10px 14px;
+  background:var(--card); color:var(--text);
+  border:2px solid var(--dg-accent, var(--accent));
+  border-radius:12px;
+  box-shadow:0 4px 14px rgba(0,0,0,.14);
+  cursor:grab; user-select:none;
+  transition:box-shadow .15s ease;
+}
+.dg-node:active { cursor:grabbing; }
+.dg-node.selected { box-shadow:0 0 0 2px color-mix(in srgb, var(--dg-accent, var(--accent)) 55%, transparent), 0 8px 22px rgba(0,0,0,.24); }
+.dg-node-label { font-size:0.82rem; line-height:1.35; word-break:break-word; white-space:pre-wrap; pointer-events:auto; width:100%; }
+.dg-node-label[contenteditable="true"] { outline:none; cursor:text; }
+
+/* Shapes */
+.dg-shape-diamond { clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius:0; padding:0; }
+.dg-shape-ellipse { border-radius:50%; }
+.dg-shape-parallelogram { clip-path:polygon(14% 0, 100% 0, 86% 100%, 0 100%); border-radius:0; }
+/* Clip-path hides real borders, so paint the outline with an inset ring instead. */
+.dg-shape-diamond, .dg-shape-parallelogram { border-color:transparent; box-shadow:inset 0 0 0 2px var(--dg-accent, var(--accent)), 0 4px 14px rgba(0,0,0,.14); }
+.dg-shape-diamond.selected, .dg-shape-parallelogram.selected { box-shadow:inset 0 0 0 2px var(--dg-accent, var(--accent)), 0 0 0 2px color-mix(in srgb, var(--dg-accent, var(--accent)) 55%, transparent); }
+
+/* Group container */
+.dg-shape-group {
+  z-index:1; display:block; align-items:initial; justify-content:initial; text-align:left;
+  background:color-mix(in srgb, var(--dg-accent, #8B8BA7) 8%, var(--card));
+  border:2px dashed var(--dg-accent, #8B8BA7);
+  box-shadow:none;
+  padding:26px 12px 12px;
+}
+.dg-shape-group > .dg-node-label { position:absolute; top:5px; left:12px; width:auto; font-size:0.7rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--dg-accent, var(--text-muted)); }
+.dg-shape-group.selected { box-shadow:0 0 0 2px color-mix(in srgb, var(--dg-accent, #8B8BA7) 55%, transparent); }
+
+/* Node action bar (edit / color / delete) — floats above the node */
+.dg-node-actions {
+  position:absolute; top:-14px; right:8px; z-index:5;
+  display:none; gap:4px; align-items:center;
+  padding:3px 5px; background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+}
+.dg-node:hover > .dg-node-actions, .dg-node.selected > .dg-node-actions { display:flex; }
+.dg-shape-group > .dg-node-actions { top:-14px; }
+.dg-node-actions button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.72rem; line-height:1; padding:2px 3px; }
+.dg-node-actions button:hover { color:var(--text); }
+.dg-color { width:20px; height:18px; padding:0; border:1px solid var(--border); border-radius:4px; background:var(--surface); cursor:pointer; }
+
+/* Connection handle — drag to draw an arrow */
+.dg-handle {
+  position:absolute; right:-8px; top:50%; transform:translateY(-50%); z-index:6;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--card);
+  opacity:0; cursor:crosshair; transition:opacity .12s;
+}
+.dg-node:hover > .dg-handle, .dg-node.selected > .dg-handle { opacity:1; }
+.dg-shape-diamond > .dg-handle, .dg-shape-parallelogram > .dg-handle { right:-4px; }
+
+/* Group resize handle */
+.dg-resize {
+  position:absolute; right:-4px; bottom:-4px; z-index:6;
+  width:14px; height:14px; cursor:nwse-resize;
+  background:linear-gradient(135deg, transparent 40%, var(--dg-accent, #8B8BA7) 40%, var(--dg-accent, #8B8BA7) 60%, transparent 60%);
+}
+
+/* Edges */
+.dg-edge { fill:none; stroke:var(--border-light); stroke-width:2; stroke-linecap:round; }
+.dg-edge.selected { stroke:var(--accent); stroke-width:2.5; }
+.dg-edge-temp { stroke:var(--accent); stroke-dasharray:5 4; }
+.dg-edge-hit { fill:none; stroke:transparent; stroke-width:14; pointer-events:stroke; cursor:pointer; }
+
+/* Edge label chip (rendered in the transformed viewport, centered on the edge) */
+.dg-edge-label {
+  position:absolute; z-index:3; transform:translate(-50%, -50%);
+  padding:1px 7px; font-size:0.68rem; font-weight:600;
+  background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:6px;
+  white-space:nowrap; cursor:pointer; pointer-events:auto;
+}
+
+.mm-svg { pointer-events:none; }
+.dg-edge-hit { pointer-events:stroke; }
