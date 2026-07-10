@@ -104,14 +104,19 @@ app.use('/api/attachments', require('./routes/attachment.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/tags', require('./routes/tag.routes'));
 app.use('/api/groups', require('./routes/group.routes'));
-app.use('/api/mindmaps', require('./routes/mindmap.routes'));
-app.use('/api/mindmap-nodes', require('./routes/mindmap.routes').nodeRouter);
-app.use('/api/mindmap-edges', require('./routes/mindmap.routes').edgeRouter);
+app.use('/api/diagrams', require('./routes/diagram.routes'));
+app.use('/api/diagram-nodes', require('./routes/diagram.routes').nodeRouter);
+app.use('/api/diagram-edges', require('./routes/diagram.routes').edgeRouter);
 app.use('/api/subtasks', require('./routes/subtask.routes'));
 app.use('/api/comments', require('./routes/comment.routes'));
 app.use('/projects', require('./routes/project.routes'));
 app.use('/projects/:projectSlug/documents', require('./routes/document.routes'));
-app.use('/projects/:projectSlug/mindmaps', require('./routes/mindmap.page.routes'));
+app.use('/projects/:projectSlug/diagrams', require('./routes/diagram.page.routes'));
+// Back-compat: old mindmap URLs 301-redirect to their diagram equivalents.
+app.get(['/projects/:projectSlug/mindmaps', '/projects/:projectSlug/mindmaps/:rest'], (req, res) => {
+  const tail = req.params.rest ? `/${req.params.rest}` : '';
+  res.redirect(301, `/projects/${req.params.projectSlug}/diagrams${tail}`);
+});
 app.use('/profile', require('./routes/profile.routes'));
 app.use('/admin', require('./routes/admin.routes'));
 

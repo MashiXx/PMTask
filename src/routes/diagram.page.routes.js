@@ -1,9 +1,9 @@
 const router = require('express').Router({ mergeParams: true });
 const { isAuthenticated } = require('../middleware/auth');
-const mm = require('../controllers/mindmap.controller');
+const dg = require('../controllers/diagram.controller');
 
 router.use(isAuthenticated);
-router.get('/', mm.getMindmapsListPage);
-router.get('/:mindmapId', mm.getMindmapCanvasPage);
+router.get('/', dg.getDiagramsListPage);
+router.get('/:diagramId', dg.getDiagramCanvasPage);
 
 module.exports = router;

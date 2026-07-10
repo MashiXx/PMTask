@@ -47,7 +47,7 @@ model Project {
   folders   Folder[]
   documents Document[]
   groups    TaskGroup[]
-  mindmaps  Mindmap[]
+  diagrams  Diagram[]
 }
 
 model Task {
@@ -74,7 +74,7 @@ model Task {
   tags        TaskTag[]
   assignees   TaskAssignee[]
   subtasks    SubTask[]
-  mindmapNodes MindmapNode[]
+  diagramNodes DiagramNode[]
   attachments TaskAttachment[]
   comments    TaskComment[]
 
@@ -190,7 +190,7 @@ model Document {
   uploadedBy User     @relation("DocumentUploader", fields: [uploadedById], references: [id])
 }
 
-model Mindmap {
+model Diagram {
   id        Int      @id @default(autoincrement())
   name      String
   type      String   @default("mindmap") // "mindmap" | "flowchart" | "architecture"
@@ -199,13 +199,15 @@ model Mindmap {
   updatedAt DateTime @updatedAt
 
   project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  nodes     MindmapNode[]
-  edges     MindmapEdge[]
+  nodes     DiagramNode[]
+  edges     DiagramEdge[]
+
+  @@map("Mindmap")
 }
 
-model MindmapNode {
+model DiagramNode {
   id        Int      @id @default(autoincrement())
-  mindmapId Int
+  mindmapId Int      // FK column kept as-is (maps to the Diagram table's id)
   parentId  Int?
   label     String   @db.Text
   shape     String   @default("rect") // rect | diamond | ellipse | parallelogram | group
@@ -220,19 +222,20 @@ model MindmapNode {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mindmap   Mindmap       @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
-  parent    MindmapNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  MindmapNode[] @relation("NodeChildren")
+  diagram   Diagram       @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  parent    DiagramNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  DiagramNode[] @relation("NodeChildren")
   task      Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  edgesFrom MindmapEdge[] @relation("EdgeSource")
-  edgesTo   MindmapEdge[] @relation("EdgeTarget")
+  edgesFrom DiagramEdge[] @relation("EdgeSource")
+  edgesTo   DiagramEdge[] @relation("EdgeTarget")
 
   @@index([mindmapId])
   @@index([parentId])
   @@index([taskId])
+  @@map("MindmapNode")
 }
 
-model MindmapEdge {
+model DiagramEdge {
   id        Int      @id @default(autoincrement())
   mindmapId Int
   sourceId  Int
@@ -242,13 +245,14 @@ model MindmapEdge {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mindmap Mindmap     @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
-  source  MindmapNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
-  target  MindmapNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  diagram Diagram     @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  source  DiagramNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target  DiagramNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
 
   @@index([mindmapId])
   @@index([sourceId])
   @@index([targetId])
+  @@map("MindmapEdge")
 }
 
 model TaskComment {

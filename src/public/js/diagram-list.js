@@ -33,24 +33,24 @@ function mmPickType() {
   });
 }
 
-async function createMindmap() {
+async function createDiagram() {
   const type = await mmPickType();
   if (!type) return;
   const name = await mmPrompt(t('js.diagram.newName'), '', t('js.mindmap.create'));
   if (!name) return;
-  const res = await fetch('/api/mindmaps', {
+  const res = await fetch('/api/diagrams', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projectId: mmProjectId(), name, type }),
   });
   const data = await res.json();
-  if (data.success) window.location.href = `/projects/${mmProjectSlug()}/mindmaps/${data.mindmap.id}`;
+  if (data.success) window.location.href = `/projects/${mmProjectSlug()}/diagrams/${data.diagram.id}`;
   else mmToast(data.error || t('js.mindmap.failedCreateMindmap'), 'error');
 }
 
-async function renameMindmap(id, current) {
+async function renameDiagram(id, current) {
   const name = await mmPrompt(t('js.mindmap.renameMindmap'), current);
   if (!name) return;
-  const res = await fetch(`/api/mindmaps/${id}`, {
+  const res = await fetch(`/api/diagrams/${id}`, {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name }),
   });
@@ -58,9 +58,9 @@ async function renameMindmap(id, current) {
   else mmToast(t('js.mindmap.failedRename'), 'error');
 }
 
-async function deleteMindmap(id) {
+async function deleteDiagram(id) {
   if (!(await mmConfirm(t('js.mindmap.confirmDeleteMindmap')))) return;
-  const res = await fetch(`/api/mindmaps/${id}`, { method: 'DELETE' });
+  const res = await fetch(`/api/diagrams/${id}`, { method: 'DELETE' });
   if ((await res.json()).success) {
     const card = document.querySelector(`.mm-card[data-mm-id="${id}"]`);
     if (card) card.remove();

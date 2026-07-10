@@ -350,7 +350,7 @@ function mmFit() {
 // ── API helper with rollback ──
 async function apiUpdateNode(id, data, onError) {
   try {
-    const res = await fetch(`/api/mindmap-nodes/${id}`, {
+    const res = await fetch(`/api/diagram-nodes/${id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error('save failed');
@@ -363,7 +363,7 @@ async function apiUpdateNode(id, data, onError) {
 
 // ── Node mutations ──
 async function mmAddChild(parentId) {
-  const res = await fetch('/api/mindmap-nodes', {
+  const res = await fetch('/api/diagram-nodes', {
     method:'POST', headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({ mindmapId: MM.id, parentId, label: t('js.mindmap.newIdea') }),
   });
@@ -461,7 +461,7 @@ async function mmDeleteNode(id) {
   if (!node || node.parentId == null) return; // never delete the root
   if (!(await mmConfirm(t('js.mindmap.confirmDeleteNode')))) return;
   let res;
-  try { res = await fetch(`/api/mindmap-nodes/${id}`, { method:'DELETE' }); } catch (e) { res = null; }
+  try { res = await fetch(`/api/diagram-nodes/${id}`, { method:'DELETE' }); } catch (e) { res = null; }
   if (!res || !res.ok) { mmToast(t('js.mindmap.couldNotDeleteNode'), 'error'); return; }
   const remove = new Set([id]);
   let grew = true;
@@ -527,7 +527,7 @@ async function mmConvert(id) {
   const node = MM.byId.get(id);
   if (!node || node.taskId) return;
   let data;
-  try { data = await (await fetch(`/api/mindmap-nodes/${id}/convert`, { method:'POST' })).json(); }
+  try { data = await (await fetch(`/api/diagram-nodes/${id}/convert`, { method:'POST' })).json(); }
   catch (e) { data = { error: 'Network error' }; }
   if (data.success) {
     node.taskId = data.task.id;

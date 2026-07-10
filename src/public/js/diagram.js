@@ -324,7 +324,7 @@ async function finishEdge(g, e) {
   if (!nodeEl) return;
   const toId = parseInt(nodeEl.dataset.nodeId);
   if (toId === g.fromId) return;
-  const res = await fetch('/api/mindmap-edges', {
+  const res = await fetch('/api/diagram-edges', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mindmapId: DG.id, sourceId: g.fromId, targetId: toId }),
   });
@@ -382,7 +382,7 @@ function dgFit() {
 // ── API helpers ──
 async function apiUpdateNode(id, data, onError) {
   try {
-    const res = await fetch(`/api/mindmap-nodes/${id}`, {
+    const res = await fetch(`/api/diagram-nodes/${id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error('save failed');
@@ -400,7 +400,7 @@ async function dgAddNode(shape) {
   const center = clientToWorld(canvasEl.getBoundingClientRect().left + canvasEl.clientWidth / 2,
                                canvasEl.getBoundingClientRect().top + canvasEl.clientHeight / 2);
   const x = Math.round(center.x - s.w / 2), y = Math.round(center.y - s.h / 2);
-  const res = await fetch('/api/mindmap-nodes', {
+  const res = await fetch('/api/diagram-nodes', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mindmapId: DG.id, label: t('js.diagram.newBox'), shape, x, y }),
   });
@@ -462,7 +462,7 @@ async function dgDeleteNode(id) {
   const n = DG.byId.get(id);
   const msg = n.shape === 'group' ? t('js.diagram.confirmDeleteGroup') : t('js.diagram.confirmDeleteNode');
   if (!(await mmConfirm(msg))) return;
-  const res = await fetch(`/api/mindmap-nodes/${id}`, { method: 'DELETE' });
+  const res = await fetch(`/api/diagram-nodes/${id}`, { method: 'DELETE' });
   if (!(await res.json()).success) { mmToast(t('js.diagram.couldNotSave'), 'error'); return; }
   // Local state: drop the node, its incident edges, and (for groups) detach members.
   DG.nodes = DG.nodes.filter(x => x.id !== id);
@@ -479,7 +479,7 @@ async function dgEditEdgeLabel(id) {
   const label = await mmPrompt(t('js.diagram.edgeLabel'), edge.label || '');
   if (label === null) return;
   edge.label = label;
-  const res = await fetch(`/api/mindmap-edges/${id}`, {
+  const res = await fetch(`/api/diagram-edges/${id}`, {
     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ label }),
   });
   if (!(await res.json()).success) mmToast(t('js.diagram.couldNotSave'), 'error');
@@ -487,7 +487,7 @@ async function dgEditEdgeLabel(id) {
 }
 
 async function dgDeleteEdge(id) {
-  const res = await fetch(`/api/mindmap-edges/${id}`, { method: 'DELETE' });
+  const res = await fetch(`/api/diagram-edges/${id}`, { method: 'DELETE' });
   if (!(await res.json()).success) { mmToast(t('js.diagram.couldNotSave'), 'error'); return; }
   DG.edges = DG.edges.filter(e => e.id !== id);
   DG.selectedEdgeId = null;
