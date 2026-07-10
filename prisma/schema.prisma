@@ -193,12 +193,14 @@ model Document {
 model Mindmap {
   id        Int      @id @default(autoincrement())
   name      String
+  type      String   @default("mindmap") // "mindmap" | "flowchart" | "architecture"
   projectId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   nodes     MindmapNode[]
+  edges     MindmapEdge[]
 }
 
 model MindmapNode {
@@ -206,9 +208,12 @@ model MindmapNode {
   mindmapId Int
   parentId  Int?
   label     String   @db.Text
+  shape     String   @default("rect") // rect | diamond | ellipse | parallelogram | group
   color     String?
   x         Float?
   y         Float?
+  width     Float?
+  height    Float?
   position  Int      @default(0)
   collapsed Boolean  @default(false)
   taskId    Int?
@@ -219,10 +224,31 @@ model MindmapNode {
   parent    MindmapNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  MindmapNode[] @relation("NodeChildren")
   task      Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  edgesFrom MindmapEdge[] @relation("EdgeSource")
+  edgesTo   MindmapEdge[] @relation("EdgeTarget")
 
   @@index([mindmapId])
   @@index([parentId])
   @@index([taskId])
+}
+
+model MindmapEdge {
+  id        Int      @id @default(autoincrement())
+  mindmapId Int
+  sourceId  Int
+  targetId  Int
+  label     String?  @db.Text
+  style     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mindmap Mindmap     @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  source  MindmapNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target  MindmapNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([mindmapId])
+  @@index([sourceId])
+  @@index([targetId])
 }
 
 model TaskComment {
