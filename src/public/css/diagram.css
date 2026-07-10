@@ -70,11 +70,23 @@
   background:linear-gradient(135deg, transparent 40%, var(--dg-accent, #8B8BA7) 40%, var(--dg-accent, #8B8BA7) 60%, transparent 60%);
 }
 
+/* Service icon inside a node */
+.dg-node-icon { display:inline-flex; align-items:center; justify-content:center; margin-bottom:4px; color:var(--dg-accent, var(--accent)); }
+.dg-node-icon svg { width:26px; height:26px; }
+.dg-node.dg-shape-rect, .dg-node.dg-shape-ellipse { flex-direction:column; }
+
 /* Edges */
-.dg-edge { fill:none; stroke:var(--border-light); stroke-width:2; stroke-linecap:round; }
+.dg-edge { fill:none; stroke:var(--border-light); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .dg-edge.selected { stroke:var(--accent); stroke-width:2.5; }
+.dg-edge.dg-edge-dashed { stroke-dasharray:6 5; }
 .dg-edge-temp { stroke:var(--accent); stroke-dasharray:5 4; }
 .dg-edge-hit { fill:none; stroke:transparent; stroke-width:14; pointer-events:stroke; cursor:pointer; }
+
+/* Icon picker grid (in the shared mm-dialog) */
+.dg-icon-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin:14px 0 4px; }
+.dg-icon-choice { display:flex; align-items:center; justify-content:center; min-height:46px; padding:8px; background:var(--surface); border:1px solid var(--border); border-radius:9px; color:var(--text); font-size:0.72rem; cursor:pointer; transition:border-color .15s, background .15s; }
+.dg-icon-choice:hover { border-color:var(--accent); background:var(--card-hover); }
+.dg-icon-choice svg { width:24px; height:24px; }
 
 /* Edge label chip (rendered in the transformed viewport, centered on the edge) */
 .dg-edge-label {

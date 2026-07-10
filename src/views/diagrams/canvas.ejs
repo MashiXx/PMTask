@@ -22,6 +22,7 @@
     <div class="mm-canvas" id="mmCanvas">
       <% if (isFreeform) { %>
       <div class="mm-toolbar">
+        <button onclick="dgAutoArrange()" title="<%= t('mindmap.autoArrange') %>">&#10070;</button>
         <button onclick="dgAddNode('rect')" title="<%= t('diagram.addBox') %>">&#9645;</button>
         <% if (diagramType === 'flowchart') { %>
         <button onclick="dgAddNode('diamond')" title="<%= t('diagram.addDiamond') %>">&#9670;</button>

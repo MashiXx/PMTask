@@ -4,6 +4,7 @@ const prisma = require('../config/prisma');
 const VALID_STATUS = ['todo', 'inprogress', 'review', 'done'];
 const VALID_TYPES = ['mindmap', 'flowchart', 'architecture'];
 const VALID_SHAPES = ['rect', 'diamond', 'ellipse', 'parallelogram', 'group'];
+const VALID_ICONS = ['server', 'database', 'queue', 'cache', 'storage', 'user', 'cloud', 'api', 'function', 'loadbalancer', 'globe', 'mobile'];
 
 // Admin sees own projects; developer sees all (mirrors dashboard.controller.js).
 function userCanAccessProject(project, user) {
@@ -142,6 +143,7 @@ exports.createNode = async (req, res) => {
     const max = await prisma.diagramNode.aggregate({ where: { mindmapId: diagram.id, parentId: pid }, _max: { position: true } });
     const data = { mindmapId: diagram.id, parentId: pid, label: label.trim(), position: (max._max.position || 0) + 1 };
     if (shape !== undefined && VALID_SHAPES.includes(shape)) data.shape = shape;
+    if (req.body.icon !== undefined && VALID_ICONS.includes(req.body.icon)) data.icon = req.body.icon;
     if (x !== undefined && x !== null) data.x = parseFloat(x);
     if (y !== undefined && y !== null) data.y = parseFloat(y);
     const node = await prisma.diagramNode.create({ data });
@@ -165,6 +167,7 @@ exports.updateNode = async (req, res) => {
     if (y !== undefined) data.y = y === null ? null : parseFloat(y);
     if (collapsed !== undefined) data.collapsed = !!collapsed;
     if (shape !== undefined && VALID_SHAPES.includes(shape)) data.shape = shape;
+    if (req.body.icon !== undefined) data.icon = VALID_ICONS.includes(req.body.icon) ? req.body.icon : null;
     if (width !== undefined) data.width = width === null ? null : parseFloat(width);
     if (height !== undefined) data.height = height === null ? null : parseFloat(height);
     if (parentId !== undefined) {

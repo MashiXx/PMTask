@@ -211,6 +211,7 @@ model DiagramNode {
   parentId  Int?
   label     String   @db.Text
   shape     String   @default("rect") // rect | diamond | ellipse | parallelogram | group
+  icon      String?  // optional service-icon key (architecture diagrams)
   color     String?
   x         Float?
   y         Float?
