@@ -19,5 +19,13 @@ nodeRouter.put('/:id', mm.updateNode);
 nodeRouter.delete('/:id', mm.deleteNode);
 nodeRouter.post('/:id/convert', mm.convertNode);
 
+// /api/mindmap-edges
+const edgeRouter = require('express').Router();
+edgeRouter.use(isAuthenticated);
+edgeRouter.post('/', mm.createEdge);
+edgeRouter.put('/:id', mm.updateEdge);
+edgeRouter.delete('/:id', mm.deleteEdge);
+
 module.exports = router;
 module.exports.nodeRouter = nodeRouter;
+module.exports.edgeRouter = edgeRouter;
