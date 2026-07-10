@@ -1,5 +1,7 @@
+<% var diagramType = (mindmap.type || 'mindmap'); var isFreeform = diagramType !== 'mindmap'; %>
 <%- include('../partials/head', { title: mindmap.name }) %>
 <link rel="stylesheet" href="/css/mindmap.css">
+<% if (isFreeform) { %><link rel="stylesheet" href="/css/diagram.css"><% } %>
 
 <div class="app-layout">
   <%- include('../partials/sidebar') %>
@@ -10,7 +12,7 @@
       </button>
       <div class="topbar-left">
         <div class="breadcrumb">
-          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps" class="breadcrumb-link"><%= t('mindmap.title') %></a>
+          <a href="/projects/<%= activeProject.id %>-<%= activeProject.slug %>/mindmaps" class="breadcrumb-link"><%= t('diagram.title') %></a>
           <span class="breadcrumb-sep">/</span>
           <span class="breadcrumb-text"><%= mindmap.name %></span>
         </div>
@@ -18,6 +20,27 @@
     </div>
 
     <div class="mm-canvas" id="mmCanvas">
+      <% if (isFreeform) { %>
+      <div class="mm-toolbar">
+        <button onclick="dgAddNode('rect')" title="<%= t('diagram.addBox') %>">&#9645;</button>
+        <% if (diagramType === 'flowchart') { %>
+        <button onclick="dgAddNode('diamond')" title="<%= t('diagram.addDiamond') %>">&#9670;</button>
+        <button onclick="dgAddNode('ellipse')" title="<%= t('diagram.addEllipse') %>">&#9711;</button>
+        <button onclick="dgAddNode('parallelogram')" title="<%= t('diagram.addParallelogram') %>">&#9649;</button>
+        <% } %>
+        <% if (diagramType === 'architecture') { %>
+        <button onclick="dgAddGroup()" title="<%= t('diagram.addGroup') %>">&#9707;</button>
+        <% } %>
+        <button onclick="dgZoom(0.1)" title="<%= t('mindmap.zoomIn') %>">+</button>
+        <button onclick="dgZoom(-0.1)" title="<%= t('mindmap.zoomOut') %>">&minus;</button>
+        <button onclick="dgFit()" title="<%= t('mindmap.resetView') %>">&#9633;</button>
+        <button onclick="dgUndo()" title="<%= t('diagram.undo') %>">&#8630;</button>
+        <button onclick="dgRedo()" title="<%= t('diagram.redo') %>">&#8631;</button>
+        <button onclick="dgExportPng()" title="<%= t('mindmap.exportPng') %>">&#11015;</button>
+      </div>
+      <svg class="mm-svg" id="mmSvg"></svg>
+      <div class="mm-viewport" id="mmViewport"></div>
+      <% } else { %>
       <div class="mm-toolbar">
         <button onclick="mmAutoArrange()" title="<%= t('mindmap.autoArrange') %>">&#10070;</button>
         <button onclick="mmClearPins()" title="<%= t('mindmap.resetLayout') %>">&#8635;</button>
@@ -34,6 +57,7 @@
       </div>
       <svg class="mm-svg" id="mmSvg"></svg>
       <div class="mm-viewport" id="mmViewport"></div>
+      <% } %>
     </div>
   </main>
 </div>
@@ -45,6 +69,19 @@
   window.CURRENT_USER_ID = <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.id : 'null' %>;
   window.IS_ADMIN = <%= typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>;
 </script>
+<script>
+  window.MINDMAP = { id: <%= mindmap.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
+  window.MINDMAP_NAME = <%- JSON.stringify(mindmap.name) %>;
+  window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
+  window.DIAGRAM = { id: <%= mindmap.id %>, type: '<%= diagramType %>', projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
+  window.DIAGRAM_EDGES = <%- JSON.stringify(typeof edges !== 'undefined' ? edges : []).replace(/</g, '\\u003c') %>;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
+<% if (isFreeform) { %>
+<script src="/js/mm-ui.js"></script>
+<script src="/js/mindmap-history.js"></script>
+<script src="/js/diagram.js"></script>
+<% } else { %>
 <script src="/js/task-attachments.js"></script>
 <script src="/js/modal.js"></script>
 <script src="/js/subtask.js"></script>
@@ -54,11 +91,6 @@
 <script src="/js/mindmap-color.js"></script>
 <script src="/js/mindmap-search.js"></script>
 <script src="/js/mindmap-history.js"></script>
-<script>
-  window.MINDMAP = { id: <%= mindmap.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
-  window.MINDMAP_NAME = <%- JSON.stringify(mindmap.name) %>;
-  window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
-</script>
-<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
 <script src="/js/mindmap.js"></script>
+<% } %>
 <%- include('../partials/foot') %>
