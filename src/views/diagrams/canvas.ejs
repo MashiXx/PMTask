@@ -72,7 +72,7 @@
 </script>
 <script>
   window.MINDMAP = { id: <%= diagram.id %>, projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
-  window.MINDMAP_NAME = <%- JSON.stringify(diagram.name) %>;
+  window.MINDMAP_NAME = <%- JSON.stringify(diagram.name).replace(/</g, '\\u003c') %>;
   window.MINDMAP_NODES = <%- JSON.stringify(nodes).replace(/</g, '\\u003c') %>;
   window.DIAGRAM = { id: <%= diagram.id %>, type: '<%= diagramType %>', projectSlug: '<%= activeProject.id %>-<%= activeProject.slug %>' };
   window.DIAGRAM_EDGES = <%- JSON.stringify(typeof edges !== 'undefined' ? edges : []).replace(/</g, '\\u003c') %>;

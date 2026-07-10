@@ -336,10 +336,10 @@
 
 <script>
   const PROJECT_ID = <%= activeProjectId %>;
-  const PROJECT_SLUG = <%- JSON.stringify(activeProject.id + '-' + activeProject.slug) %>;
+  const PROJECT_SLUG = <%- JSON.stringify(activeProject.id + '-' + activeProject.slug).replace(/</g, '\\u003c') %>;
   const CURRENT_FOLDER_ID = <%= currentFolder ? currentFolder.id : 'null' %>;
   const IS_ADMIN = <%= currentUser && currentUser.role === 'admin' ? 'true' : 'false' %>;
-  const DOC_LIST = <%- JSON.stringify(documents.map(function(d) { return { id: d.id, mimeType: d.mimeType, title: d.title }; })) %>;
+  const DOC_LIST = <%- JSON.stringify(documents.map(function(d) { return { id: d.id, mimeType: d.mimeType, title: d.title }; })).replace(/</g, '\\u003c') %>;
 </script>
 <script src="/js/documents.js"></script>
 <script src="/js/theme.js"></script>

@@ -290,7 +290,7 @@
     const taskId = document.getElementById('deleteTaskId').value;
     try {
       await fetch('/api/tasks/' + taskId, { method: 'DELETE' });
-      window.location.href = '/dashboard/' + <%- JSON.stringify(task.project.id + '-' + task.project.slug) %>;
+      window.location.href = '/dashboard/' + <%- JSON.stringify(task.project.id + '-' + task.project.slug).replace(/</g, '\\u003c') %>;
     } catch (err) {
       console.error('Failed to delete task:', err);
     }
