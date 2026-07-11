@@ -21,24 +21,36 @@
 
     <div class="mm-canvas" id="mmCanvas">
       <% if (isFreeform) { %>
-      <div class="mm-toolbar">
-        <button onclick="dgAutoArrange()" title="<%= t('mindmap.autoArrange') %>">&#10070;</button>
-        <button onclick="dgAddNode('rect')" title="<%= t('diagram.addBox') %>">&#9645;</button>
-        <% if (diagramType === 'flowchart') { %>
-        <button onclick="dgAddNode('diamond')" title="<%= t('diagram.addDiamond') %>">&#9670;</button>
-        <button onclick="dgAddNode('ellipse')" title="<%= t('diagram.addEllipse') %>">&#9711;</button>
-        <button onclick="dgAddNode('parallelogram')" title="<%= t('diagram.addParallelogram') %>">&#9649;</button>
-        <% } %>
-        <% if (diagramType === 'architecture') { %>
-        <button onclick="dgAddGroup()" title="<%= t('diagram.addGroup') %>">&#9707;</button>
-        <% } %>
-        <button onclick="dgZoom(0.1)" title="<%= t('mindmap.zoomIn') %>">+</button>
-        <button onclick="dgZoom(-0.1)" title="<%= t('mindmap.zoomOut') %>">&minus;</button>
-        <button onclick="dgFit()" title="<%= t('mindmap.resetView') %>">&#9633;</button>
-        <button onclick="dgUndo()" title="<%= t('diagram.undo') %>">&#8630;</button>
-        <button onclick="dgRedo()" title="<%= t('diagram.redo') %>">&#8631;</button>
-        <button onclick="dgExportPng()" title="<%= t('mindmap.exportPng') %>">&#11015;</button>
+      <div class="mm-toolbar dg-toolbar">
+        <div class="dg-tgroup">
+          <button class="dg-tbtn" onclick="dgAddNode('rect')"><span class="dg-tglyph">&#9645;</span><span class="dg-tlabel"><%= t('diagram.addBox') %></span></button>
+          <% if (diagramType === 'flowchart') { %>
+          <button class="dg-tbtn" onclick="dgAddNode('diamond')" title="<%= t('diagram.addDiamond') %>"><span class="dg-tglyph">&#9670;</span></button>
+          <button class="dg-tbtn" onclick="dgAddNode('ellipse')" title="<%= t('diagram.addEllipse') %>"><span class="dg-tglyph">&#9711;</span></button>
+          <button class="dg-tbtn" onclick="dgAddNode('parallelogram')" title="<%= t('diagram.addParallelogram') %>"><span class="dg-tglyph">&#9649;</span></button>
+          <% } %>
+          <% if (diagramType === 'architecture') { %>
+          <button class="dg-tbtn" onclick="dgAddGroup()" title="<%= t('diagram.addGroup') %>"><span class="dg-tglyph">&#9707;</span></button>
+          <% } %>
+        </div>
+        <div class="dg-tgroup">
+          <button class="dg-tbtn" onclick="dgAutoArrange()"><span class="dg-tglyph">&#10070;</span><span class="dg-tlabel"><%= t('diagram.toolbar.arrange') %></span></button>
+        </div>
+        <div class="dg-tgroup">
+          <button class="dg-tbtn" onclick="dgZoom(0.1)" title="<%= t('diagram.toolbar.zoomIn') %>"><span class="dg-tglyph">+</span></button>
+          <button class="dg-tbtn" onclick="dgZoom(-0.1)" title="<%= t('diagram.toolbar.zoomOut') %>"><span class="dg-tglyph">&minus;</span></button>
+          <button class="dg-tbtn" onclick="dgFit()"><span class="dg-tglyph">&#9633;</span><span class="dg-tlabel"><%= t('diagram.toolbar.fit') %></span></button>
+        </div>
+        <div class="dg-tgroup">
+          <button class="dg-tbtn" onclick="dgUndo()" title="<%= t('diagram.toolbar.undo') %>"><span class="dg-tglyph">&#8630;</span></button>
+          <button class="dg-tbtn" onclick="dgRedo()" title="<%= t('diagram.toolbar.redo') %>"><span class="dg-tglyph">&#8631;</span></button>
+        </div>
+        <div class="dg-tgroup">
+          <button class="dg-tbtn" onclick="dgExportPng()"><span class="dg-tglyph">&#11015;</span><span class="dg-tlabel"><%= t('diagram.toolbar.export') %></span></button>
+          <button class="dg-tbtn" onclick="dgShowShortcuts()" title="<%= t('diagram.toolbar.shortcuts') %>"><span class="dg-tglyph">?</span></button>
+        </div>
       </div>
+      <button class="dg-fab" onclick="dgAddNode('rect')" title="<%= t('diagram.addBox') %>" aria-label="<%= t('diagram.addBox') %>">+</button>
       <svg class="mm-svg" id="mmSvg"></svg>
       <div class="mm-viewport" id="mmViewport"></div>
       <% } else { %>
@@ -81,6 +93,7 @@
 <% if (isFreeform) { %>
 <script src="/js/mm-ui.js"></script>
 <script src="/js/mindmap-history.js"></script>
+<script src="/js/diagram-clipboard.js"></script>
 <script src="/js/diagram.js"></script>
 <% } else { %>
 <script src="/js/task-attachments.js"></script>
