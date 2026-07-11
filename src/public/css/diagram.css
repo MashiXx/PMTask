@@ -51,15 +51,15 @@
 
 /* Node action bar (edit / color / delete) — floats above the node */
 .dg-node-actions {
-  position:absolute; top:-14px; right:8px; z-index:5;
-  display:none; gap:4px; align-items:center;
-  padding:3px 5px; background:var(--surface); border:1px solid var(--border); border-radius:8px;
-  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  position:absolute; top:-16px; right:8px; z-index:5;
+  display:none; gap:3px; align-items:center;
+  padding:4px 6px; background:var(--card); border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
 }
 .dg-node:hover > .dg-node-actions, .dg-node.selected > .dg-node-actions { display:flex; }
-.dg-shape-group > .dg-node-actions { top:-14px; }
-.dg-node-actions button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.72rem; line-height:1; padding:2px 3px; }
-.dg-node-actions button:hover { color:var(--text); }
+.dg-shape-group > .dg-node-actions { top:-16px; }
+.dg-node-actions button { width:26px; height:26px; display:grid; place-items:center; background:none; border:none; border-radius:7px; color:var(--text-muted); cursor:pointer; font-size:0.8rem; line-height:1; padding:0; }
+.dg-node-actions button:hover { background:var(--accent-soft, var(--surface)); color:var(--accent); }
 .dg-color { width:20px; height:18px; padding:0; border:1px solid var(--border); border-radius:4px; background:var(--surface); cursor:pointer; }
 
 /* Connection handle — drag to draw an arrow */
@@ -107,6 +107,38 @@
 
 .mm-svg { pointer-events:none; }
 .dg-edge-hit { pointer-events:stroke; }
+
+/* Grouped labeled toolbar (overrides base .mm-toolbar) */
+.dg-toolbar { flex-wrap:wrap; gap:4px; align-items:center; padding:5px; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.14); max-width:calc(100% - 28px); }
+.dg-tgroup { display:flex; gap:2px; padding:0 4px; position:relative; }
+.dg-tgroup + .dg-tgroup::before { content:""; position:absolute; left:-1px; top:5px; bottom:5px; width:1px; background:var(--border-light); }
+.dg-toolbar .dg-tbtn { width:auto; height:auto; display:flex; align-items:center; gap:6px; padding:6px 10px; border:none; border-radius:8px; background:none; color:var(--text); font-size:0.82rem; font-weight:500; line-height:1; cursor:pointer; }
+.dg-toolbar .dg-tbtn:hover { background:var(--card-hover, var(--surface)); }
+.dg-tglyph { font-size:0.95rem; color:var(--text-muted); }
+.dg-toolbar .dg-tbtn:hover .dg-tglyph { color:var(--accent); }
+.dg-tlabel { white-space:nowrap; }
+.dg-fab { display:none; }
+
+/* Mobile: toolbar becomes a bottom bar; add a floating + button */
+@media (max-width: 640px) {
+  .mm-toolbar.dg-toolbar {
+    position:fixed; left:0; right:0; bottom:0; top:auto; max-width:none;
+    justify-content:space-around; flex-wrap:nowrap; overflow-x:auto;
+    border-radius:0; border:none; border-top:1px solid var(--border); box-shadow:none;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom)); gap:2px; z-index:40; background:var(--surface);
+  }
+  .dg-toolbar .dg-tgroup { padding:0 2px; }
+  .dg-toolbar .dg-tgroup + .dg-tgroup::before { display:none; }
+  .dg-toolbar .dg-tbtn { flex-direction:column; gap:3px; padding:6px 8px; font-size:0.62rem; }
+  .dg-tglyph { font-size:1.2rem; }
+  .dg-fab {
+    display:grid; place-items:center; position:fixed; right:16px; bottom:76px; z-index:41;
+    width:52px; height:52px; border-radius:50%; border:none; background:var(--accent); color:#fff;
+    font-size:1.7rem; line-height:1; box-shadow:0 8px 22px rgba(0,0,0,.3); cursor:pointer;
+  }
+  .dg-handle { width:18px; height:18px; right:-10px; }
+  .dg-node-actions button { width:32px; height:32px; font-size:0.95rem; }
+}
 
 /* Shortcuts help */
 .dg-shortcuts { display:grid; grid-template-columns:1fr; gap:2px; margin:14px 0 4px; max-height:52vh; overflow:auto; }
