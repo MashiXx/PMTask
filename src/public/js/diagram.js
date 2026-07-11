@@ -684,8 +684,8 @@ document.addEventListener('keydown', (e) => {
   else if (mod && (k === '=' || k === '+')) { e.preventDefault(); dgZoom(0.1); }
   else if (mod && k === '-') { e.preventDefault(); dgZoom(-0.1); }
   else if (mod && k === '0') { e.preventDefault(); dgFit(); }
-  else if (k.startsWith('Arrow')) { e.preventDefault(); dgNudge(k, e.shiftKey); }
-  else if (k === 'Tab') { e.preventDefault(); dgTabConnect(); }
+  else if (k.startsWith('Arrow') && DG.selection.size) { e.preventDefault(); dgNudge(k, e.shiftKey); }
+  else if (k === 'Tab' && (e.target === document.body || e.target === canvasEl)) { e.preventDefault(); dgTabConnect(); }
   else if ((k === 'Enter' || k === 'F2') && DG.selection.size === 1) { e.preventDefault(); dgEditLabel([...DG.selection][0]); }
   else if (k === 'Escape') { clearTempEdge(); dgClearSelection(); }
   else if (k === '?') { e.preventDefault(); dgShowShortcuts(); }
