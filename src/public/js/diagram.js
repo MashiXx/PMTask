@@ -11,7 +11,7 @@ const DG = {
   byId: new Map(),
   pan: { x: 120, y: 120 },
   zoom: 1,
-  selectedId: null,
+  selection: new Set(),
   selectedEdgeId: null,
 };
 DG.history = mmCreateHistory(50);
@@ -88,7 +88,7 @@ function dgRender() {
 function buildNodeEl(n) {
   const el = document.createElement('div');
   const isGroup = n.shape === 'group';
-  el.className = `dg-node dg-shape-${n.shape || 'rect'}` + (n.id === DG.selectedId ? ' selected' : '');
+  el.className = `dg-node dg-shape-${n.shape || 'rect'}` + (DG.selection.has(n.id) ? ' selected' : '');
   el.dataset.nodeId = n.id;
   el.style.left = (n.x || 0) + 'px';
   el.style.top = (n.y || 0) + 'px';
@@ -181,21 +181,31 @@ function dgRenderEdges() {
   }
 }
 
-// ── Selection ──
-function dgSelectNode(id) {
-  DG.selectedId = id;
+// ── Selection (multi) ──
+function dgSelectNode(id, additive) {
+  if (additive) {
+    if (DG.selection.has(id)) DG.selection.delete(id); else DG.selection.add(id);
+  } else {
+    DG.selection = new Set([id]);
+  }
+  DG.selectedEdgeId = null;
+  dgRender();
+}
+function dgSelectAll() {
+  DG.selection = new Set(DG.nodes.filter(n => n.shape !== 'group').map(n => n.id));
   DG.selectedEdgeId = null;
   dgRender();
 }
 function dgSelectEdge(id) {
   DG.selectedEdgeId = id;
-  DG.selectedId = null;
+  DG.selection = new Set();
   dgRender();
 }
 function dgClearSelection() {
-  if (DG.selectedId == null && DG.selectedEdgeId == null) return;
-  DG.selectedId = null; DG.selectedEdgeId = null; dgRender();
+  if (DG.selection.size === 0 && DG.selectedEdgeId == null) return;
+  DG.selection = new Set(); DG.selectedEdgeId = null; dgRender();
 }
+function dgSelectedNodes() { return [...DG.selection].map(id => DG.byId.get(id)).filter(Boolean); }
 
 // ── Coordinate helpers ──
 function clientToCanvas(clientX, clientY) {
@@ -237,14 +247,19 @@ canvasEl.addEventListener('pointerdown', (e) => {
       origW: n.width || SHAPE_DEFAULT.group.w, origH: n.height || SHAPE_DEFAULT.group.h };
     return;
   }
-  // Select / drag a node (groups carry their members).
+  // Select / drag a node (groups carry their members; multi-selection moves together).
   const nodeEl = e.target.closest('.dg-node');
   if (nodeEl) {
     const id = parseInt(nodeEl.dataset.nodeId);
+    const additive = e.shiftKey || e.metaKey || e.ctrlKey;
+    if (additive) { dgSelectNode(id, true); gesture = null; return; }
+    if (!DG.selection.has(id)) dgSelectNode(id, false);
     const n = DG.byId.get(id);
-    const members = n.shape === 'group'
-      ? DG.nodes.filter(m => m.parentId === id).map(m => ({ id: m.id, ox: m.x || 0, oy: m.y || 0 }))
-      : [];
+    // Move set: the clicked node's group members, plus any other co-selected nodes.
+    const moveIds = new Set(DG.selection);
+    if (n.shape === 'group') DG.nodes.filter(m => m.parentId === id).forEach(m => moveIds.add(m.id));
+    moveIds.delete(id);
+    const members = [...moveIds].map(mid => { const m = DG.byId.get(mid); return { id: mid, ox: m.x || 0, oy: m.y || 0 }; });
     gesture = { type: 'drag', pointerId: e.pointerId, id, el: nodeEl,
       startX: e.clientX, startY: e.clientY, origX: n.x || 0, origY: n.y || 0,
       nx: n.x || 0, ny: n.y || 0, moved: false, members };
@@ -556,7 +571,7 @@ async function dgDeleteNode(id) {
   DG.nodes = DG.nodes.filter(x => x.id !== id);
   DG.edges = DG.edges.filter(x => x.sourceId !== id && x.targetId !== id);
   if (n.shape === 'group') DG.nodes.forEach(x => { if (x.parentId === id) x.parentId = null; });
-  DG.selectedId = null;
+  DG.selection.delete(id);
   DG.history.clear();
   dgRender();
 }
@@ -591,7 +606,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.closest('[contenteditable="true"]') || e.target.matches('input, textarea')) return;
   if (e.key === 'Delete' || e.key === 'Backspace') {
     if (DG.selectedEdgeId != null) { e.preventDefault(); dgDeleteEdge(DG.selectedEdgeId); }
-    else if (DG.selectedId != null) { e.preventDefault(); dgDeleteNode(DG.selectedId); }
+    else if (DG.selection.size) { e.preventDefault(); [...DG.selection].forEach(id => dgDeleteNode(id)); }
   } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
     e.preventDefault();
     if (e.shiftKey) dgRedo(); else dgUndo();
@@ -611,8 +626,8 @@ canvasEl.addEventListener('dblclick', (e) => {
 // ── Export ──
 async function dgExportPng() {
   if (!window.htmlToImage) { mmToast(t('js.mindmap.exportUnavailable'), 'error'); return; }
-  const prevSel = DG.selectedId, prevEdge = DG.selectedEdgeId;
-  DG.selectedId = null; DG.selectedEdgeId = null; dgRender();
+  const prevSel = DG.selection, prevEdge = DG.selectedEdgeId;
+  DG.selection = new Set(); DG.selectedEdgeId = null; dgRender();
   try {
     const dataUrl = await window.htmlToImage.toPng(canvasEl, {
       backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg') || '#ffffff',
@@ -624,7 +639,7 @@ async function dgExportPng() {
   } catch (err) {
     console.error(err); mmToast(t('js.mindmap.exportFailed'), 'error');
   } finally {
-    DG.selectedId = prevSel; DG.selectedEdgeId = prevEdge; dgRender();
+    DG.selection = prevSel; DG.selectedEdgeId = prevEdge; dgRender();
   }
 }
 
