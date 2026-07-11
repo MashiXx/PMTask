@@ -210,6 +210,7 @@ model DiagramNode {
   mindmapId Int      // FK column kept as-is (maps to the Diagram table's id)
   parentId  Int?
   label     String   @db.Text
+  description String? @db.Text
   shape     String   @default("rect") // rect | diamond | ellipse | parallelogram | group
   icon      String?  // optional service-icon key (architecture diagrams)
   color     String?

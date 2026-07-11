@@ -146,6 +146,13 @@ exports.createNode = async (req, res) => {
     if (req.body.icon !== undefined && VALID_ICONS.includes(req.body.icon)) data.icon = req.body.icon;
     if (x !== undefined && x !== null) data.x = parseFloat(x);
     if (y !== undefined && y !== null) data.y = parseFloat(y);
+    if (req.body.color !== undefined) data.color = req.body.color || null;
+    if (req.body.width !== undefined && req.body.width !== null) data.width = parseFloat(req.body.width);
+    if (req.body.height !== undefined && req.body.height !== null) data.height = parseFloat(req.body.height);
+    if (req.body.description !== undefined) {
+      const d = req.body.description ? String(req.body.description).replace(/^\s+|\s+$/g, '') : '';
+      data.description = d || null;
+    }
     const node = await prisma.diagramNode.create({ data });
     res.json({ success: true, node });
   } catch (err) {
@@ -159,9 +166,13 @@ exports.updateNode = async (req, res) => {
     const loaded = await loadNode(req.params.id);
     if (!loaded) return res.status(404).json({ error: 'Node not found' });
     if (!userCanAccessProject(loaded.project, req.user)) return res.status(403).json({ error: 'Access denied' });
-    const { label, color, x, y, collapsed, shape, width, height, parentId } = req.body;
+    const { label, color, x, y, collapsed, shape, width, height, parentId, description } = req.body;
     const data = {};
     if (label != null) data.label = String(label).trim();
+    if (description !== undefined) {
+      const d = description ? String(description).replace(/^\s+|\s+$/g, '') : '';
+      data.description = d || null;
+    }
     if (color !== undefined) data.color = color || null;
     if (x !== undefined) data.x = x === null ? null : parseFloat(x);
     if (y !== undefined) data.y = y === null ? null : parseFloat(y);
