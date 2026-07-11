@@ -99,11 +99,17 @@ function buildNodeEl(n) {
   el.style.setProperty('--dg-accent', accent);
   const iconHtml = (!isGroup && n.icon && ICON_PATHS[n.icon]) ? `<span class="dg-node-icon">${iconSvg(n.icon)}</span>` : '';
   const iconBtn = isGroup ? '' : `<button onclick="dgPickIcon(${n.id})" title="${t('diagram.setIcon')}">◈</button>`;
+  const titleHtml = `<div class="dg-node-title" data-node-id="${n.id}">${escapeHtml(n.label)}</div>`;
+  const showDesc = !isGroup && n.shape !== 'diamond' && n.shape !== 'ellipse';
+  const descHtml = showDesc
+    ? `<div class="dg-node-desc${n.description ? '' : ' is-empty'}" data-desc-id="${n.id}" data-placeholder="${t('js.diagram.descPlaceholder')}">${escapeHtml(n.description || '')}</div>`
+    : '';
   el.innerHTML = `
-    ${iconHtml}
-    <div class="dg-node-label" data-node-id="${n.id}">${escapeHtml(n.label)}</div>
+    <div class="dg-node-head">${iconHtml}${titleHtml}</div>
+    ${descHtml}
     <div class="dg-node-actions">
       <button onclick="dgEditLabel(${n.id})" title="${t('js.mindmap.edit')}">✎</button>
+      ${showDesc ? `<button onclick="dgEditDescription(${n.id})" title="${t('js.diagram.editDescription')}">☰</button>` : ''}
       ${iconBtn}
       <input type="color" class="dg-color" value="${accent}" title="${t('js.mindmap.nodeColor')}" onchange="dgSetColor(${n.id}, this.value)" onpointerdown="event.stopPropagation()">
       <button onclick="dgDeleteNode(${n.id})" title="${t('js.mindmap.delete')}">🗑</button>
@@ -458,7 +464,7 @@ async function dgAddNode(shape) {
 function dgAddGroup() { return dgAddNode('group'); }
 
 function dgEditLabel(id) {
-  const labelEl = viewportEl.querySelector(`.dg-node-label[data-node-id="${id}"]`);
+  const labelEl = viewportEl.querySelector(`.dg-node-title[data-node-id="${id}"]`);
   if (!labelEl) return;
   const n = DG.byId.get(id);
   labelEl.setAttribute('contenteditable', 'true');
@@ -491,6 +497,43 @@ function dgEditLabel(id) {
   labelEl.addEventListener('keydown', onKey);
   labelEl.addEventListener('blur', onBlur);
 }
+
+function dgEditDescription(id) {
+  const el = viewportEl.querySelector(`.dg-node-desc[data-desc-id="${id}"]`);
+  if (!el) return;
+  const n = DG.byId.get(id);
+  el.classList.remove('is-empty');
+  el.setAttribute('contenteditable', 'true');
+  el.focus();
+  document.getSelection().selectAllChildren(el);
+  let done = false;
+  function finish(save) {
+    if (done) return;
+    done = true;
+    el.removeAttribute('contenteditable');
+    el.removeEventListener('blur', onBlur);
+    el.removeEventListener('keydown', onKey);
+    const text = el.innerText.replace(/^\s+|\s+$/g, '');
+    const prev = n.description || '';
+    if (save && text !== prev) {
+      n.description = text || null;
+      apiUpdateNode(id, { description: text }, () => { n.description = prev || null; dgRender(); });
+      DG.history.push({ label: 'description',
+        undo: () => { n.description = prev || null; apiUpdateNode(id, { description: prev }); dgRender(); },
+        redo: () => { n.description = text || null; apiUpdateNode(id, { description: text }); dgRender(); } });
+    }
+    dgRender();
+  }
+  function onKey(ev) {
+    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); finish(true); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); finish(false); }
+    // Shift+Enter falls through → browser inserts a newline.
+  }
+  function onBlur() { finish(true); }
+  el.addEventListener('keydown', onKey);
+  el.addEventListener('blur', onBlur);
+}
+window.dgEditDescription = dgEditDescription;
 
 function dgSetColor(id, value) {
   const n = DG.byId.get(id);
