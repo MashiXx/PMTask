@@ -15,6 +15,7 @@ const DG = {
   selectedEdgeId: null,
 };
 DG.history = mmCreateHistory(50);
+DG.clipboard = [];
 
 const canvasEl = document.getElementById('mmCanvas');
 const viewportEl = document.getElementById('mmViewport');
@@ -597,24 +598,98 @@ async function dgDeleteEdge(id) {
   dgRender();
 }
 
+// ── Clipboard (in-page) ──
+function dgCopy() {
+  const nodes = dgSelectedNodes().filter(n => n.shape !== 'group');
+  if (nodes.length) DG.clipboard = diagramClipboard.cloneForClipboard(nodes);
+}
+async function dgPaste() {
+  if (!DG.clipboard.length) return;
+  const payloads = diagramClipboard.pastePayloads(DG.clipboard, GRID, GRID);
+  const created = [];
+  for (const p of payloads) {
+    const res = await fetch('/api/diagram-nodes', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mindmapId: DG.id, ...p, x: snap(p.x), y: snap(p.y) }),
+    });
+    const data = await res.json();
+    if (data.success) { DG.nodes.push(data.node); created.push(data.node); }
+    else { mmToast(data.error || t('js.diagram.couldNotSave'), 'error'); }
+  }
+  if (!created.length) return;
+  DG.clipboard = diagramClipboard.cloneForClipboard(created); // chained pastes keep cascading
+  DG.selection = new Set(created.map(n => n.id));
+  DG.selectedEdgeId = null;
+  const ids = created.map(n => n.id);
+  DG.history.push({ label: 'paste',
+    undo: async () => { for (const id of ids) await fetch(`/api/diagram-nodes/${id}`, { method: 'DELETE' }); DG.nodes = DG.nodes.filter(n => !ids.includes(n.id)); DG.selection = new Set(); dgRender(); },
+    redo: () => {} });
+  dgRender();
+}
+async function dgDuplicate() {
+  const nodes = dgSelectedNodes().filter(n => n.shape !== 'group');
+  if (!nodes.length) return;
+  DG.clipboard = diagramClipboard.cloneForClipboard(nodes);
+  await dgPaste();
+}
+function dgNudge(key, fine) {
+  const d = diagramClipboard.nudgeDelta(key, fine, GRID);
+  if (!d) return;
+  const nodes = dgSelectedNodes();
+  if (!nodes.length) return;
+  for (const n of nodes) { n.x = (n.x || 0) + d.dx; n.y = (n.y || 0) + d.dy; apiUpdateNode(n.id, { x: n.x, y: n.y }); }
+  dgRender();
+}
+async function dgTabConnect() {
+  if (DG.selection.size !== 1) return;
+  const fromId = [...DG.selection][0];
+  const from = DG.byId.get(fromId);
+  if (!from || from.shape === 'group') return;
+  const fs = nodeSize(from);
+  const x = snap((from.x || 0) + fs.w + 80), y = snap(from.y || 0);
+  const res = await fetch('/api/diagram-nodes', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mindmapId: DG.id, label: t('js.diagram.newBox'), shape: 'rect', x, y }),
+  });
+  const data = await res.json();
+  if (!data.success) { mmToast(data.error || t('js.diagram.couldNotSave'), 'error'); return; }
+  DG.nodes.push(data.node);
+  await fetch('/api/diagram-edges', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mindmapId: DG.id, sourceId: fromId, targetId: data.node.id }),
+  }).then(r => r.json()).then(d => { if (d.success) DG.edges.push(d.edge); });
+  dgSelectNode(data.node.id, false);
+  dgEditLabel(data.node.id);
+}
+
 // ── Undo / redo ──
 async function dgUndo() { const c = DG.history.undo(); if (c) await c.undo(); }
 async function dgRedo() { const c = DG.history.redo(); if (c) await c.redo(); }
 
 // ── Keyboard ──
+// dgShowShortcuts is defined in the "Shortcuts help" section below.
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('[contenteditable="true"]') || e.target.matches('input, textarea')) return;
-  if (e.key === 'Delete' || e.key === 'Backspace') {
+  const mod = e.metaKey || e.ctrlKey;
+  const k = e.key;
+  if (k === 'Delete' || k === 'Backspace') {
     if (DG.selectedEdgeId != null) { e.preventDefault(); dgDeleteEdge(DG.selectedEdgeId); }
     else if (DG.selection.size) { e.preventDefault(); [...DG.selection].forEach(id => dgDeleteNode(id)); }
-  } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
-    e.preventDefault();
-    if (e.shiftKey) dgRedo(); else dgUndo();
-  } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
-    e.preventDefault(); dgRedo();
-  } else if (e.key.toLowerCase() === 'd' && DG.selectedEdgeId != null) {
-    e.preventDefault(); dgToggleEdgeStyle(DG.selectedEdgeId); // toggle dashed on selected arrow
-  }
+  } else if (mod && k.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) dgRedo(); else dgUndo(); }
+  else if (mod && k.toLowerCase() === 'y') { e.preventDefault(); dgRedo(); }
+  else if (mod && k.toLowerCase() === 'c') { e.preventDefault(); dgCopy(); }
+  else if (mod && k.toLowerCase() === 'v') { e.preventDefault(); dgPaste(); }
+  else if (mod && k.toLowerCase() === 'd') { e.preventDefault(); dgDuplicate(); }
+  else if (mod && k.toLowerCase() === 'a') { e.preventDefault(); dgSelectAll(); }
+  else if (mod && (k === '=' || k === '+')) { e.preventDefault(); dgZoom(0.1); }
+  else if (mod && k === '-') { e.preventDefault(); dgZoom(-0.1); }
+  else if (mod && k === '0') { e.preventDefault(); dgFit(); }
+  else if (k.startsWith('Arrow')) { e.preventDefault(); dgNudge(k, e.shiftKey); }
+  else if (k === 'Tab') { e.preventDefault(); dgTabConnect(); }
+  else if ((k === 'Enter' || k === 'F2') && DG.selection.size === 1) { e.preventDefault(); dgEditLabel([...DG.selection][0]); }
+  else if (k === 'Escape') { clearTempEdge(); dgClearSelection(); }
+  else if (k === '?') { e.preventDefault(); dgShowShortcuts(); }
+  else if (k.toLowerCase() === 'd' && !mod && DG.selectedEdgeId != null) { e.preventDefault(); dgToggleEdgeStyle(DG.selectedEdgeId); }
 });
 
 // Double-click an empty spot adds a default box there.
@@ -675,6 +750,44 @@ function dgSetIcon(id, icon) {
     redo: () => { n.icon = icon; apiUpdateNode(id, { icon: icon || '' }); dgRender(); } });
   dgRender();
 }
+
+// ── Shortcuts help ──
+const SHORTCUT_ROWS = [
+  ['diagram.shortcuts.editTitle', 'Enter / F2'],
+  ['diagram.shortcuts.newline', 'Shift + ↵'],
+  ['diagram.shortcuts.copy', 'Ctrl + C'],
+  ['diagram.shortcuts.paste', 'Ctrl + V'],
+  ['diagram.shortcuts.duplicate', 'Ctrl + D'],
+  ['diagram.shortcuts.selectAll', 'Ctrl + A'],
+  ['diagram.shortcuts.nudge', '← ↑ ↓ →'],
+  ['diagram.shortcuts.connect', 'Tab'],
+  ['diagram.shortcuts.delete', 'Del'],
+  ['diagram.shortcuts.deselect', 'Esc'],
+  ['diagram.shortcuts.undoRedo', 'Ctrl + Z'],
+  ['diagram.shortcuts.zoom', 'Ctrl + / −'],
+  ['diagram.shortcuts.fit', 'Ctrl + 0'],
+  ['diagram.shortcuts.dashEdge', 'D'],
+];
+function dgShowShortcuts() {
+  const overlay = document.createElement('div');
+  overlay.className = 'mm-dialog-overlay';
+  const rows = SHORTCUT_ROWS.map(([key, keys]) =>
+    `<div class="dg-sc-row"><span>${escapeHtml(t(key))}</span><kbd>${escapeHtml(keys)}</kbd></div>`).join('');
+  overlay.innerHTML = `
+    <div class="mm-dialog" role="dialog" aria-modal="true">
+      <div class="mm-dialog-title">${t('diagram.shortcuts.title')}</div>
+      <div class="dg-shortcuts">${rows}</div>
+      <div class="mm-dialog-actions"><button class="mm-dialog-cancel" type="button">${t('js.mindmap.cancel')}</button></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  function close() { overlay.remove(); document.removeEventListener('keydown', onKey); }
+  overlay.querySelector('.mm-dialog-cancel').onclick = close;
+  overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) close(); });
+  function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
+  document.addEventListener('keydown', onKey);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+}
+window.dgShowShortcuts = dgShowShortcuts;
 
 // ── Edge style (dashed toggle) ──
 function dgToggleEdgeStyle(id) {

@@ -107,3 +107,10 @@
 
 .mm-svg { pointer-events:none; }
 .dg-edge-hit { pointer-events:stroke; }
+
+/* Shortcuts help */
+.dg-shortcuts { display:grid; grid-template-columns:1fr; gap:2px; margin:14px 0 4px; max-height:52vh; overflow:auto; }
+.dg-sc-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:7px 2px; border-bottom:1px solid var(--border-light); font-size:0.86rem; }
+.dg-sc-row span { color:var(--text-muted); }
+.dg-sc-row kbd { font-family:ui-monospace, monospace; font-size:0.72rem; padding:3px 7px; border:1px solid var(--border); border-bottom-width:2px; border-radius:6px; background:var(--surface); color:var(--text); white-space:nowrap; }
+@media (min-width:520px) { .dg-shortcuts { grid-template-columns:1fr 1fr; gap:2px 22px; } }
