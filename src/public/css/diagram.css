@@ -51,13 +51,13 @@
 
 /* Node action bar (edit / color / delete) — floats above the node */
 .dg-node-actions {
-  position:absolute; top:-16px; right:8px; z-index:5;
+  position:absolute; bottom:100%; right:8px; margin-bottom:6px; z-index:5;
   display:none; gap:3px; align-items:center;
   padding:4px 6px; background:var(--card); border:1px solid var(--border); border-radius:10px;
   box-shadow:0 6px 18px rgba(0,0,0,.22);
 }
 .dg-node:hover > .dg-node-actions, .dg-node.selected > .dg-node-actions { display:flex; }
-.dg-shape-group > .dg-node-actions { top:-16px; }
+.dg-shape-group > .dg-node-actions { bottom:100%; }
 .dg-node-actions button { width:26px; height:26px; display:grid; place-items:center; background:none; border:none; border-radius:7px; color:var(--text-muted); cursor:pointer; font-size:0.8rem; line-height:1; padding:0; }
 .dg-node-actions button:hover { background:var(--accent-soft, var(--surface)); color:var(--accent); }
 .dg-color { width:20px; height:18px; padding:0; border:1px solid var(--border); border-radius:4px; background:var(--surface); cursor:pointer; }
