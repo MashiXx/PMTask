@@ -252,6 +252,29 @@
   </div>
 </div>
 
+<!-- Paste Image Preview Modal -->
+<% if (!isGuest) { %>
+<div class="modal-overlay" id="pastePreviewModal">
+  <div class="modal">
+    <h2 class="modal-title"><%= t('documents.pasteImageTitle') %></h2>
+    <div class="form-group" style="text-align:center;">
+      <img id="pastePreviewImg" alt="" style="max-width:100%; max-height:240px; border-radius:8px; border:1px solid var(--border);">
+    </div>
+    <div class="form-group">
+      <label><%= t('documents.fileNameLabel') %></label>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <input type="text" id="pasteFileName" style="flex:1;">
+        <span id="pasteFileExt" style="color:var(--text-dim); font-size:0.85rem; white-space:nowrap;"></span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel" onclick="closePasteModal()"><%= t('common.cancel') %></button>
+      <button type="button" class="btn-submit" id="pasteSubmitBtn" onclick="submitPasteUpload()"><%= t('common.upload') %></button>
+    </div>
+  </div>
+</div>
+<% } %>
+
 <!-- Password Modal (Admin only) -->
 <% if (currentUser && currentUser.role === 'admin') { %>
 <div class="modal-overlay" id="passwordModal">

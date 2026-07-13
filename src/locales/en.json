@@ -78,6 +78,8 @@
   "documents.browse": "browse",
   "documents.maxFileSize": "Max 10 MB per file",
   "documents.clickToSelect": "Click to select files",
+  "documents.pasteImageTitle": "Paste image",
+  "documents.fileNameLabel": "FILE NAME",
   "documents.folderName": "Folder name",
   "documents.folderNameLabel": "FOLDER NAME",
   "documents.enterFolderName": "Enter folder name",

@@ -77,6 +77,8 @@
   "documents.browse": "duyệt tìm",
   "documents.maxFileSize": "Tối đa 10 MB mỗi tệp",
   "documents.clickToSelect": "Nhấn để chọn tệp",
+  "documents.pasteImageTitle": "Dán ảnh",
+  "documents.fileNameLabel": "TÊN TỆP",
   "documents.folderName": "Tên thư mục",
   "documents.folderNameLabel": "TÊN THƯ MỤC",
   "documents.enterFolderName": "Nhập tên thư mục",

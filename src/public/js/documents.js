@@ -502,6 +502,119 @@ if (fileInput) {
   });
 }
 
+// ===== Paste image from clipboard =====
+(function () {
+  const modal = document.getElementById('pastePreviewModal');
+  if (!modal) return; // guests have no paste modal
+
+  const imgEl = document.getElementById('pastePreviewImg');
+  const nameInput = document.getElementById('pasteFileName');
+  const extEl = document.getElementById('pasteFileExt');
+  const submitBtn = document.getElementById('pasteSubmitBtn');
+
+  const EXT_BY_TYPE = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'image/bmp': 'bmp',
+  };
+
+  let pasteBlob = null;
+  let pasteExt = 'png';
+  let objectUrl = null;
+
+  function isEditable(el) {
+    if (!el) return false;
+    const tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+  }
+
+  function timestamp() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+  }
+
+  document.addEventListener('paste', function (e) {
+    if (isEditable(e.target)) return; // don't hijack paste into text fields
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+
+    let blob = null;
+    for (const it of items) {
+      if (it.kind === 'file' && it.type.indexOf('image/') === 0) {
+        blob = it.getAsFile();
+        if (blob) break;
+      }
+    }
+    if (!blob) return;
+
+    e.preventDefault();
+    pasteBlob = blob;
+    pasteExt = EXT_BY_TYPE[blob.type] || 'png';
+
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(blob);
+    imgEl.src = objectUrl;
+    extEl.textContent = '.' + pasteExt;
+    nameInput.value = 'pasted-' + timestamp();
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = t('js.docs.upload');
+    modal.classList.add('active');
+    nameInput.focus();
+    nameInput.select();
+  });
+
+  window.closePasteModal = function () {
+    modal.classList.remove('active');
+    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+    pasteBlob = null;
+    imgEl.src = '';
+  };
+
+  window.submitPasteUpload = function () {
+    if (!pasteBlob) return;
+
+    let name = (nameInput.value || '').trim();
+    // strip a trailing extension the user may have typed; we always append pasteExt
+    name = name.replace(/\.[a-z0-9]{1,5}$/i, '');
+    if (!name) name = 'pasted-' + timestamp();
+    const filename = name + '.' + pasteExt;
+
+    const file = new File([pasteBlob], filename, { type: pasteBlob.type });
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = t('js.docs.uploading') + '...';
+
+    const xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        window.location.reload();
+      } else {
+        let msg = t('js.docs.uploadFailed');
+        try { msg = JSON.parse(xhr.responseText).error || msg; } catch (err) {}
+        alert(msg);
+        submitBtn.disabled = false;
+        submitBtn.textContent = t('js.docs.upload');
+      }
+    });
+    xhr.addEventListener('error', function () {
+      alert(t('js.docs.uploadFailed'));
+      submitBtn.disabled = false;
+      submitBtn.textContent = t('js.docs.upload');
+    });
+
+    const formData = new FormData();
+    formData.append('file', file);
+    if (CURRENT_FOLDER_ID) formData.append('folderId', CURRENT_FOLDER_ID);
+    xhr.open('POST', `/projects/${PROJECT_SLUG}/documents/api/upload/${PROJECT_ID}`);
+    xhr.send(formData);
+  };
+})();
+
 // ===== Close modals on overlay click =====
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', e => {
