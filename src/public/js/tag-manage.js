@@ -1,11 +1,13 @@
 // Tag Manager
 let currentProjectId = null;
+let tagsDirty = false; // only reload the board on close if tags actually changed
 
 function openTagManager() {
   const pid = document.getElementById('taskProjectId');
   currentProjectId = pid ? pid.value : null;
   if (!currentProjectId) return;
 
+  tagsDirty = false;
   loadTagList();
 
   // Init color swatch selection
@@ -20,7 +22,7 @@ function openTagManager() {
 
 function closeTagManager() {
   document.getElementById('tagManagerModal').classList.remove('active');
-  window.location.reload();
+  if (tagsDirty) window.location.reload(); // re-render board tag chips/columns only if changed
 }
 
 function updateTagSwatches() {
@@ -76,6 +78,7 @@ async function addNewTag() {
       body: JSON.stringify({ name, color, projectId: currentProjectId }),
     });
     document.getElementById('newTagName').value = '';
+    tagsDirty = true;
     loadTagList();
   } catch (err) {
     console.error('Failed to add tag:', err);
@@ -88,6 +91,7 @@ async function deleteTagItem(id, name, taskCount) {
   }
   try {
     await fetch(`/api/tags/${id}`, { method: 'DELETE' });
+    tagsDirty = true;
     const item = document.getElementById(`tag-item-${id}`);
     if (item) item.remove();
   } catch (err) {

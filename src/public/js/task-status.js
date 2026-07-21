@@ -21,9 +21,12 @@ async function changeTaskStatus(taskId, status) {
       body: JSON.stringify({ status }),
     });
     if (!res.ok) throw new Error('status update failed');
-    window.location.reload();
+    const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+    if (card) card.classList.toggle('is-done', status === 'done');
+    if (typeof refreshCardFromAPI === 'function') refreshCardFromAPI(taskId);
+    if (typeof refreshListRowsFromAPI === 'function') refreshListRowsFromAPI(taskId);
   } catch (err) {
     console.error('Failed to change status:', err);
-    window.location.reload();
+    window.location.reload(); // fallback: resync on error
   }
 }
