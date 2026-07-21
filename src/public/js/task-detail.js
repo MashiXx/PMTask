@@ -1,10 +1,11 @@
 // ── Task Detail Page: Inline Editing with EasyMDE ──
 
-// Mark the task complete / incomplete (status done ↔ todo), then reload to reflect everywhere
+// Mark the task complete / incomplete (status done ↔ todo), updating the toggle in place.
 async function toggleDetailDone() {
   if (!window.TASK_DATA) return;
   const btn = document.getElementById('detailDoneToggle');
   const done = !(btn && btn.classList.contains('is-done'));
+  if (btn) btn.classList.toggle('is-done', done); // optimistic
   try {
     const res = await fetch(`/api/tasks/${window.TASK_DATA.id}/status`, {
       method: 'PATCH',
@@ -12,9 +13,10 @@ async function toggleDetailDone() {
       body: JSON.stringify({ status: done ? 'done' : 'todo' }),
     });
     if (!res.ok) throw new Error('status update failed');
-    window.location.reload();
+    window.TASK_DATA.status = done ? 'done' : 'todo';
   } catch (err) {
     console.error('Failed to toggle done:', err);
+    if (btn) btn.classList.toggle('is-done', !done); // revert on failure
   }
 }
 

@@ -63,16 +63,26 @@ document.getElementById('taskForm').addEventListener('submit', async (e) => {
     const url = taskId ? `/api/tasks/${taskId}` : '/api/tasks';
     const method = taskId ? 'PUT' : 'POST';
 
-    await fetch(url, {
+    const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+    if (!res.ok) throw new Error('save failed');
 
     closeTaskModal();
-    window.location.reload();
+
+    if (taskId) {
+      // Editing an existing task — refresh just this card/row in place, no full page reload.
+      if (typeof refreshCardFromAPI === 'function') refreshCardFromAPI(taskId);
+      if (typeof refreshListRowsFromAPI === 'function') refreshListRowsFromAPI(taskId);
+    } else {
+      // Brand-new task — reload so it renders in the correct column with server markup.
+      window.location.reload();
+    }
   } catch (err) {
     console.error('Failed to save task:', err);
+    window.location.reload(); // fallback: resync on error
   }
 });
 
@@ -89,12 +99,29 @@ function closeDeleteModal() {
 async function confirmDelete() {
   const taskId = document.getElementById('deleteTaskId').value;
   try {
-    await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+    const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('delete failed');
     closeDeleteModal();
-    window.location.reload();
+    removeTaskFromBoard(taskId);
   } catch (err) {
     console.error('Failed to delete task:', err);
+    window.location.reload(); // fallback: resync on error
   }
+}
+
+// Remove a task's board card and list row in place, with a quick fade — no full reload.
+function removeTaskFromBoard(taskId) {
+  const nodes = document.querySelectorAll(
+    `.task-card[data-task-id="${taskId}"], #listView .list-row[data-task-id="${taskId}"]`
+  );
+  if (!nodes.length) { window.location.reload(); return; }
+  nodes.forEach(node => {
+    node.classList.add('is-removing');
+    setTimeout(() => {
+      node.remove();
+      if (typeof updateColumnCounts === 'function') updateColumnCounts();
+    }, 200);
+  });
 }
 
 function toggleTaskMenu(taskId, btn) {

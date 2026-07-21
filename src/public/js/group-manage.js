@@ -1,4 +1,5 @@
 // Group manager (modeled on tag-manage.js)
+let groupsDirty = false; // only reload the board on close if groups actually changed
 function groupProjectId() {
   const pid = document.getElementById('taskProjectId');
   return pid ? pid.value : null;
@@ -6,6 +7,7 @@ function groupProjectId() {
 
 function openGroupManager() {
   if (!groupProjectId()) return;
+  groupsDirty = false;
   loadGroupList();
   document.getElementById('groupManagerModal').classList.add('active');
   document.getElementById('newGroupName').value = '';
@@ -13,7 +15,7 @@ function openGroupManager() {
 
 function closeGroupManager() {
   document.getElementById('groupManagerModal').classList.remove('active');
-  window.location.reload(); // re-render board columns
+  if (groupsDirty) window.location.reload(); // re-render board columns only if changed
 }
 
 async function loadGroupList() {
@@ -51,6 +53,7 @@ async function addNewGroup() {
     });
     if (res.status === 409) { alert(t('js.group.nameExists')); return; }
     document.getElementById('newGroupName').value = '';
+    groupsDirty = true;
     loadGroupList();
   } catch (err) {
     console.error('Failed to add group:', err);
@@ -61,6 +64,7 @@ async function deleteGroupItem(id, taskCount) {
   if (taskCount > 0 && !confirm(t('js.group.deleteConfirm', { count: taskCount }))) return;
   try {
     await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+    groupsDirty = true;
     const el = document.getElementById(`group-item-${id}`);
     if (el) el.remove();
   } catch (err) {
