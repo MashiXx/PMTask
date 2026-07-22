@@ -1,16 +1,15 @@
 const { generateSlug, parseIdFromSlug } = require('../utils/slug');
 const prisma = require('../config/prisma');
+const { canAccessProject } = require('../utils/access');
 
 const VALID_STATUS = ['todo', 'inprogress', 'review', 'done'];
 const VALID_TYPES = ['mindmap', 'flowchart', 'architecture'];
 const VALID_SHAPES = ['rect', 'diamond', 'ellipse', 'parallelogram', 'group'];
 const VALID_ICONS = ['server', 'database', 'queue', 'cache', 'storage', 'user', 'cloud', 'api', 'function', 'loadbalancer', 'globe', 'mobile'];
 
-// Admin sees own projects; developer sees all (mirrors dashboard.controller.js).
+// Admin sees every project; other users only their own (see utils/access.js).
 function userCanAccessProject(project, user) {
-  if (!user || !project) return false;
-  if (user.role === 'admin') return project.userId === user.id;
-  return true;
+  return canAccessProject(project, user);
 }
 
 // Load a diagram with its project; returns { diagram, project } or null.

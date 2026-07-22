@@ -5855,3 +5855,30 @@ a:focus-visible,
     transition: none !important;
   }
 }
+
+/* ── Notes: editor page ── */
+.note-editor-page {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.note-title-input {
+  font-size: 1.75rem;
+  margin-bottom: 16px;
+}
+
+.note-editor-wrap .EasyMDEContainer .CodeMirror {
+  min-height: 420px;
+}
+
+.note-save-status {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  min-width: 96px;
+  text-align: right;
+}
+
+.note-pin-btn.is-pinned {
+  color: var(--amber);
+}

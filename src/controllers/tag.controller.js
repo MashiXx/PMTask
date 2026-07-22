@@ -1,9 +1,14 @@
 const prisma = require('../config/prisma');
+const { canAccessProject } = require('../utils/access');
 
 exports.getTagsByProject = async (req, res) => {
   try {
     const projectId = parseInt(req.query.projectId);
     if (!projectId) return res.status(400).json({ error: 'projectId is required' });
+
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { userId: true } });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!canAccessProject(project, req.user)) return res.status(403).json({ error: 'Access denied' });
 
     const tags = await prisma.tag.findMany({
       where: { projectId },

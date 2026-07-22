@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { generateSlug, parseIdFromSlug } = require('../utils/slug');
 const { uploadDir } = require('../config/upload');
+const { projectListWhere, canAccessProject } = require('../utils/access');
 
 const VALID_STATUSES = ['todo', 'inprogress', 'review', 'done'];
 const VALID_PRIORITIES = ['low', 'medium', 'high'];
@@ -27,6 +28,14 @@ exports.createTask = async (req, res) => {
     if (!title || !projectId) {
       return res.status(400).json({ error: 'Title and projectId are required' });
     }
+
+    // IDOR protection: only create tasks in a project the user may reach.
+    const targetProject = await prisma.project.findUnique({
+      where: { id: parseInt(projectId) },
+      select: { userId: true },
+    });
+    if (!targetProject) return res.status(404).json({ error: 'Project not found' });
+    if (!canAccessProject(targetProject, req.user)) return res.status(403).json({ error: 'Access denied' });
 
     const safeStatus = VALID_STATUSES.includes(status) ? status : 'todo';
     const safePriority = VALID_PRIORITIES.includes(priority) ? priority : 'medium';
@@ -288,8 +297,19 @@ exports.getTaskPage = async (req, res) => {
         || task.assignees.some((a) => a.userId === req.user.id);
     }
 
+    // View access: owners/assignees/admin for private tasks; anyone for a
+    // project that has shared its tasks publicly. Blocks a logged-in user from
+    // viewing another person's private task by guessing its URL.
+    const canView = req.user
+      ? (canEdit || canAccessProject(task.project, req.user))
+      : task.project.publicTasks;
+    if (!canView) {
+      req.flash('error', req.t('flash.taskNotFound'));
+      return res.redirect('/dashboard');
+    }
+
     // These two are independent — run them concurrently instead of sequentially.
-    const projectFilter = req.user && req.user.role === 'admin' ? { userId: req.user.id } : {};
+    const projectFilter = projectListWhere(req.user, { publicTasks: true });
     const [projects, projectTags] = await Promise.all([
       prisma.project.findMany({
         where: projectFilter,

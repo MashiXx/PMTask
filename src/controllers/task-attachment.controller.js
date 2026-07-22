@@ -36,14 +36,27 @@ async function loadViewableAttachment(req) {
 
   const attachment = await prisma.taskAttachment.findUnique({
     where: { id },
-    include: { task: { include: { project: { select: { publicTasks: true } } } } },
+    include: {
+      task: {
+        include: {
+          project: { select: { publicTasks: true, userId: true } },
+          assignees: { select: { userId: true } },
+        },
+      },
+    },
   });
   if (!attachment) return { error: 'Attachment not found', status: 404 };
 
-  // Guests may only view attachments of tasks in public-task projects
-  if (!req.user && !attachment.task.project.publicTasks) {
-    return { error: 'Access denied', status: 403 };
-  }
+  // Guests may only view attachments of tasks in public-task projects.
+  // Logged-in users only their own tasks (owner/assignee), unless the task is
+  // public or they are an admin.
+  const { task } = attachment;
+  const u = req.user;
+  const canView = u
+    ? (u.role === 'admin' || task.project.userId === u.id || task.createdById === u.id
+      || task.assignees.some((a) => a.userId === u.id) || task.project.publicTasks)
+    : task.project.publicTasks;
+  if (!canView) return { error: 'Access denied', status: 403 };
   return { attachment };
 }
 

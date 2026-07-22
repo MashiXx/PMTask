@@ -47,15 +47,24 @@ function cleanContent(raw) {
 exports.getComments = async (req, res) => {
   try {
     const taskId = parseInt(req.params.taskId);
-    if (!req.user) {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: { project: { select: { publicTasks: true } } },
-      });
-      if (!task || !task.project.publicTasks) {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-    }
+    // Access: guests only for public tasks; logged-in users only for tasks they
+    // own / are assigned to (admin: any). Prevents reading another user's
+    // private task comments straight from the API.
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        project: { select: { publicTasks: true, userId: true } },
+        assignees: { select: { userId: true } },
+      },
+    });
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    const u = req.user;
+    const canView = u
+      ? (u.role === 'admin' || task.project.userId === u.id || task.createdById === u.id
+        || task.assignees.some((a) => a.userId === u.id) || task.project.publicTasks)
+      : task.project.publicTasks;
+    if (!canView) return res.status(403).json({ error: 'Access denied' });
+
     const comments = await prisma.taskComment.findMany({
       where: { taskId, parentId: null },
       orderBy: { createdAt: 'asc' },

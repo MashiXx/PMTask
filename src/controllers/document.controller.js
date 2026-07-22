@@ -4,6 +4,7 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const mammoth = require('mammoth');
 const { uploadDir } = require('../config/upload');
+const { canAccessProject } = require('../utils/access');
 
 // Validate that a file path is inside the uploads directory (prevent path traversal)
 function isPathSafe(filepath) {
@@ -140,6 +141,12 @@ exports.getDocumentsPage = async (req, res) => {
       return res.redirect('/auth/login');
     }
 
+    // Logged-in users may only browse their own projects' documents (admin: any).
+    if (req.user && !canAccessProject(project, req.user)) {
+      req.flash('error', req.t('flash.projectNotFound'));
+      return res.redirect('/projects');
+    }
+
     // Check password protection
     const access = await checkFolderAccess(req, folderId);
     if (!access.allowed) {
@@ -230,6 +237,11 @@ exports.createFolder = async (req, res) => {
     const safeName = sanitizeName(name);
     if (!safeName) return res.status(400).json({ error: 'Invalid folder name' });
 
+    // IDOR protection: only create folders in a project the user may reach.
+    const project = await prisma.project.findUnique({ where: { id: parseInt(projectId) }, select: { userId: true } });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!canAccessProject(project, req.user)) return res.status(403).json({ error: 'Access denied' });
+
     // Check duplicate at same level
     const existing = await prisma.folder.findFirst({
       where: {
@@ -270,6 +282,12 @@ exports.updateFolder = async (req, res) => {
 
     const folder = await prisma.folder.findUnique({ where: { id: parseInt(id) } });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
+
+    // IDOR protection: only the project owner (or admin) may rename its folders.
+    const folderProject = await prisma.project.findUnique({ where: { id: folder.projectId }, select: { userId: true } });
+    if (!folderProject || !canAccessProject(folderProject, req.user)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     // Check duplicate
     const existing = await prisma.folder.findFirst({
@@ -459,6 +477,12 @@ exports.uploadDocument = async (req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
+    // IDOR protection: only upload into a project the user may reach.
+    if (!canAccessProject(project, req.user)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     // Verify folder belongs to this project (if specified)
     if (folderId) {
       const folder = await prisma.folder.findUnique({ where: { id: folderId } });
@@ -576,8 +600,16 @@ exports.updateDocument = async (req, res) => {
 exports.deleteDocument = async (req, res) => {
   try {
     const { id } = req.params;
-    const doc = await prisma.document.findUnique({ where: { id: parseInt(id) } });
+    const doc = await prisma.document.findUnique({
+      where: { id: parseInt(id) },
+      include: { project: { select: { userId: true } } },
+    });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // IDOR protection: only the project owner, the uploader, or an admin.
+    if (!canAccessProject(doc.project, req.user) && doc.uploadedById !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     await prisma.document.delete({ where: { id: parseInt(id) } });
 
@@ -597,12 +629,17 @@ exports.downloadDocument = async (req, res) => {
     const { id } = req.params;
     const doc = await prisma.document.findUnique({
       where: { id: parseInt(id) },
-      include: { project: { select: { publicDocuments: true } } },
+      include: { project: { select: { publicDocuments: true, userId: true } } },
     });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     // Guests can only download from public document projects
     if (!req.user && !doc.project.publicDocuments) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Logged-in users: only the project owner, the uploader, or an admin.
+    if (req.user && !canAccessProject(doc.project, req.user) && doc.uploadedById !== req.user.id) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -649,13 +686,18 @@ exports.previewDocument = async (req, res) => {
     const { id } = req.params;
     const doc = await prisma.document.findUnique({
       where: { id: parseInt(id) },
-      include: { project: { select: { publicDocuments: true } } },
+      include: { project: { select: { publicDocuments: true, userId: true } } },
     });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     // Guests can only preview from public document projects
     if (!req.user && !doc.project.publicDocuments) {
       console.log('[Preview] Access denied: guest user, publicDocuments =', doc.project.publicDocuments);
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Logged-in users: only the project owner, the uploader, or an admin.
+    if (req.user && !canAccessProject(doc.project, req.user) && doc.uploadedById !== req.user.id) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

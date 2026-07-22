@@ -1,6 +1,7 @@
 const prisma = require('../config/prisma');
 const { parseIdFromSlug } = require('../utils/slug');
 const { buildGroupColumns } = require('../utils/groupColumns');
+const { projectListWhere } = require('../utils/access');
 
 exports.getDashboard = async (req, res) => {
   try {
@@ -9,13 +10,8 @@ exports.getDashboard = async (req, res) => {
     const projectParam = req.params.projectSlug || req.query.project || null;
     const projectId = projectParam ? parseIdFromSlug(projectParam) : null;
 
-    // Admins see their own projects; developers see all; guests see only public
-    let projectFilter = {};
-    if (user && user.role === 'admin') {
-      projectFilter = { userId: user.id };
-    } else if (!user) {
-      projectFilter = { publicTasks: true };
-    }
+    // Admin sees all; other users see only their own; guests see only public.
+    const projectFilter = projectListWhere(user, { publicTasks: true });
     const projects = await prisma.project.findMany({
       where: projectFilter,
       include: { _count: { select: { tasks: true } } },

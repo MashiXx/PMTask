@@ -3,16 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const { generateSlug } = require('../utils/slug');
 const { uploadDir } = require('../config/upload');
+const { projectListWhere } = require('../utils/access');
+
+// Public projects a guest may list (either their tasks or documents are shared).
+const GUEST_PROJECTS = { OR: [{ publicTasks: true }, { publicDocuments: true }] };
 
 exports.getProjects = async (req, res) => {
   try {
     const isGuest = !req.user;
-    let projectFilter = {};
-    if (req.user && req.user.role === 'admin') {
-      projectFilter = { userId: req.user.id };
-    } else if (!req.user) {
-      projectFilter = { OR: [{ publicTasks: true }, { publicDocuments: true }] };
-    }
+    // Admin sees all; other users see only their own; guests see only public.
+    const projectFilter = projectListWhere(req.user, GUEST_PROJECTS);
     const projects = await prisma.project.findMany({
       where: projectFilter,
       include: {
@@ -46,13 +46,8 @@ exports.getProjects = async (req, res) => {
 // GET /api/projects/list — lightweight JSON list for the project switcher popup
 exports.listProjects = async (req, res) => {
   try {
-    // Same visibility rules as getProjects: admin sees own, guests see public, devs see all
-    let projectFilter = {};
-    if (req.user && req.user.role === 'admin') {
-      projectFilter = { userId: req.user.id };
-    } else if (!req.user) {
-      projectFilter = { OR: [{ publicTasks: true }, { publicDocuments: true }] };
-    }
+    // Admin sees all; other users see only their own; guests see only public.
+    const projectFilter = projectListWhere(req.user, GUEST_PROJECTS);
 
     const projects = await prisma.project.findMany({
       where: projectFilter,

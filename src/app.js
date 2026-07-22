@@ -117,6 +117,7 @@ app.get(['/projects/:projectSlug/mindmaps', '/projects/:projectSlug/mindmaps/:re
   const tail = req.params.rest ? `/${req.params.rest}` : '';
   res.redirect(301, `/projects/${req.params.projectSlug}/diagrams${tail}`);
 });
+app.use('/notes', require('./routes/note.routes'));
 app.use('/profile', require('./routes/profile.routes'));
 app.use('/admin', require('./routes/admin.routes'));
 
