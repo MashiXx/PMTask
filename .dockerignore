@@ -1,0 +1,26 @@
+# --- VCS / tooling --------------------------------------------------------
+.git
+.gitignore
+.github
+.dockerignore
+
+# --- Dependencies & build artifacts (reinstalled inside the image) -------
+node_modules
+npm-debug.log*
+
+# --- Local secrets & data (never bake into the image) --------------------
+.env
+.env.*
+!.env.example
+prisma/data/
+prisma/dev.db
+*.db
+uploads/
+
+# --- Local-only assets ----------------------------------------------------
+screenshot/
+scratchpad/
+docs/
+*.md
+task.txt
+.DS_Store
