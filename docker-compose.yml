@@ -23,9 +23,10 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    network_mode: host
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=${PORT:-3000}
       # Coolify replaces SERVICE_FQDN_APP_3000 with the assigned domain and
       # wires up the proxy + Let's Encrypt certificate automatically.
       - SERVICE_FQDN_APP_3000
@@ -45,9 +46,6 @@ services:
       - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-}
       # --- One-off demo seed (set true only for the first deploy) ---
       - SEED_ON_START=${SEED_ON_START:-false}
-    ports:
-      # Exposed for local runs; Coolify routes via SERVICE_FQDN_APP_3000 instead.
-      - "${APP_PORT:-3000}:3000"
     volumes:
       # Persist user uploads (avatars, task attachments, project documents).
       - pmtask-uploads:/app/uploads
@@ -57,7 +55,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://127.0.0.1:3000/login',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))",
+          "require('http').get('http://127.0.0.1:${PORT:-3000}/login',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))",
         ]
       interval: 30s
       timeout: 5s
