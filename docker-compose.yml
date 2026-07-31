@@ -19,9 +19,8 @@
 #                         (default ./data/uploads, next to this file).
 #
 # Uploads are bind-mounted from the host so the files stay browsable/backupable
-# outside the container and survive rebuilds. Create the directory and give it
-# to uid 1000 (the `node` user inside the image) BEFORE the first start:
-#   sudo mkdir -p ./data/uploads && sudo chown -R 1000:1000 ./data/uploads
+# outside the container and survive rebuilds. No host-side setup needed — the
+# entrypoint creates the directory tree and chowns it to uid 1000 on start.
 # ===========================================================================
 
 services:

@@ -34,7 +34,9 @@ RUN npx prisma generate
 # --- Stage 2: runtime ----------------------------------------------------
 FROM node:22-alpine AS runtime
 
-RUN apk add --no-cache openssl tini
+# su-exec lets the entrypoint drop from root to `node` after fixing the
+# ownership of the bind-mounted uploads directory.
+RUN apk add --no-cache openssl tini su-exec
 
 ENV NODE_ENV=production \
     PORT=3000 \
@@ -55,7 +57,9 @@ RUN mkdir -p uploads \
     && chmod +x docker-entrypoint.sh \
     && chown -R node:node /app
 
-USER node
+# NOTE: no `USER node` here on purpose. The entrypoint starts as root only to
+# chown the bind-mounted uploads volume, then re-execs itself as `node` via
+# su-exec — the app process itself never runs privileged.
 
 EXPOSE 3000
 
