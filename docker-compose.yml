@@ -1,17 +1,20 @@
 # ===========================================================================
-# PMTask — Docker Compose for Coolify
+# PMTask — Docker Compose (app only)
 # ---------------------------------------------------------------------------
-# Deploy this repo on Coolify as a "Docker Compose" resource. Coolify builds
-# the `app` image from the Dockerfile, injects environment variables from its
-# UI, and manages the reverse proxy + TLS for you.
+# Runs just the PMTask app; it connects to an EXTERNAL MySQL database.
+# Deploy on Coolify as a "Docker Compose" resource, or run locally.
 #
-# In Coolify, set at minimum these environment variables (Configuration → Env):
+# Set these environment variables (Coolify UI, or a local .env file):
 #   SESSION_SECRET   long random string
-#   DB_PASSWORD      MySQL password for the app user
-#   DB_ROOT_PASSWORD MySQL root password
-#   SERVICE_FQDN_APP_3000   (auto-managed by Coolify — maps the domain to :3000)
+#   DB_HOST          hostname of your MySQL server
+#   DB_PORT          MySQL port (default 3306)
+#   DB_USER          MySQL user
+#   DB_PASSWORD      MySQL password
+#   DB_NAME          database name
+# Or set a full DATABASE_URL to override the DB_* components entirely.
 # Optional: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_CALLBACK_URL,
-#           SEED_ON_START=true (first boot only, to load demo data).
+#           SEED_ON_START=true (first boot only, to load demo data),
+#           SERVICE_FQDN_APP_3000 (auto-managed by Coolify — maps domain to :3000).
 # ===========================================================================
 
 services:
@@ -20,32 +23,33 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=3000
       # Coolify replaces SERVICE_FQDN_APP_3000 with the assigned domain and
       # wires up the proxy + Let's Encrypt certificate automatically.
       - SERVICE_FQDN_APP_3000
-      # --- Database (points at the mysql service below) ---
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=${DB_USER:-pmtask}
-      - DB_PASSWORD=${DB_PASSWORD:?set DB_PASSWORD in Coolify}
+      # --- External database ---
+      - DB_HOST=${DB_HOST:?set DB_HOST to your external MySQL host}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:?set DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD:?set DB_PASSWORD}
       - DB_NAME=${DB_NAME:-pmtask}
+      # Optional: full connection string, overrides the DB_* components above.
+      - DATABASE_URL=${DATABASE_URL:-}
       # --- Session ---
-      - SESSION_SECRET=${SESSION_SECRET:?set SESSION_SECRET in Coolify}
+      - SESSION_SECRET=${SESSION_SECRET:?set SESSION_SECRET}
       # --- Google OAuth (optional) ---
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-}
       # --- One-off demo seed (set true only for the first deploy) ---
       - SEED_ON_START=${SEED_ON_START:-false}
+    ports:
+      # Exposed for local runs; Coolify routes via SERVICE_FQDN_APP_3000 instead.
+      - "${APP_PORT:-3000}:3000"
     volumes:
-      # Persist user uploads (avatars, task attachments, project documents)
-      # across redeploys.
+      # Persist user uploads (avatars, task attachments, project documents).
       - pmtask-uploads:/app/uploads
     healthcheck:
       test:
@@ -60,25 +64,5 @@ services:
       retries: 5
       start_period: 40s
 
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in Coolify}
-      MYSQL_DATABASE: ${DB_NAME:-pmtask}
-      MYSQL_USER: ${DB_USER:-pmtask}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in Coolify}
-    volumes:
-      - pmtask-db:/var/lib/mysql
-    healthcheck:
-      test:
-        ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
 volumes:
   pmtask-uploads:
-  pmtask-db:
