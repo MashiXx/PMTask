@@ -2,6 +2,7 @@ node_modules/
 .env
 prisma/data/
 uploads/
+data/
 .DS_Store
 
 # SQLite (legacy — project now uses MySQL)

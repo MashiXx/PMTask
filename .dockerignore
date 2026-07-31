@@ -16,6 +16,7 @@ prisma/data/
 prisma/dev.db
 *.db
 uploads/
+data/
 
 # --- Local-only assets ----------------------------------------------------
 screenshot/

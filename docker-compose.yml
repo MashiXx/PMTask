@@ -14,7 +14,14 @@
 # Or set a full DATABASE_URL to override the DB_* components entirely.
 # Optional: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_CALLBACK_URL,
 #           SEED_ON_START=true (first boot only, to load demo data),
-#           SERVICE_FQDN_APP_3000 (auto-managed by Coolify — maps domain to :3000).
+#           SERVICE_FQDN_APP_3000 (auto-managed by Coolify — maps domain to :3000),
+#           UPLOADS_PATH  host directory that holds user uploads
+#                         (default ./data/uploads, next to this file).
+#
+# Uploads are bind-mounted from the host so the files stay browsable/backupable
+# outside the container and survive rebuilds. Create the directory and give it
+# to uid 1000 (the `node` user inside the image) BEFORE the first start:
+#   sudo mkdir -p ./data/uploads && sudo chown -R 1000:1000 ./data/uploads
 # ===========================================================================
 
 services:
@@ -48,8 +55,12 @@ services:
       # --- One-off demo seed (set true only for the first deploy) ---
       - SEED_ON_START=${SEED_ON_START:-false}
     volumes:
-      # Persist user uploads (avatars, task attachments, project documents).
-      - pmtask-uploads:/app/uploads
+      # Persist user uploads on the host filesystem. One bind mount covers all
+      # of them — the app writes everything under /app/uploads:
+      #   <projectId>/   project documents
+      #   tasks/<id>/    task attachments
+      #   avatars/       user avatars
+      - ${UPLOADS_PATH:-./data/uploads}:/app/uploads
     healthcheck:
       test:
         [
@@ -62,6 +73,3 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
-
-volumes:
-  pmtask-uploads:

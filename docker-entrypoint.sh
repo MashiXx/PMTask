@@ -3,12 +3,25 @@
 # PMTask — container entrypoint
 # ---------------------------------------------------------------------------
 # Runs on every container start (Coolify redeploys included):
-#   1. Wait for the database to accept connections.
-#   2. Apply pending Prisma migrations (`migrate deploy` — safe & idempotent).
-#   3. Optionally seed the database when SEED_ON_START=true.
-#   4. Exec the CMD (the app server).
+#   1. Make sure the uploads mount is present and writable.
+#   2. Wait for the database to accept connections.
+#   3. Apply pending Prisma migrations (`migrate deploy` — safe & idempotent).
+#   4. Optionally seed the database when SEED_ON_START=true.
+#   5. Exec the CMD (the app server).
 # ===========================================================================
 set -e
+
+# /app/uploads is bind-mounted from the host (see docker-compose.yml). A fresh
+# host directory is created owned by root, which this non-root process cannot
+# write to — fail loudly with the fix instead of 500-ing on the first upload.
+UPLOAD_DIR=/app/uploads
+if ! mkdir -p "${UPLOAD_DIR}/avatars" "${UPLOAD_DIR}/tasks" 2>/dev/null || [ ! -w "${UPLOAD_DIR}" ]; then
+  echo "[entrypoint] ${UPLOAD_DIR} is not writable by uid $(id -u)." >&2
+  echo "[entrypoint] Fix the host directory mounted there, then redeploy:" >&2
+  echo "[entrypoint]   sudo chown -R 1000:1000 <host-uploads-dir>" >&2
+  exit 1
+fi
+echo "[entrypoint] Uploads directory ready at ${UPLOAD_DIR}."
 
 # Wait for the external database to accept TCP connections. When only a full
 # DATABASE_URL is provided (no DB_HOST), skip the wait — Prisma resolves the
