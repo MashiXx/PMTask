@@ -59,7 +59,7 @@ services:
       #   <projectId>/   project documents
       #   tasks/<id>/    task attachments
       #   avatars/       user avatars
-      - ${UPLOADS_PATH:-./data/uploads}:/app/uploads
+      - /home/mashi/xmashi/PMTask/uploads:/app/uploads
     healthcheck:
       test:
         [
