@@ -23,49 +23,51 @@
           <svg class="theme-icon theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="theme-icon theme-icon-system" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </button>
-        <button class="btn-new-task" onclick="createNote()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <%= t('notes.new') %>
-        </button>
       </div>
     </div>
 
     <div class="dashboard-body">
-      <% if (notes.length === 0) { %>
-        <div class="doc-empty" id="notesEmpty">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <p style="margin-top: 16px; font-size: 0.95rem;"><%= t('notes.empty') %></p>
-          <p style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);"><%= t('notes.emptySub') %></p>
-        </div>
-      <% } else { %>
-        <div class="doc-grid" id="notesGrid">
-          <% notes.forEach(note => { %>
-            <div class="doc-file-card note-card" data-note-id="<%= note.id %>" data-title="<%= note.title.toLowerCase() %>" onclick="window.location='/notes/<%= note.id %>'" style="cursor:pointer;">
-              <div class="doc-card-top">
-                <div class="doc-card-icon doc-card-icon-file">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </div>
-                <div class="doc-card-actions">
-                  <button class="column-add-btn note-pin-btn <%= note.pinned ? 'is-pinned' : '' %>" onclick="event.stopPropagation(); togglePin(<%= note.id %>, this)" title="<%= note.pinned ? t('notes.unpin') : t('notes.pin') %>">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="<%= note.pinned ? 'var(--amber)' : 'none' %>" stroke="<%= note.pinned ? 'var(--amber)' : 'currentColor' %>" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/></svg>
-                  </button>
-                  <button class="column-add-btn text-coral" onclick="event.stopPropagation(); deleteNote(<%= note.id %>)" title="<%= t('common.delete') %>">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  </button>
-                </div>
-              </div>
-              <p class="doc-card-name" title="<%= note.title %>"><%= note.title %></p>
-              <p class="doc-card-meta"><%= new Date(note.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></p>
-            </div>
-          <% }) %>
-        </div>
-        <div class="doc-empty hidden" id="notesNoMatch">
-          <p style="margin-top: 16px; font-size: 0.9rem; color: var(--text-muted);"><%= t('notes.noMatch') %></p>
-        </div>
-      <% } %>
+      <!-- Google-Keep-style composer -->
+      <div class="keep-composer" id="noteComposer"></div>
+
+      <!-- Label filter chips (rendered by JS from the user's labels) -->
+      <div class="keep-filter-bar" id="labelFilterBar"></div>
+
+      <!-- Pinned notes -->
+      <div class="keep-section" id="pinnedSection" hidden>
+        <h3 class="keep-section-title"><%= t('notes.pinned') %></h3>
+        <div class="keep-board" id="pinnedBoard"></div>
+      </div>
+
+      <!-- Other notes -->
+      <div class="keep-section" id="othersSection" hidden>
+        <h3 class="keep-section-title" id="othersTitle"><%= t('notes.others') %></h3>
+        <div class="keep-board" id="othersBoard"></div>
+      </div>
+
+      <!-- Empty / no-match states -->
+      <div class="doc-empty" id="notesEmpty" hidden>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <p style="margin-top: 16px; font-size: 0.95rem;"><%= t('notes.empty') %></p>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);"><%= t('notes.emptySub') %></p>
+      </div>
+      <div class="doc-empty" id="notesNoMatch" hidden>
+        <p style="margin-top: 16px; font-size: 0.9rem; color: var(--text-muted);"><%= t('notes.noMatch') %></p>
+      </div>
     </div>
   </main>
 </div>
 
+<!-- Editor modal (populated by JS) -->
+<div class="keep-modal-overlay hidden" id="noteModal">
+  <div class="keep-modal" id="noteModalCard" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+  window.NOTES_DATA = <%- JSON.stringify(notes).replace(/</g, '\\u003c') %>;
+  window.NOTE_LABELS = <%- JSON.stringify(labels).replace(/</g, '\\u003c') %>;
+  window.NOTE_COLORS = <%- JSON.stringify(colors) %>;
+  window.OPEN_NOTE_ID = <%= openNoteId ? openNoteId : 'null' %>;
+</script>
 <%- include('partials/foot') %>
 <script src="/js/notes.js"></script>

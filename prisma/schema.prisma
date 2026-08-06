@@ -29,6 +29,7 @@ model User {
   attachments TaskAttachment[] @relation("AttachmentUploader")
   comments  TaskComment[] @relation("CommentAuthor")
   notes     Note[]     @relation("NoteAuthor")
+  noteLabels NoteLabel[] @relation("NoteLabelCreator")
 }
 
 model Project {
@@ -280,6 +281,7 @@ model Note {
   id          Int      @id @default(autoincrement())
   title       String   @default("Untitled")
   content     String   @db.Text
+  color       String   @default("default")
   pinned      Boolean  @default(false)
   position    Int      @default(0)
   createdById Int
@@ -287,6 +289,52 @@ model Note {
   updatedAt   DateTime @updatedAt
 
   createdBy User @relation("NoteAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+  labels    NoteLabelLink[]
+  media     NoteMedia[]
 
   @@index([createdById])
+}
+
+// User-scoped labels (a.k.a. tags) for classifying notes. A note can carry many
+// labels and a label can be attached to many notes (via NoteLabelLink).
+model NoteLabel {
+  id          Int      @id @default(autoincrement())
+  name        String
+  color       String   @default("#6C63FF")
+  createdById Int
+  createdAt   DateTime @default(now())
+
+  createdBy User            @relation("NoteLabelCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  notes     NoteLabelLink[]
+
+  @@unique([name, createdById])
+  @@index([createdById])
+}
+
+model NoteLabelLink {
+  noteId  Int
+  labelId Int
+
+  note  Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  label NoteLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, labelId])
+  @@index([labelId])
+}
+
+// Images / videos embedded in a note's rich-text body. Files live under
+// uploads/notes/<noteId>/ and are streamed by the note controller.
+model NoteMedia {
+  id        Int      @id @default(autoincrement())
+  noteId    Int
+  filename  String
+  filepath  String
+  mimeType  String
+  size      Int
+  type      String   @default("image") // "image" | "video"
+  createdAt DateTime @default(now())
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId])
 }

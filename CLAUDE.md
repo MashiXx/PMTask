@@ -40,7 +40,7 @@ Database connection is configured via the `DB_*` components in `.env` (host, por
 - `src/middleware/auth.js` — `isAuthenticated`, `isGuest`, `isAdmin` middleware
 
 ### Data Model (Prisma)
-Core models: User, Project, Task, SubTask, Tag, Folder, Document. Many-to-many via TaskTag and TaskAssignee junction tables. Folders support nesting (self-referential parentId).
+Core models: User, Project, Task, SubTask, Tag, Folder, Document, Note. Many-to-many via TaskTag and TaskAssignee junction tables. Folders support nesting (self-referential parentId). Notes are private (owner-only), carry a background `color`, embed images/video (NoteMedia), and are classified by user-scoped labels (NoteLabel ↔ NoteLabelLink, many-to-many).
 
 ### Auth & Roles
 - Two roles: `admin` and `developer`. New registrations default to `pending` status (need admin approval).
@@ -58,6 +58,7 @@ Core models: User, Project, Task, SubTask, Tag, Folder, Document. Many-to-many v
 - Upload paths (under `uploads/`, served via controllers, not statically):
   - Project documents: `uploads/<projectId>/`
   - Task attachments: `uploads/tasks/<taskId>/` (served by `/api/attachments/...`)
+  - Note media: `uploads/notes/<noteId>/` (images + video, 50MB; owner-only, served by `GET /notes/api/media/:id`)
   - User avatars: `uploads/avatars/` (image-only, 5MB; served by `GET /users/:id/avatar`)
 - Filenames randomized with crypto. Folder password protection supported (optional, admin-set).
 - `User.avatar` holds either a local relative path (uploaded) or an http URL (Google). The

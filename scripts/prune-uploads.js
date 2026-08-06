@@ -2,7 +2,7 @@
 // prune-uploads — audit & clean orphaned upload files
 // ---------------------------------------------------------------------------
 // Reconciles the files on disk under uploadDir against the DB rows that
-// reference them (Document.filepath + TaskAttachment.filepath), so you can see:
+// reference them (Document.filepath + TaskAttachment.filepath + NoteMedia.filepath), so you can see:
 //   • ORPHAN files   — on disk but no DB row points to them (safe to delete)
 //   • DANGLING rows  — a DB row whose file is missing on disk (broken link)
 //
@@ -47,6 +47,7 @@ function describeLocation(absFile) {
   const rel = path.relative(uploadDir, absFile);
   const parts = rel.split(path.sep);
   if (parts[0] === 'tasks' && parts[1]) return `task #${parts[1]}`;
+  if (parts[0] === 'notes' && parts[1]) return `note #${parts[1]}`;
   if (parts[0]) return `project #${parts[0]}`;
   return 'unknown';
 }
@@ -74,9 +75,10 @@ function pruneEmptyDirs(dir) {
   }
 
   // 1. Gather referenced files from the DB (absolute, resolved paths).
-  const [docs, attachments] = await Promise.all([
+  const [docs, attachments, noteMedia] = await Promise.all([
     prisma.document.findMany({ select: { id: true, filename: true, filepath: true, projectId: true } }),
     prisma.taskAttachment.findMany({ select: { id: true, filename: true, filepath: true, taskId: true } }),
+    prisma.noteMedia.findMany({ select: { id: true, filename: true, filepath: true, noteId: true } }),
   ]);
 
   const referenced = new Map(); // absolute path -> { type, id, filename, owner }
@@ -85,6 +87,9 @@ function pruneEmptyDirs(dir) {
   }
   for (const a of attachments) {
     referenced.set(path.resolve(uploadDir, a.filepath), { type: 'attachment', id: a.id, filename: a.filename, owner: `task #${a.taskId}` });
+  }
+  for (const m of noteMedia) {
+    referenced.set(path.resolve(uploadDir, m.filepath), { type: 'note-media', id: m.id, filename: m.filename, owner: `note #${m.noteId}` });
   }
 
   // 2. Walk the disk.
@@ -103,7 +108,7 @@ function pruneEmptyDirs(dir) {
   // 4. Report.
   console.log('── Upload audit ───────────────────────────────────────────');
   console.log(`uploadDir:        ${base}`);
-  console.log(`DB references:    ${referenced.size} (${docs.length} documents, ${attachments.length} attachments)`);
+  console.log(`DB references:    ${referenced.size} (${docs.length} documents, ${attachments.length} attachments, ${noteMedia.length} note media)`);
   console.log(`Files on disk:    ${diskFiles.length}`);
   console.log(`Linked OK:        ${diskFiles.length - orphans.length}`);
   console.log(`Orphan files:     ${orphans.length}`);
