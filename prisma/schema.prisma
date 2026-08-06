@@ -209,7 +209,7 @@ model Diagram {
 
 model DiagramNode {
   id        Int      @id @default(autoincrement())
-  mindmapId Int      // FK column kept as-is (maps to the Diagram table's id)
+  diagramId Int      @map("mindmapId") // physical column still named mindmapId; renaming it needs a data migration
   parentId  Int?
   label     String   @db.Text
   description String? @db.Text
@@ -226,14 +226,14 @@ model DiagramNode {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  diagram   Diagram       @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  diagram   Diagram       @relation(fields: [diagramId], references: [id], onDelete: Cascade)
   parent    DiagramNode?  @relation("NodeChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children  DiagramNode[] @relation("NodeChildren")
   task      Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
   edgesFrom DiagramEdge[] @relation("EdgeSource")
   edgesTo   DiagramEdge[] @relation("EdgeTarget")
 
-  @@index([mindmapId])
+  @@index([diagramId])
   @@index([parentId])
   @@index([taskId])
   @@map("MindmapNode")
@@ -241,7 +241,7 @@ model DiagramNode {
 
 model DiagramEdge {
   id        Int      @id @default(autoincrement())
-  mindmapId Int
+  diagramId Int      @map("mindmapId")
   sourceId  Int
   targetId  Int
   label     String?  @db.Text
@@ -249,11 +249,11 @@ model DiagramEdge {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  diagram Diagram     @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  diagram Diagram     @relation(fields: [diagramId], references: [id], onDelete: Cascade)
   source  DiagramNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
   target  DiagramNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
 
-  @@index([mindmapId])
+  @@index([diagramId])
   @@index([sourceId])
   @@index([targetId])
   @@map("MindmapEdge")

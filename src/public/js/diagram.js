@@ -6,7 +6,7 @@ const DG = {
   id: window.DIAGRAM.id,
   type: window.DIAGRAM.type,
   slug: window.DIAGRAM.projectSlug,
-  nodes: window.MINDMAP_NODES || [],
+  nodes: window.DIAGRAM_NODES || [],
   edges: window.DIAGRAM_EDGES || [],
   byId: new Map(),
   pan: { x: 120, y: 120 },
@@ -393,7 +393,7 @@ async function finishEdge(g, e) {
   if (toId === g.fromId) return;
   const res = await fetch('/api/diagram-edges', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mindmapId: DG.id, sourceId: g.fromId, targetId: toId }),
+    body: JSON.stringify({ diagramId: DG.id, sourceId: g.fromId, targetId: toId }),
   });
   const data = await res.json();
   if (!data.success) { mmToast(data.error || t('js.diagram.couldNotSave'), 'error'); return; }
@@ -469,7 +469,7 @@ async function dgAddNode(shape) {
   const x = snap(center.x - s.w / 2), y = snap(center.y - s.h / 2);
   const res = await fetch('/api/diagram-nodes', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mindmapId: DG.id, label: t('js.diagram.newBox'), shape, x, y }),
+    body: JSON.stringify({ diagramId: DG.id, label: t('js.diagram.newBox'), shape, x, y }),
   });
   const data = await res.json();
   if (!data.success) { mmToast(data.error || t('js.diagram.couldNotSave'), 'error'); return; }
@@ -610,7 +610,7 @@ async function dgPaste() {
   for (const p of payloads) {
     const res = await fetch('/api/diagram-nodes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mindmapId: DG.id, ...p, x: snap(p.x), y: snap(p.y) }),
+      body: JSON.stringify({ diagramId: DG.id, ...p, x: snap(p.x), y: snap(p.y) }),
     });
     const data = await res.json();
     if (data.success) { DG.nodes.push(data.node); created.push(data.node); }
@@ -649,14 +649,14 @@ async function dgTabConnect() {
   const x = snap((from.x || 0) + fs.w + 80), y = snap(from.y || 0);
   const res = await fetch('/api/diagram-nodes', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mindmapId: DG.id, label: t('js.diagram.newBox'), shape: 'rect', x, y }),
+    body: JSON.stringify({ diagramId: DG.id, label: t('js.diagram.newBox'), shape: 'rect', x, y }),
   });
   const data = await res.json();
   if (!data.success) { mmToast(data.error || t('js.diagram.couldNotSave'), 'error'); return; }
   DG.nodes.push(data.node);
   await fetch('/api/diagram-edges', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mindmapId: DG.id, sourceId: fromId, targetId: data.node.id }),
+    body: JSON.stringify({ diagramId: DG.id, sourceId: fromId, targetId: data.node.id }),
   }).then(r => r.json()).then(d => { if (d.success) DG.edges.push(d.edge); });
   dgSelectNode(data.node.id, false);
   dgEditLabel(data.node.id);
@@ -709,7 +709,7 @@ async function dgExportPng() {
       pixelRatio: 2,
     });
     const a = document.createElement('a');
-    a.download = `${(window.MINDMAP_NAME || 'diagram').replace(/[^\w\-]+/g, '_')}.png`;
+    a.download = `${(window.DIAGRAM_NAME || 'diagram').replace(/[^\w\-]+/g, '_')}.png`;
     a.href = dataUrl; a.click();
   } catch (err) {
     console.error(err); mmToast(t('js.mindmap.exportFailed'), 'error');

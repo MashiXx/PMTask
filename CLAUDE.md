@@ -47,7 +47,9 @@ Core models: User, Project, Task, SubTask, Tag, TaskGroup, Folder, Document, Not
 - **Notes** are private (owner-only), carry a background `color`, embed images/video (NoteMedia), and are classified by user-scoped labels (NoteLabel ↔ NoteLabelLink, many-to-many).
 - **Diagrams** (mindmap / flowchart / architecture) belong to a Project and hold DiagramNode + DiagramEdge. A node can optionally link to a Task.
 
-> **Naming gotcha:** the diagram feature was renamed from "mindmap" but the DB layer was left in place. `Diagram`/`DiagramNode`/`DiagramEdge` map to the physical tables `Mindmap`/`MindmapNode`/`MindmapEdge` (via `@@map`), and the FK column is still `mindmapId`. Front-end files, CSS, and tests also still use both `mindmap*` and `diagram*` names side by side. Old `/projects/:slug/mindmaps` URLs 301-redirect to `/diagrams`.
+> **Naming gotcha (legacy DB names):** the feature was renamed from "mindmap" to "diagram". Application code (Prisma models/fields, controller, API payloads, `window.DIAGRAM*` globals) reads as `diagram`/`diagramId` throughout. Only the **physical MySQL layer** keeps the old names, bridged by Prisma annotations: models `Diagram`/`DiagramNode`/`DiagramEdge` map to tables `Mindmap`/`MindmapNode`/`MindmapEdge` (`@@map`), and field `diagramId` maps to column `mindmapId` (`@map`). Renaming the physical tables/column would need a data migration; the `@map`/`@@map` bridge avoids it. Old `/projects/:slug/mindmaps` URLs 301-redirect to `/diagrams`.
+>
+> **"mindmap" is a real diagram type, not debt:** `Diagram.type` is one of `mindmap` | `flowchart` | `architecture`. The front-end has two engines by type — `mindmap.js` (+ `mindmap-layout/color/search.js`, `mm-*` UI) renders the tree-layout **mindmap** type; `diagram.js` (+ `diagram-clipboard.js`, `dg-*` UI) renders the free-form **flowchart/architecture** types. `mm-ui.js` and `mindmap-history.js` are shared by both. So `mindmap*` front-end names are intentional (type-specific), not leftover — don't blanket-rename them.
 
 ### Auth & Roles
 - Two roles: `admin` and `developer`. New registrations default to `pending` status (need admin approval).

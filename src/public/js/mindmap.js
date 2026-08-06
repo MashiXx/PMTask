@@ -1,7 +1,7 @@
 const MM = {
-  id: window.MINDMAP.id,
-  slug: window.MINDMAP.projectSlug,
-  nodes: window.MINDMAP_NODES || [],
+  id: window.DIAGRAM.id,
+  slug: window.DIAGRAM.projectSlug,
+  nodes: window.DIAGRAM_NODES || [],
   byId: new Map(),
   pan: { x: 80, y: 80 },
   zoom: 1,
@@ -365,7 +365,7 @@ async function apiUpdateNode(id, data, onError) {
 async function mmAddChild(parentId) {
   const res = await fetch('/api/diagram-nodes', {
     method:'POST', headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ mindmapId: MM.id, parentId, label: t('js.mindmap.newIdea') }),
+    body: JSON.stringify({ diagramId: MM.id, parentId, label: t('js.mindmap.newIdea') }),
   });
   const data = await res.json();
   if (!data.success) { mmToast(data.error || 'Could not add node', 'error'); return; }
@@ -623,7 +623,7 @@ async function mmExportPng() {
     const dataUrl = await htmlToImage.toPng(canvasEl, { width: W, height: H, pixelRatio: 2, backgroundColor: bg,
       style: { } });
     const a = document.createElement('a');
-    a.download = (window.MINDMAP_NAME || 'mindmap').replace(/[^\w\-]+/g, '_') + '.png';
+    a.download = (window.DIAGRAM_NAME || 'mindmap').replace(/[^\w\-]+/g, '_') + '.png';
     a.href = dataUrl; a.click();
   } catch (err) {
     console.error('Export failed:', err);

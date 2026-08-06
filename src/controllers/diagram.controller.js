@@ -64,10 +64,10 @@ exports.createDiagram = async (req, res) => {
     const type = VALID_TYPES.includes(req.body.type) ? req.body.type : 'mindmap';
     const diagram = await prisma.diagram.create({ data: { name: name.trim(), projectId: pid, type } });
     if (type === 'mindmap') {
-      await prisma.diagramNode.create({ data: { mindmapId: diagram.id, label: name.trim(), parentId: null } });
+      await prisma.diagramNode.create({ data: { diagramId: diagram.id, label: name.trim(), parentId: null } });
     } else {
       // Free-form diagrams start with one placed starter box (canvas isn't blank).
-      await prisma.diagramNode.create({ data: { mindmapId: diagram.id, label: name.trim(), shape: 'rect', x: 0, y: 0 } });
+      await prisma.diagramNode.create({ data: { diagramId: diagram.id, label: name.trim(), shape: 'rect', x: 0, y: 0 } });
     }
     res.json({ success: true, diagram });
   } catch (err) {
@@ -112,11 +112,11 @@ exports.getDiagram = async (req, res) => {
     if (!loaded) return res.status(404).json({ error: 'Diagram not found' });
     if (!userCanAccessProject(loaded.project, req.user)) return res.status(403).json({ error: 'Access denied' });
     const nodes = await prisma.diagramNode.findMany({
-      where: { mindmapId: loaded.diagram.id },
+      where: { diagramId: loaded.diagram.id },
       orderBy: { position: 'asc' },
       include: { task: { select: { id: true, status: true, title: true } } },
     });
-    const edges = await prisma.diagramEdge.findMany({ where: { mindmapId: loaded.diagram.id } });
+    const edges = await prisma.diagramEdge.findMany({ where: { diagramId: loaded.diagram.id } });
     res.json({ diagram: loaded.diagram, nodes, edges });
   } catch (err) {
     console.error(err);
@@ -128,19 +128,19 @@ exports.getDiagram = async (req, res) => {
 
 exports.createNode = async (req, res) => {
   try {
-    const { mindmapId, parentId, label, shape, x, y } = req.body;
-    if (!mindmapId || !label) return res.status(400).json({ error: 'mindmapId and label are required' });
-    const diagram = await prisma.diagram.findUnique({ where: { id: parseInt(mindmapId) }, include: { project: true } });
+    const { diagramId, parentId, label, shape, x, y } = req.body;
+    if (!diagramId || !label) return res.status(400).json({ error: 'diagramId and label are required' });
+    const diagram = await prisma.diagram.findUnique({ where: { id: parseInt(diagramId) }, include: { project: true } });
     if (!diagram) return res.status(404).json({ error: 'Diagram not found' });
     if (!userCanAccessProject(diagram.project, req.user)) return res.status(403).json({ error: 'Access denied' });
     let pid = null;
     if (parentId != null && parentId !== '') {
       pid = parseInt(parentId);
       const parent = await prisma.diagramNode.findUnique({ where: { id: pid } });
-      if (!parent || parent.mindmapId !== diagram.id) return res.status(400).json({ error: 'Parent not in this diagram' });
+      if (!parent || parent.diagramId !== diagram.id) return res.status(400).json({ error: 'Parent not in this diagram' });
     }
-    const max = await prisma.diagramNode.aggregate({ where: { mindmapId: diagram.id, parentId: pid }, _max: { position: true } });
-    const data = { mindmapId: diagram.id, parentId: pid, label: label.trim(), position: (max._max.position || 0) + 1 };
+    const max = await prisma.diagramNode.aggregate({ where: { diagramId: diagram.id, parentId: pid }, _max: { position: true } });
+    const data = { diagramId: diagram.id, parentId: pid, label: label.trim(), position: (max._max.position || 0) + 1 };
     if (shape !== undefined && VALID_SHAPES.includes(shape)) data.shape = shape;
     if (req.body.icon !== undefined && VALID_ICONS.includes(req.body.icon)) data.icon = req.body.icon;
     if (x !== undefined && x !== null) data.x = parseFloat(x);
@@ -186,7 +186,7 @@ exports.updateNode = async (req, res) => {
       } else {
         const pid = parseInt(parentId);
         const parent = await prisma.diagramNode.findUnique({ where: { id: pid } });
-        if (!parent || parent.mindmapId !== loaded.node.mindmapId) return res.status(400).json({ error: 'Parent not in this diagram' });
+        if (!parent || parent.diagramId !== loaded.node.diagramId) return res.status(400).json({ error: 'Parent not in this diagram' });
         if (pid === loaded.node.id) return res.status(400).json({ error: 'Node cannot be its own parent' });
         data.parentId = pid;
       }
@@ -217,7 +217,7 @@ exports.deleteNode = async (req, res) => {
     }
 
     // Collect the subtree (BFS over parentId within the same diagram), then delete in one transaction.
-    const all = await prisma.diagramNode.findMany({ where: { mindmapId: loaded.node.mindmapId }, select: { id: true, parentId: true } });
+    const all = await prisma.diagramNode.findMany({ where: { diagramId: loaded.node.diagramId }, select: { id: true, parentId: true } });
     const childrenOf = new Map();
     for (const n of all) {
       if (!childrenOf.has(n.parentId)) childrenOf.set(n.parentId, []);
@@ -279,18 +279,18 @@ async function loadEdge(id) {
 
 exports.createEdge = async (req, res) => {
   try {
-    const { mindmapId, sourceId, targetId, label } = req.body;
-    if (!mindmapId || !sourceId || !targetId) return res.status(400).json({ error: 'mindmapId, sourceId and targetId are required' });
-    const diagram = await prisma.diagram.findUnique({ where: { id: parseInt(mindmapId) }, include: { project: true } });
+    const { diagramId, sourceId, targetId, label } = req.body;
+    if (!diagramId || !sourceId || !targetId) return res.status(400).json({ error: 'diagramId, sourceId and targetId are required' });
+    const diagram = await prisma.diagram.findUnique({ where: { id: parseInt(diagramId) }, include: { project: true } });
     if (!diagram) return res.status(404).json({ error: 'Diagram not found' });
     if (!userCanAccessProject(diagram.project, req.user)) return res.status(403).json({ error: 'Access denied' });
     if (diagram.type === 'mindmap') return res.status(400).json({ error: 'Edges are not supported on mindmaps' });
     const sid = parseInt(sourceId), tid = parseInt(targetId);
     if (sid === tid) return res.status(400).json({ error: 'An edge needs two different nodes' });
-    const nodes = await prisma.diagramNode.findMany({ where: { id: { in: [sid, tid] }, mindmapId: diagram.id }, select: { id: true } });
+    const nodes = await prisma.diagramNode.findMany({ where: { id: { in: [sid, tid] }, diagramId: diagram.id }, select: { id: true } });
     if (nodes.length !== 2) return res.status(400).json({ error: 'Both nodes must belong to this diagram' });
     const edge = await prisma.diagramEdge.create({
-      data: { mindmapId: diagram.id, sourceId: sid, targetId: tid, label: label ? String(label).trim() : null },
+      data: { diagramId: diagram.id, sourceId: sid, targetId: tid, label: label ? String(label).trim() : null },
     });
     res.json({ success: true, edge });
   } catch (err) {
@@ -349,7 +349,7 @@ exports.getDiagramsListPage = async (req, res) => {
       activePage: 'diagrams', diagrams, isGuest: false,
     });
   } catch (err) {
-    console.error(err); req.flash('error', req.t('flash.loadMindmapsFailed')); res.redirect('/projects');
+    console.error(err); req.flash('error', req.t('flash.loadDiagramsFailed')); res.redirect('/projects');
   }
 };
 
@@ -364,17 +364,17 @@ exports.getDiagramCanvasPage = async (req, res) => {
     if (req.params.projectSlug !== canonical) return res.redirect(301, `/projects/${canonical}/diagrams/${diagramId}`);
     if (!userCanAccessProject(project, req.user)) return res.redirect('/projects');
     const diagram = await prisma.diagram.findUnique({ where: { id: diagramId } });
-    if (!diagram || diagram.projectId !== projectId) { req.flash('error', req.t('flash.mindmapNotFound')); return res.redirect(`/projects/${canonical}/diagrams`); }
+    if (!diagram || diagram.projectId !== projectId) { req.flash('error', req.t('flash.diagramNotFound')); return res.redirect(`/projects/${canonical}/diagrams`); }
     const nodes = await prisma.diagramNode.findMany({
-      where: { mindmapId: diagramId }, orderBy: { position: 'asc' },
+      where: { diagramId: diagramId }, orderBy: { position: 'asc' },
       include: { task: { select: { id: true, status: true, title: true } } },
     });
-    const edges = await prisma.diagramEdge.findMany({ where: { mindmapId: diagramId } });
+    const edges = await prisma.diagramEdge.findMany({ where: { diagramId: diagramId } });
     res.render('diagrams/canvas', {
       title: diagram.name, activeProject: project, activeProjectId: projectId,
       activePage: 'diagrams', diagram, nodes, edges, isGuest: false,
     });
   } catch (err) {
-    console.error(err); req.flash('error', req.t('flash.loadMindmapFailed')); res.redirect('/projects');
+    console.error(err); req.flash('error', req.t('flash.loadDiagramFailed')); res.redirect('/projects');
   }
 };
