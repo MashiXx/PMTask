@@ -34,15 +34,19 @@
 
 - **Projects** — Create and manage multiple projects with color coding
 - **Kanban Board** — Drag-and-drop task management with Sortable.js
-- **Views** — Toggle between board and list view, group by status or tags
+- **Views** — Toggle between board and list view; group by status, tags, or custom groups
 - **Tasks** — Title, description, priority, due date, starred, assignees
 - **Subtasks** — Checklist items with automatic progress calculation
-- **Tags** — Label, filter, and group tasks by tag
+- **Tags & Groups** — Label and filter tasks by tag; organize columns with custom task groups
+- **Comments** — Threaded discussion on each task
+- **Attachments** — Upload files directly on a task
 - **Documents** — Upload, preview (PDF/images/Word), folder organization with optional password protection
+- **Diagrams** — Built-in mindmap / flowchart / architecture editor per project
+- **Notes** — Private, Google Keep-style notes with colors, labels, and embedded images/video
 - **Team** — Assign tasks to multiple members
-- **Dashboard** — Overview with statistics and progress tracking
 - **Admin Panel** — User management with approval workflow and role assignment
-- **Themes** — Dark / light / system theme support
+- **i18n** — English / Vietnamese interface
+- **Themes** — Light / dark theme support
 - **Search** — Real-time task search
 
 ## Quick Start

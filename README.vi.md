@@ -22,15 +22,19 @@
 
 - **Dự án** — Tạo và quản lý nhiều project với màu sắc phân biệt
 - **Kanban Board** — Kéo thả task với Sortable.js
-- **Giao diện** — Chuyển đổi giữa board và list view, nhóm theo trạng thái hoặc tag
+- **Giao diện** — Chuyển đổi giữa board và list view; nhóm theo trạng thái, tag hoặc nhóm tùy chỉnh
 - **Task** — Tiêu đề, mô tả, mức ưu tiên, ngày hết hạn, đánh dấu sao, phân công
 - **Subtask** — Checklist với tính toán tiến độ tự động
-- **Tag** — Gắn nhãn, lọc và nhóm task theo tag
+- **Tag & Nhóm** — Gắn nhãn và lọc task theo tag; sắp xếp cột bằng nhóm task tùy chỉnh
+- **Bình luận** — Thảo luận phân luồng trên mỗi task
+- **Tệp đính kèm** — Upload file trực tiếp trên task
 - **Tài liệu** — Upload, xem trước (PDF/ảnh/Word), tổ chức folder với mật khẩu bảo vệ tùy chọn
-- **Nhóm** — Phân công task cho nhiều thành viên
-- **Dashboard** — Tổng quan với thống kê và theo dõi tiến độ
+- **Sơ đồ** — Trình vẽ mindmap / flowchart / architecture tích hợp cho từng dự án
+- **Ghi chú** — Ghi chú riêng tư kiểu Google Keep: màu sắc, nhãn, chèn ảnh/video
+- **Nhóm thành viên** — Phân công task cho nhiều thành viên
 - **Admin Panel** — Quản lý người dùng, phê duyệt tài khoản, phân quyền
-- **Giao diện** — Hỗ trợ dark / light / system theme
+- **Đa ngôn ngữ** — Giao diện Tiếng Anh / Tiếng Việt
+- **Giao diện** — Hỗ trợ theme sáng / tối
 - **Tìm kiếm** — Tìm kiếm task real-time
 
 ## Bắt đầu nhanh

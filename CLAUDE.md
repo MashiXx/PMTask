@@ -31,16 +31,23 @@ Routes (`src/routes/`) → Controllers (`src/controllers/`) → Prisma ORM → M
 Database connection is configured via the `DB_*` components in `.env` (host, port, user, password, name). `src/config/database.js` assembles these into `DATABASE_URL` for Prisma; a full `DATABASE_URL` can be set to override them.
 
 ### Key Directories
-- `src/routes/` — Express route definitions (auth, task, project, tag, subtask, document, admin, profile)
-- `src/controllers/` — Business logic per domain
+- `src/routes/` — Express route definitions (auth, dashboard, task, attachment, project, tag, group, diagram, subtask, comment, document, note, admin, profile)
+- `src/controllers/` — Business logic per domain (one controller per route domain, plus `diagram` and `dashboard`)
 - `src/views/` — EJS templates; `partials/` for reusable components, `partials/modals/` for modal dialogs
-- `src/public/js/` — Frontend vanilla JS modules (kanban drag-drop, modals, search, theme, etc.)
+- `src/public/js/` — Frontend vanilla JS modules (kanban drag-drop, modals, search, theme, diagram/mindmap editor, notes, etc.)
 - `src/public/css/` — Stylesheets with light/dark theme support
-- `src/config/` — Passport strategies, session config, multer upload config
+- `src/config/` — Passport strategies, session config, i18n, multer upload configs (one per upload domain)
+- `src/locales/` — i18n dictionaries (`en.json`, `vi.json`); server helper in `src/config/i18n.js`
 - `src/middleware/auth.js` — `isAuthenticated`, `isGuest`, `isAdmin` middleware
 
 ### Data Model (Prisma)
-Core models: User, Project, Task, SubTask, Tag, Folder, Document, Note. Many-to-many via TaskTag and TaskAssignee junction tables. Folders support nesting (self-referential parentId). Notes are private (owner-only), carry a background `color`, embed images/video (NoteMedia), and are classified by user-scoped labels (NoteLabel ↔ NoteLabelLink, many-to-many).
+Core models: User, Project, Task, SubTask, Tag, TaskGroup, Folder, Document, Note.
+- **Tasks** belong to a Project, optionally to a TaskGroup (kanban column, `onDelete: SetNull`), and link many-to-many to Tag (TaskTag) and User (TaskAssignee) via junction tables. A task also has SubTask checklist items, TaskAttachment files, and threaded TaskComment (self-referential `parentId` for replies).
+- **Documents** live in a Project, optionally inside a Folder; folders nest via self-referential `parentId` and support optional password protection.
+- **Notes** are private (owner-only), carry a background `color`, embed images/video (NoteMedia), and are classified by user-scoped labels (NoteLabel ↔ NoteLabelLink, many-to-many).
+- **Diagrams** (mindmap / flowchart / architecture) belong to a Project and hold DiagramNode + DiagramEdge. A node can optionally link to a Task.
+
+> **Naming gotcha:** the diagram feature was renamed from "mindmap" but the DB layer was left in place. `Diagram`/`DiagramNode`/`DiagramEdge` map to the physical tables `Mindmap`/`MindmapNode`/`MindmapEdge` (via `@@map`), and the FK column is still `mindmapId`. Front-end files, CSS, and tests also still use both `mindmap*` and `diagram*` names side by side. Old `/projects/:slug/mindmaps` URLs 301-redirect to `/diagrams`.
 
 ### Auth & Roles
 - Two roles: `admin` and `developer`. New registrations default to `pending` status (need admin approval).
@@ -49,9 +56,15 @@ Core models: User, Project, Task, SubTask, Tag, Folder, Document, Note. Many-to-
 
 ### Frontend Patterns
 - Kanban board uses Sortable.js for drag-drop; position changes go through `PATCH /api/tasks/:id/move`.
-- Views toggle between kanban and list, grouped by status or tags.
+- Views toggle between kanban and list, grouped by status, tags, or custom TaskGroups.
 - Task progress auto-calculated from subtask completion: `doneSubtasks / (totalSubtasks + 1) * 100`.
-- Global template vars: `currentUser`, `userTheme`, `success`/`error` flash messages (set in `src/app.js`).
+- Diagram editor is a custom canvas engine (no external diagram lib); files split across `diagram*.js` and `mindmap*.js` in `src/public/js/`.
+- Global template vars: `currentUser`, `userTheme`, `lang`, `t()` (i18n translate), `success`/`error` flash messages (all set in `src/app.js`).
+
+### i18n
+- Two locales: English (`en`) and Vietnamese (`vi`), dictionaries in `src/locales/`.
+- Language resolves per request: user preference → `pmtask-lang` cookie → default `en` (`src/app.js`).
+- Server-side: `res.locals.t(key, vars)` in views, `req.t` in controllers (for flash messages). Client-side strings are embedded as `clientI18n` and consumed by `src/public/js/i18n.js`.
 
 ### File Uploads
 - Multer with 10MB limit, 5 files per request, whitelist-based extension + MIME validation.
