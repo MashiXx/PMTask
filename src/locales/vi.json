@@ -55,6 +55,7 @@
   "js.notes.addImage": "Thêm ảnh hoặc video",
   "js.notes.removeMedia": "Gỡ bỏ",
   "js.notes.uploadFailed": "Tải lên thất bại",
+  "js.notes.saveFailed": "Lưu thất bại",
   "js.notes.linkPrompt": "Nhập đường dẫn URL",
   "js.notes.allNotes": "Tất cả",
   "js.notes.labelNote": "Gắn thẻ ghi chú",

@@ -280,7 +280,9 @@ model TaskComment {
 model Note {
   id          Int      @id @default(autoincrement())
   title       String   @default("Untitled")
-  content     String   @db.Text
+  // MEDIUMTEXT, not TEXT: notes hold rich-text HTML and TEXT's 65,535-BYTE
+  // ceiling is reached quickly by emoji/accented text or pasted markup.
+  content     String   @db.MediumText
   color       String   @default("default")
   pinned      Boolean  @default(false)
   position    Int      @default(0)

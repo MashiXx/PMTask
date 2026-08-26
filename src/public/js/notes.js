@@ -743,7 +743,14 @@
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: title, content: content }),
       });
-    } catch (e) { console.error('save failed', e); modal.dirty = true; }
+    } catch (e) {
+      // Don't swallow this: a rejected save (e.g. the note exceeds the server's
+      // size cap) would otherwise leave the user typing into a note that is
+      // silently no longer being persisted.
+      console.error('save failed', e);
+      modal.dirty = true;
+      alert(tr('js.notes.saveFailed') + (e.message ? ': ' + e.message : ''));
+    }
   }
 
   async function closeModal(skipSave) {

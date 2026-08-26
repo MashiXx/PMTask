@@ -3,9 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const { uploadDir } = require('../config/upload');
 const { isPathSafe } = require('../utils/file-serve');
+const { isContentTooLong } = require('../utils/note-content');
 
 const MAX_TITLE = 255;
-const MAX_CONTENT = 100000;
 const MAX_LABEL = 60;
 
 // Google-Keep-style background palette. The client renders these swatches; the
@@ -143,10 +143,13 @@ exports.getNote = async (req, res) => {
 // can insert a card without a round-trip.
 exports.createNote = async (req, res) => {
   try {
+    // Never truncate: slicing HTML mid-tag corrupts the note. Reject instead.
+    if (isContentTooLong(req.body.content)) return res.status(413).json({ error: 'Note too long' });
+
     const note = await prisma.note.create({
       data: {
         title: cleanTitle(req.body.title),
-        content: typeof req.body.content === 'string' ? req.body.content.slice(0, MAX_CONTENT) : '',
+        content: typeof req.body.content === 'string' ? req.body.content : '',
         color: cleanColor(req.body.color),
         createdById: req.user.id,
       },
@@ -177,7 +180,7 @@ exports.updateNote = async (req, res) => {
     const data = {};
     if (typeof req.body.title === 'string') data.title = cleanTitle(req.body.title);
     if (typeof req.body.content === 'string') {
-      if (req.body.content.length > MAX_CONTENT) return res.status(400).json({ error: 'Note too long' });
+      if (isContentTooLong(req.body.content)) return res.status(413).json({ error: 'Note too long' });
       data.content = req.body.content;
     }
     if (typeof req.body.color === 'string') data.color = cleanColor(req.body.color);
