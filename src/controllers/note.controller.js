@@ -7,6 +7,9 @@ const { isContentTooLong } = require('../utils/note-content');
 
 const MAX_TITLE = 255;
 const MAX_LABEL = 60;
+// Upper bound on one reorder request, so a malformed client can't ask for an
+// unbounded transaction.
+const MAX_REORDER = 2000;
 
 // Google-Keep-style background palette. The client renders these swatches; the
 // server only validates that a note's stored color is one of the known keys so
@@ -62,13 +65,18 @@ const NOTE_INCLUDE = {
   media: { orderBy: { createdAt: 'asc' } },
 };
 
+// Board order. `position` is the user's own drag-and-drop order; notes that
+// predate ordering all sit at 0, so recency breaks those ties until the first
+// drag assigns real positions.
+const NOTE_ORDER = [{ pinned: 'desc' }, { position: 'asc' }, { updatedAt: 'desc' }];
+
 // GET /notes — the Keep-style board (all of the user's notes + their labels)
 exports.getNotesPage = async (req, res) => {
   try {
     const [notes, labels] = await Promise.all([
       prisma.note.findMany({
         where: { createdById: req.user.id },
-        orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
+        orderBy: NOTE_ORDER,
         include: NOTE_INCLUDE,
       }),
       prisma.noteLabel.findMany({
@@ -103,7 +111,7 @@ exports.getNotePage = async (req, res) => {
     const [notes, labels] = await Promise.all([
       prisma.note.findMany({
         where: { createdById: req.user.id },
-        orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
+        orderBy: NOTE_ORDER,
         include: NOTE_INCLUDE,
       }),
       prisma.noteLabel.findMany({
@@ -146,11 +154,20 @@ exports.createNote = async (req, res) => {
     // Never truncate: slicing HTML mid-tag corrupts the note. Reject instead.
     if (isContentTooLong(req.body.content)) return res.status(413).json({ error: 'Note too long' });
 
+    // A new note goes to the top of the board, ahead of everything already
+    // there. Positions are relative, so going one below the current minimum is
+    // enough -- no need to renumber every other note.
+    const lowest = await prisma.note.aggregate({
+      where: { createdById: req.user.id },
+      _min: { position: true },
+    });
+
     const note = await prisma.note.create({
       data: {
         title: cleanTitle(req.body.title),
         content: typeof req.body.content === 'string' ? req.body.content : '',
         color: cleanColor(req.body.color),
+        position: (lowest._min.position || 0) - 1,
         createdById: req.user.id,
       },
       include: NOTE_INCLUDE,
@@ -210,6 +227,40 @@ exports.togglePin = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update note' });
+  }
+};
+
+// PATCH /notes/api/reorder — persist a drag-and-drop order.
+//
+// The client sends the complete ordered id list for one section (pinned or
+// unpinned), including notes hidden behind a label filter or search, so the
+// order it describes is total rather than a rearrangement of whatever happened
+// to be on screen. Ids the user doesn't own are dropped rather than rejected:
+// a stale tab shouldn't be able to renumber someone else's notes, and shouldn't
+// fail the whole drag either.
+exports.reorderNotes = async (req, res) => {
+  try {
+    if (!Array.isArray(req.body.ids)) return res.status(400).json({ error: 'ids must be an array' });
+    if (req.body.ids.length > MAX_REORDER) return res.status(400).json({ error: 'Too many notes' });
+
+    const ids = [...new Set(req.body.ids.map((n) => parseInt(n)).filter((n) => !Number.isNaN(n)))];
+    if (!ids.length) return res.json({ success: true, updated: 0 });
+
+    const owned = await prisma.note.findMany({
+      where: { id: { in: ids }, createdById: req.user.id },
+      select: { id: true },
+    });
+    const ownedIds = new Set(owned.map((n) => n.id));
+    const ordered = ids.filter((id) => ownedIds.has(id));
+
+    await prisma.$transaction(
+      ordered.map((id, index) => prisma.note.update({ where: { id }, data: { position: index } }))
+    );
+
+    res.json({ success: true, updated: ordered.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to reorder notes' });
   }
 };
 

@@ -29,6 +29,8 @@ router.get('/api/media/:id', note.serveMedia);
 router.delete('/api/media/:id', note.deleteMedia);
 
 // ── Note JSON mutations (under /notes/api so they never collide with page GETs) ──
+// "reorder" is registered before /api/:id so it isn't parsed as a note id.
+router.patch('/api/reorder', note.reorderNotes);
 router.post('/api', note.createNote);
 router.get('/api/:id', note.getNote);
 router.put('/api/:id', note.updateNote);

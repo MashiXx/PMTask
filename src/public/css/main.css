@@ -5927,7 +5927,16 @@ a:focus-visible,
   font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-dim); margin: 0 0 12px 4px;
 }
-.keep-board { columns: 240px; column-gap: 14px; }
+/* Real column elements, not CSS multi-column: the browser reflows multi-column
+   children across column boxes, leaving a drag library no stable geometry to
+   hit-test. notes.js distributes cards into these columns itself. */
+.keep-board { display: flex; align-items: flex-start; gap: 14px; }
+.keep-board-col { flex: 1 1 0; min-width: 0; }
+/* Keep an empty column droppable so a card can be dragged into it. */
+.keep-board-col:empty { min-height: 60px; }
+.keep-card-ghost { opacity: 0.35; }
+.keep-card-drag { transform: rotate(1.5deg); box-shadow: 0 8px 20px rgba(0,0,0,0.18); }
+.keep-board.is-dragging .keep-card { cursor: grabbing; }
 
 /* ── Card ── */
 .keep-card {
@@ -6110,6 +6119,6 @@ a:focus-visible,
 [data-theme="dark"] .keep-modal-close:hover { background: rgba(255,255,255,0.12); }
 
 @media (max-width: 640px) {
-  .keep-board { columns: 160px; column-gap: 10px; }
+  .keep-board { gap: 10px; }
   .keep-modal { padding: 14px 14px 10px; }
 }

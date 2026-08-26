@@ -102,3 +102,101 @@ test('an auto-applied label does not rescue a note that also has content', () =>
 test('tolerates a missing labels list', () => {
   assert.strictEqual(isNoteEmpty({ title: 'Untitled' }, null), true);
 });
+
+// ── Masonry layout ────────────────────────────────────────────────────────
+// The board is laid out as explicit column elements (CSS multi-column can't be
+// drag-sorted), so column count and card placement are computed here.
+
+const { columnCountFor, splitIntoColumns, applyVisualOrder } = require('../src/public/js/note-card');
+
+test('columnCountFor fits as many columns as the width allows', () => {
+  // n columns need n*240 + (n-1)*14 px.
+  assert.strictEqual(columnCountFor(748, 240, 14), 3); // exactly 3 columns
+  assert.strictEqual(columnCountFor(747, 240, 14), 2); // one pixel short of 3
+  assert.strictEqual(columnCountFor(494, 240, 14), 2); // exactly 2 columns
+  assert.strictEqual(columnCountFor(493, 240, 14), 1);
+});
+
+test('columnCountFor never drops below a single column', () => {
+  assert.strictEqual(columnCountFor(100, 240, 14), 1);
+  assert.strictEqual(columnCountFor(0, 240, 14), 1);
+  assert.strictEqual(columnCountFor(-50, 240, 14), 1);
+  assert.strictEqual(columnCountFor(NaN, 240, 14), 1);
+});
+
+// splitIntoColumns gives each column a CONTIGUOUS run of the note order, the
+// way CSS multi-column does. That is what makes the layout reversible: reading
+// the columns left to right, top to bottom recovers the exact order that was
+// laid out, so ending a drag can't silently scramble the board.
+
+const sum = (a) => a.reduce((x, y) => x + y, 0);
+
+test('splitIntoColumns returns runs that exactly cover the list', () => {
+  const heights = [100, 40, 70, 120, 55, 90, 30];
+  for (const count of [1, 2, 3, 4, 8]) {
+    const runs = splitIntoColumns(heights, count);
+    assert.strictEqual(runs.length, count, `${count} columns`);
+    assert.strictEqual(sum(runs), heights.length, `covers all cards for ${count}`);
+    assert.ok(runs.every((r) => r >= 0), 'no negative runs');
+  }
+});
+
+test('splitIntoColumns balances column heights', () => {
+  // Six equal cards over three columns -> two each.
+  assert.deepStrictEqual(splitIntoColumns([10, 10, 10, 10, 10, 10], 3), [2, 2, 2]);
+  // One very tall card should occupy a column on its own.
+  assert.deepStrictEqual(splitIntoColumns([100, 10, 10, 10, 10], 2), [1, 4]);
+});
+
+test('splitIntoColumns puts everything in one column when asked for one', () => {
+  assert.deepStrictEqual(splitIntoColumns([10, 20, 30], 1), [3]);
+});
+
+test('splitIntoColumns handles fewer cards than columns', () => {
+  assert.deepStrictEqual(splitIntoColumns([10, 20], 3), [1, 1, 0]);
+  assert.deepStrictEqual(splitIntoColumns([10], 3), [1, 0, 0]);
+});
+
+test('splitIntoColumns handles an empty board', () => {
+  assert.deepStrictEqual(splitIntoColumns([], 3), [0, 0, 0]);
+  assert.deepStrictEqual(splitIntoColumns([], 1), [0]);
+});
+
+test('splitIntoColumns never reorders: runs are read left to right in sequence', () => {
+  // Reconstructing the list from the runs must give back the original order.
+  const heights = [30, 90, 45, 60, 15, 80];
+  const items = ['a', 'b', 'c', 'd', 'e', 'f'];
+  const runs = splitIntoColumns(heights, 3);
+  let at = 0;
+  const readBack = [];
+  for (const len of runs) for (let k = 0; k < len; k++) readBack.push(items[at++]);
+  assert.deepStrictEqual(readBack, items);
+});
+
+// ── applyVisualOrder ──────────────────────────────────────────────────────
+// A drag reorders only the notes currently on screen. Notes hidden by a label
+// filter or a search query must keep the slots they already hold, otherwise
+// reordering a filtered view would silently shuffle everything else.
+
+test('with nothing filtered out, the visual order IS the new order', () => {
+  assert.deepStrictEqual(applyVisualOrder([1, 2, 3], [3, 1, 2]), [3, 1, 2]);
+});
+
+test('hidden notes keep their slots while visible ones are rearranged', () => {
+  // 2 and 4 are hidden; visible 1,3,5 get dragged into the order 5,3,1.
+  assert.deepStrictEqual(applyVisualOrder([1, 2, 3, 4, 5], [5, 3, 1]), [5, 2, 3, 4, 1]);
+});
+
+test('a hidden note at the front is not disturbed', () => {
+  assert.deepStrictEqual(applyVisualOrder([9, 1, 2], [2, 1]), [9, 2, 1]);
+});
+
+test('an empty or unchanged drag leaves the list alone', () => {
+  assert.deepStrictEqual(applyVisualOrder([1, 2, 3], []), [1, 2, 3]);
+  assert.deepStrictEqual(applyVisualOrder([1, 2, 3], [1, 2, 3]), [1, 2, 3]);
+  assert.deepStrictEqual(applyVisualOrder([], []), []);
+});
+
+test('ids that are not in the full list are ignored rather than injected', () => {
+  assert.deepStrictEqual(applyVisualOrder([1, 2], [2, 99, 1]), [2, 1]);
+});

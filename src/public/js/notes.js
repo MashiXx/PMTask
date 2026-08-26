@@ -95,24 +95,156 @@
     return true;
   }
 
+  // Card width these must agree with .keep-board / .keep-board-col in main.css.
+  var COL_MIN = 240;
+  var COL_MIN_NARROW = 160;
+  var COL_GAP = 14;
+  var COL_GAP_NARROW = 10;
+  var CARD_MARGIN = 14; // .keep-card margin-bottom, not counted by offsetHeight
+
+  // Lay a section's cards out as a masonry over real column elements.
+  //
+  // Each column takes a contiguous slice of the list, so the board reads left to
+  // right, top to bottom -- and reading it back that way after a drag recovers
+  // the order exactly (see splitIntoColumns in note-card.js).
+  function fillBoard(board, list) {
+    board.innerHTML = '';
+
+    var narrow = window.innerWidth <= 768;
+    var gap = narrow ? COL_GAP_NARROW : COL_GAP;
+    var count = columnCountFor(board.clientWidth, narrow ? COL_MIN_NARROW : COL_MIN, gap);
+
+    var cols = [];
+    for (var i = 0; i < count; i++) {
+      var col = document.createElement('div');
+      col.className = 'keep-board-col';
+      board.appendChild(col);
+      cols.push(col);
+    }
+    if (!list.length) return cols;
+
+    // Balancing needs every card's height up front, and a card only has a height
+    // once it is in the document at its final width. Staging them all in the
+    // first column gives exactly that width, so the measurements hold after the
+    // cards are dealt out below.
+    var cards = list.map(buildCard);
+    cards.forEach(function (card) { cols[0].appendChild(card); });
+    var heights = cards.map(function (card) { return card.offsetHeight + CARD_MARGIN; });
+
+    var at = 0;
+    splitIntoColumns(heights, count).forEach(function (len, ci) {
+      for (var k = 0; k < len; k++) cols[ci].appendChild(cards[at++]);
+    });
+
+    return cols;
+  }
+
   function renderBoard() {
     var visible = notes.filter(noteMatches);
     var pinned = visible.filter(function (n) { return n.pinned; });
     var others = visible.filter(function (n) { return !n.pinned; });
 
-    pinnedBoard.innerHTML = '';
-    othersBoard.innerHTML = '';
-    pinned.forEach(function (n) { pinnedBoard.appendChild(buildCard(n)); });
-    others.forEach(function (n) { othersBoard.appendChild(buildCard(n)); });
-
+    // Reveal the sections BEFORE laying them out: a hidden section has zero
+    // width, which would collapse the masonry to a single column.
     pinnedSection.hidden = pinned.length === 0;
     othersSection.hidden = others.length === 0;
     // Only show the "Others" heading when there are also pinned notes.
     othersTitle.style.display = pinned.length ? '' : 'none';
 
+    destroySortables();
+    // Sections are sorted separately and never exchange cards, so a note is
+    // pinned/unpinned with the pin button rather than by dragging.
+    makeSortable(fillBoard(pinnedBoard, pinned), 'notes-pinned', true);
+    makeSortable(fillBoard(othersBoard, others), 'notes-others', false);
+
     emptyState.hidden = notes.length !== 0;
     noMatchState.hidden = !(notes.length !== 0 && visible.length === 0);
   }
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  Drag to reorder
+  // ══════════════════════════════════════════════════════════════════════
+
+  // Set while a drag is in flight so the card's click handler doesn't open the
+  // editor when the pointer comes back up.
+  var dragging = false;
+
+  // Live Sortable instances, one per column. renderBoard() throws its columns
+  // away and builds new ones, so the old instances have to be destroyed or they
+  // accumulate on every keystroke in the search box.
+  var sortables = [];
+
+  function destroySortables() {
+    sortables.forEach(function (s) { s.destroy(); });
+    sortables = [];
+  }
+
+  function makeSortable(cols, group, isPinned) {
+    if (typeof Sortable === 'undefined') return; // library blocked/offline
+    cols.forEach(function (col) {
+      sortables.push(Sortable.create(col, {
+        group: group, // per-section, so pinned and unpinned never mix
+        animation: 150,
+        ghostClass: 'keep-card-ghost',
+        dragClass: 'keep-card-drag',
+        // Toolbar buttons stay clickable instead of starting a drag.
+        filter: '.keep-icon-btn',
+        preventOnFilter: false,
+        delay: 120,           // a short press starts a drag...
+        delayOnTouchOnly: true, // ...but only on touch, so the page still scrolls
+        touchStartThreshold: 5,
+        onStart: function () { dragging = true; col.closest('.keep-board').classList.add('is-dragging'); },
+        onEnd: function () {
+          col.closest('.keep-board').classList.remove('is-dragging');
+          // Let the pending click land on the card first, then clear the flag.
+          setTimeout(function () { dragging = false; }, 0);
+          persistOrder(cols, isPinned);
+        },
+      }));
+    });
+  }
+
+  // Read the dragged order off the DOM and save it.
+  //
+  // Columns are read left to right, top to bottom -- the same way the eye reads
+  // the board, and the same order fillBoard() consumes when it lays the cards
+  // back out.
+  function persistOrder(cols, isPinned) {
+    var visibleIds = [];
+    cols.forEach(function (col) {
+      Array.prototype.forEach.call(col.children, function (card) {
+        visibleIds.push(parseInt(card.dataset.noteId));
+      });
+    });
+
+    // The drag only rearranged what was on screen; splice it back into the full
+    // section so notes hidden by a filter or search keep their own slots.
+    var section = notes.filter(function (n) { return !!n.pinned === isPinned; });
+    var ordered = applyVisualOrder(section.map(function (n) { return n.id; }), visibleIds);
+
+    // Reorder the local model to match, so the next render agrees with the DOM
+    // without waiting on the server.
+    var byId = {};
+    section.forEach(function (n) { byId[n.id] = n; });
+    var rest = notes.filter(function (n) { return !!n.pinned !== isPinned; });
+    var reordered = ordered.map(function (id) { return byId[id]; });
+    notes = isPinned ? reordered.concat(rest) : rest.concat(reordered);
+
+    api('/notes/api/reorder', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: ordered }),
+    }).catch(function (e) {
+      console.error('reorder failed', e);
+      alert(tr('js.notes.reorderFailed') + (e.message ? ': ' + e.message : ''));
+    });
+  }
+
+  // Column count depends on the board width, so a resize has to re-lay it out.
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderBoard, 150);
+  });
 
   function buildCard(n) {
     var card = document.createElement('div');
@@ -121,7 +253,10 @@
 
     var body = document.createElement('div');
     body.className = 'keep-card-body';
-    body.addEventListener('click', function () { openEditor(n.id, false); });
+    body.addEventListener('click', function () {
+      if (dragging) return; // this click is the tail of a drag, not a tap
+      openEditor(n.id, false);
+    });
 
     var parsed = parseBody(n.content);
 
@@ -827,9 +962,12 @@
   // ══════════════════════════════════════════════════════════════════════
   var searchInput = document.getElementById('notesSearch');
   if (searchInput) {
+    var searchTimer = null;
     searchInput.addEventListener('input', function () {
       searchQuery = searchInput.value.trim().toLowerCase();
-      renderBoard();
+      // Re-laying out the masonry measures every card, so coalesce keystrokes.
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(renderBoard, 120);
     });
   }
 

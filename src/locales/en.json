@@ -57,6 +57,7 @@
   "js.notes.removeMedia": "Remove",
   "js.notes.uploadFailed": "Upload failed",
   "js.notes.saveFailed": "Save failed",
+  "js.notes.reorderFailed": "Could not save the new order",
   "js.notes.linkPrompt": "Enter a URL",
   "js.notes.allNotes": "All",
   "js.notes.labelNote": "Label note",

@@ -56,6 +56,7 @@
   "js.notes.removeMedia": "Gỡ bỏ",
   "js.notes.uploadFailed": "Tải lên thất bại",
   "js.notes.saveFailed": "Lưu thất bại",
+  "js.notes.reorderFailed": "Không lưu được thứ tự mới",
   "js.notes.linkPrompt": "Nhập đường dẫn URL",
   "js.notes.allNotes": "Tất cả",
   "js.notes.labelNote": "Gắn thẻ ghi chú",
