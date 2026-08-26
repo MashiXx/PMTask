@@ -36,11 +36,30 @@
     });
   }
 
-  // Plain-text digest of a note's HTML content, for search + empty detection.
-  function textOf(html) {
+  // Everything the board needs to know about a note body, from ONE sanitize +
+  // parse. Cards need the plain text, the first image and the body-minus-that-
+  // image, and re-parsing for each would mean three passes per card per render.
+  //
+  //   text        — plain-text digest, for search + empty detection
+  //   imageSrc    — src of the first <img>, read off the SANITIZED DOM so a
+  //                 hostile src can never reach the card ('' when there is none)
+  //   html        — the sanitized body, ready to render
+  //   htmlNoImage — body with that leading <img> removed, for when the image was
+  //                 promoted to the cover and must not appear twice
+  function parseBody(html) {
     var d = document.createElement('div');
     d.innerHTML = sanitize(html);
-    return (d.textContent || '').trim();
+    var text = (d.textContent || '').trim();
+    var safeHtml = d.innerHTML;
+    var img = d.querySelector('img');
+    var imageSrc = (img && img.getAttribute('src')) || '';
+    if (img && img.parentNode) img.parentNode.removeChild(img);
+    return { text: text, imageSrc: imageSrc, html: safeHtml, htmlNoImage: d.innerHTML };
+  }
+
+  // Plain-text digest of a note's HTML content, for search + empty detection.
+  function textOf(html) {
+    return parseBody(html).text;
   }
 
   async function api(url, opts) {
@@ -104,23 +123,25 @@
     body.className = 'keep-card-body';
     body.addEventListener('click', function () { openEditor(n.id, false); });
 
-    // Media strip (thumbnails)
-    if (n.media && n.media.length) {
-      var strip = document.createElement('div');
-      strip.className = 'keep-card-media keep-card-media-' + Math.min(n.media.length, 4);
-      n.media.slice(0, 4).forEach(function (m) {
-        var url = '/notes/api/media/' + m.id;
-        if (m.type === 'video') {
-          var v = document.createElement('video');
-          v.src = url; v.muted = true; v.preload = 'metadata';
-          strip.appendChild(v);
-        } else {
-          var img = document.createElement('img');
-          img.src = url; img.loading = 'lazy'; img.alt = '';
-          strip.appendChild(img);
-        }
-      });
-      body.appendChild(strip);
+    var parsed = parseBody(n.content);
+
+    // Cover: the note's first image (see note-card.js for the precedence).
+    var cover = pickNoteCover(n.media, parsed.imageSrc);
+    if (cover) {
+      var wrap = document.createElement('div');
+      wrap.className = 'keep-card-cover';
+      var el;
+      if (cover.type === 'video') {
+        el = document.createElement('video');
+        el.src = '/notes/api/media/' + cover.id;
+        el.muted = true; el.preload = 'metadata';
+      } else {
+        el = document.createElement('img');
+        el.src = cover.source === 'media' ? '/notes/api/media/' + cover.id : cover.src;
+        el.loading = 'lazy'; el.alt = '';
+      }
+      wrap.appendChild(el);
+      body.appendChild(wrap);
     }
 
     if (n.title) {
@@ -130,15 +151,17 @@
       body.appendChild(title);
     }
 
-    var text = textOf(n.content);
+    var text = parsed.text;
     if (text) {
       var content = document.createElement('div');
       content.className = 'keep-card-content';
-      content.innerHTML = sanitize(n.content);
+      content.innerHTML = cover && cover.source === 'content'
+        ? parsed.htmlNoImage
+        : parsed.html;
       body.appendChild(content);
     }
 
-    if ((!n.title && !text && (!n.media || !n.media.length))) {
+    if (!n.title && !text && !cover) {
       var ph = document.createElement('div');
       ph.className = 'keep-card-empty';
       ph.textContent = tr('js.notes.emptyNote');
@@ -454,14 +477,21 @@
   }
 
   async function newNote(withImage) {
+    // Adopt the label currently being filtered on: a note created from a
+    // filtered board should belong to that view, not vanish out of it.
+    var autoLabelId = activeFilter;
     try {
       var data = await api('/notes/api', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: '', content: '' }),
+        body: JSON.stringify({
+          title: '', content: '',
+          labelIds: autoLabelId ? [autoLabelId] : [],
+        }),
       });
       data.note._isNew = true;
       notes.unshift(data.note);
       openEditor(data.note.id, true);
+      modal.autoLabelId = autoLabelId;
       if (withImage) setTimeout(function () { triggerMediaPicker(); }, 50);
     } catch (e) { console.error('create note failed', e); }
   }
@@ -471,12 +501,14 @@
   // ══════════════════════════════════════════════════════════════════════
   var overlay = document.getElementById('noteModal');
   var modalCard = document.getElementById('noteModalCard');
-  var modal = { noteId: null, isNew: false, saveTimer: null, dirty: false, els: {} };
+  var modal = { noteId: null, isNew: false, autoLabelId: null, saveTimer: null, dirty: false, els: {} };
 
   function openEditor(id, isNew) {
     var n = findNote(id);
     if (!n) return;
     modal.noteId = id;
+    // Only newNote() sets this, right after opening; never inherit it.
+    modal.autoLabelId = null;
     modal.isNew = !!isNew;
     modal.dirty = false;
     buildModal(n);
@@ -764,20 +796,23 @@
     modal.noteId = null;
 
     // Drop a brand-new note that was left completely empty.
-    if (!skipSave && modal.isNew && n && isEmptyNote(n)) {
+    if (!skipSave && modal.isNew && n && noteIsBlank(n, modal.autoLabelId)) {
       notes = notes.filter(function (x) { return x.id !== n.id; });
       try { await api('/notes/api/' + n.id, { method: 'DELETE' }); } catch (e) {}
     }
     modal.isNew = false;
+    modal.autoLabelId = null;
     renderBoard();
   }
 
-  function isEmptyNote(n) {
-    var hasTitle = n.title && n.title !== 'Untitled';
-    var hasText = textOf(n.content).length > 0;
-    var hasMedia = n.media && n.media.length > 0;
-    var hasLabels = n.labels && n.labels.length > 0;
-    return !hasTitle && !hasText && !hasMedia && !hasLabels;
+  function noteIsBlank(n, autoLabelId) {
+    var parsed = parseBody(n.content);
+    return isNoteEmpty({
+      title: n.title,
+      hasText: parsed.text.length > 0,
+      hasImage: (n.media && n.media.length > 0) || !!parsed.imageSrc,
+      labels: n.labels,
+    }, autoLabelId);
   }
 
   overlay.addEventListener('click', function (e) {
