@@ -22,7 +22,6 @@ exports.getProfile = async (req, res) => {
     res.render('profile', {
       title: 'Profile',
       projects,
-      activeProjectId: null,
       projectTags: [],
       activePage: 'profile',
     });

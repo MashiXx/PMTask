@@ -13,9 +13,8 @@ exports.getUsers = async (req, res) => {
     res.render('admin/users', {
       title: 'User Management',
       users,
-      activeProjectId: null,
-      activeProject: null,
       projectTags: [],
+      activePage: 'users',
     });
   } catch (err) {
     console.error(err);

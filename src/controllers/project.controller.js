@@ -32,7 +32,11 @@ exports.getProjects = async (req, res) => {
     res.render('projects', {
       title: 'Projects',
       projects,
+      // The project list is where a project gets chosen, so it deliberately
+      // shows the general menu -- these nulls override the session project the
+      // sidebar middleware would otherwise attach.
       activeProjectId: null,
+      activeProject: null,
       projectTags: [],
       isGuest,
     });

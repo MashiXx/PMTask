@@ -97,6 +97,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Sidebar continuity: pages with no project of their own still render the
+// project menu, so the left nav doesn't change shape between pages.
+app.use(require('./middleware/sidebar-project'));
+
 // Routes
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/dashboard', require('./routes/dashboard.routes'));
